@@ -1,0 +1,46 @@
+[Unit]
+Description=PatchTrail independent HTTPS preview on8444
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=notify
+User=math-proxy
+Group=math-proxy
+Environment=XDG_DATA_HOME=/var/lib/patchtrail-proxy/data
+Environment=XDG_CONFIG_HOME=/var/lib/patchtrail-proxy/config
+EnvironmentFile=/etc/patchtrail-proxy/proxy.env
+WorkingDirectory=/var/lib/patchtrail-proxy
+StateDirectory=patchtrail-proxy
+StateDirectoryMode=0750
+RuntimeDirectory=patchtrail-proxy
+RuntimeDirectoryMode=0750
+ExecStartPre=/opt/patchtrail-proxy/bin/caddy-2.11.7 validate --config /etc/patchtrail-proxy/Caddyfile --adapter caddyfile
+ExecStart=/opt/patchtrail-proxy/bin/caddy-2.11.7 run --config /etc/patchtrail-proxy/Caddyfile --adapter caddyfile
+ExecReload=/opt/patchtrail-proxy/bin/caddy-2.11.7 validate --config /etc/patchtrail-proxy/Caddyfile --adapter caddyfile
+ExecReload=/bin/kill -USR1 $MAINPID
+Restart=on-failure
+RestartPreventExitStatus=1
+RestartSec=3
+TimeoutStopSec=30
+KillSignal=SIGTERM
+UMask=0027
+NoNewPrivileges=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryHigh=128M
+MemoryMax=192M
+CPUQuota=50%
+TasksMax=128
+LimitNOFILE=8192
+
+[Install]
+WantedBy=multi-user.target

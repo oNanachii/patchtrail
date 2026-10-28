@@ -1,0 +1,36 @@
+{
+	admin off
+	auto_https off
+	persist_config off
+	storage file_system {
+		root /var/lib/patchtrail-proxy/data/caddy
+	}
+	servers :8444 {
+		protocols h1 h2
+		timeouts {
+			read_header 10s
+			read_body 10s
+			write 45s
+			idle 30s
+		}
+		max_header_size 16KB
+	}
+}
+
+https://math.madokanun.top:8444 {
+	tls {$PATCHTRAIL_TLS_CERT} {$PATCHTRAIL_TLS_KEY}
+	request_body {
+		max_size 4096
+	}
+	encode zstd gzip
+	header {
+		defer
+		X-Robots-Tag "noindex, nofollow"
+		-Strict-Transport-Security
+	}
+	reverse_proxy 127.0.0.1:3110 {
+		transport http {
+			response_header_timeout 30s
+		}
+	}
+}

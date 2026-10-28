@@ -156,7 +156,7 @@ class ServiceTests(unittest.TestCase):
         self.runner.force_result = CheckResult(0, "Ran 0 tests in 0.000s\n\nOK\n", 1, False, False, "fake")
         self.service.verify(pending["id"])
         final = self.service.store.get_run(pending["id"])
-        self.assertEqual((final["state"], final["stop_reason"]), ("failed", "verifier_failed"))
+        self.assertEqual((final["state"], final["stop_reason"]), ("failed", "verification_unconfirmed"))
 
     def test_natural_language_claim_is_not_task_completion(self):
         provider = FakeProvider([None])

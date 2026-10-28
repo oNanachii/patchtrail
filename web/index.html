@@ -1,23 +1,17 @@
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PatchTrail · 排错与补丁验证</title><meta name="description" content="查看一次受控仓库排错的证据、补丁和实际检查结果。">
-  <link rel="stylesheet" href="/assets/style.css"><script src="/assets/app.js" defer></script>
-</head>
-<body>
-<header><a class="brand" href="/">PatchTrail<span>排错与补丁验证</span></a><div id="health" role="status">正在检查服务…</div></header>
-<main>
-  <section class="intro"><p class="eyebrow">受控任务 · 可回放证据</p><h1>从一个失败测试，走到可核对的修复。</h1><p>查看调查过程，确认具体补丁，再由独立检查决定结果。演示模式使用预设动作；DeepSeek 模式记录真实模型调用。</p></section>
-  <div id="notice" class="notice" role="alert" hidden></div>
-  <div class="workspace">
-    <aside><section class="card"><h2>选择任务</h2><div id="tasks" class="tasks"></div><label for="mode">执行方式</label><select id="mode"><option value="demo">脚本演示 · 不调用模型</option><option value="live">DeepSeek · 真实调用</option></select><label for="token">操作令牌 <span>仅本页内存</span></label><input id="token" type="password" autocomplete="off" placeholder="真实调用时填写操作令牌"><button id="start" class="primary">开始一次排错</button><p class="small">只运行预置任务。代码检查需要可用的容器运行环境，不会转到宿主机执行。</p></section><section class="card"><h2>最近运行</h2><div id="runs" class="runs"><p class="muted">还没有运行记录。</p></div></section></aside>
-    <section class="detail"><div id="empty" class="card empty"><h2>一条可以追踪的执行链</h2><ol><li>读取源码、搜索证据</li><li>复现原始测试失败</li><li>提出单文件补丁，等待确认</li><li>在新工作区运行不可修改的测试</li></ol><p>这些小型任务来自已观察到的问题，经独立编写重现。它们是公开回归案例，不是未知测试集。</p></div><div id="run-detail" hidden>
-      <section class="card"><div class="title-row"><h2 id="run-title">运行详情</h2><span id="state" class="badge"></span></div><p id="run-meta" class="small"></p><p id="provider-label" class="mode-label"></p><div id="metrics" class="metrics"></div><div class="actions"><button id="cancel">取消运行</button><button id="resume" hidden>明确恢复执行</button><button id="download">下载运行报告</button></div></section>
-      <section id="proposal-panel" class="card" hidden><div class="title-row"><h2>待确认的补丁</h2><button id="approve" class="primary">确认此补丁并验证</button></div><p id="explanation"></p><p id="proposal-hash" class="small mono"></p><pre id="diff" aria-label="补丁差异"></pre><p class="small">确认绑定当前版本与补丁哈希。验证会从原始任务重建工作区；不会修改你的真实仓库。</p></section>
-      <section id="result-panel" class="card" hidden><h2>检查结果</h2><p id="result-summary"></p><pre id="result" aria-label="实际检查输出"></pre></section>
-      <section class="card"><h2>执行记录</h2><div id="events" class="events" aria-live="polite"></div></section>
-    </div></section>
-  </div>
-</main><footer>PatchTrail v0.1 · 脚本回归、真实模型效果与人工验收分别记录</footer>
-</body></html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>PatchTrail · 排错与补丁验证</title>
+    <meta name="description" content="受控仓库排错与补丁验证工作台：查看 Agent 的调查证据，审阅并准确确认补丁，由不可修改的测试决定结果。">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <script type="module" crossorigin src="/assets/index-B_c-s6__.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-p6fP6fUu.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>PatchTrail 需要启用 JavaScript。API 契约位于 /api/openapi.json。</noscript>
+  </body>
+</html>

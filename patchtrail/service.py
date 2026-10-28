@@ -334,8 +334,13 @@ class RunService:
             check = self.runner.run(workspace, task.check_command, run_id)
             if self.store.get_run(run_id)["state"] != "verifying":
                 return
+            last = check.output.rstrip().splitlines()[-1:] or [""]
+            confirmed = (check.tests_run > 0 and not check.timed_out and not check.truncated
+                         and ((check.exit_code == 0 and last[0] == "OK")
+                              or (check.exit_code == 1 and last[0].startswith("FAILED"))))
+            reason = "verifier_passed" if check.passed else "verifier_failed" if confirmed else "verification_unconfirmed"
             self.store.transition(run_id, {"verifying"}, "succeeded" if check.passed else "failed",
-                                  {"result": check.to_dict(), "stop_reason": "verifier_passed" if check.passed else "verifier_failed"})
+                                  {"result": check.to_dict(), "stop_reason": reason})
         except StoreConflict:
             return
         except SandboxUnavailable:

@@ -1,0 +1,13 @@
+{
+  "checked_date": "2026-10-28",
+  "repository": "https://github.com/caddyserver/caddy",
+  "release": "v2.11.7",
+  "published_at": "2026-10-03T05:58:33Z",
+  "asset": "caddy_2.11.7_linux_amd64.tar.gz",
+  "asset_url": "https://github.com/caddyserver/caddy/releases/download/v2.11.7/caddy_2.11.7_linux_amd64.tar.gz",
+  "checksums_url": "https://github.com/caddyserver/caddy/releases/download/v2.11.7/caddy_2.11.7_checksums.txt",
+  "checksum_algorithm": "sha512",
+  "asset_sha512": "a7a433a1b133efc3c8d10eb0b99d52a24b5ef5c322dc77f5282182b1c0402139ab83f3a99f0c52409df77d20123fb0b523edad8a66d8f5e49136197bf61ef0e7",
+  "signature_verified": false,
+  "note": "Official release metadata and checksum manifest read. The install helper verifies the downloaded archive against both the official manifest and this pinned value; checksum verification is not a claim of signature verification."
+}

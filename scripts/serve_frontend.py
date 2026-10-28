@@ -4,12 +4,21 @@ from functools import partial
 import http.client
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+import sys
 from urllib.parse import urlsplit
 
 WEB = Path(__file__).resolve().parent.parent / "web"
+sys.path.insert(0, str(WEB.parent))
+from patchtrail.api import CSP
 
 
 class FrontendHandler(SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header("Content-Security-Policy", CSP)
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Cache-Control", "no-store")
+        return super().end_headers()
+
     def log_message(self, format, *args):
         pass
 

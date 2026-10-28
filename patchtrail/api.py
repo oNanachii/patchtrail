@@ -20,6 +20,9 @@ from .service import RunService, ServiceError, public_run
 from .storage import RunNotFound, StoreConflict
 from .tasks import list_tasks
 
+CSP = ("default-src 'self'; script-src 'self'; style-src 'self'; "
+       "img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+
 
 class CreateRun(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -92,8 +95,7 @@ def create_app(service=None):
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "no-referrer"
-        response.headers["Content-Security-Policy"] = ("default-src 'self'; script-src 'self'; style-src 'self'; "
-            "img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+        response.headers["Content-Security-Policy"] = CSP
         if request.url.path.startswith("/api/"):
             response.headers["Cache-Control"] = "no-store"
         return response

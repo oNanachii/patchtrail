@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch the existing managed certificate for PatchTrail HTTPS reload
+
+[Path]
+PathChanged=/var/lib/math-proxy/data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/math.madokanun.top/math.madokanun.top.crt
+PathChanged=/var/lib/math-proxy/data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/math.madokanun.top/math.madokanun.top.key
+Unit=patchtrail-proxy-cert-reload.service
+
+[Install]
+WantedBy=multi-user.target

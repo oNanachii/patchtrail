@@ -1,0 +1,16 @@
+[Unit]
+Description=Reload only the new PatchTrail HTTPS proxy after certificate update
+After=patchtrail-proxy.service
+
+[Service]
+Type=oneshot
+ExecCondition=/bin/systemctl --quiet is-active patchtrail-proxy.service
+# Certificate and key may be replaced in adjacent filesystem operations.
+ExecStartPre=/bin/sleep 2
+ExecStart=/bin/systemctl reload patchtrail-proxy.service
+TimeoutStartSec=20
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictAddressFamilies=AF_UNIX

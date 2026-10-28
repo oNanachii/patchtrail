@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-28",
+  "reviewer": "Codex internal review independent of the frontend implementation",
+  "frontend_logic_tests": 21,
+  "python_integrated_tests": 77,
+  "typescript_and_production_build": "passed",
+  "source_delivery_browser_claims": "Claude reported11 headless-Chrome scenarios; this review did not rerun the entire CDP harness",
+  "independent_browser": {
+    "driver": "in-app Chromium through supported CUA APIs",
+    "backend": "actual private server, rootless Podman, no design_harness",
+    "desktop": {
+      "width": 1440,
+      "height": 900,
+      "real_live_record_rendered": true,
+      "configured_and_reported_model": "deepseek-flash",
+      "tokens_displayed": 5072,
+      "before_after_tests": 4,
+      "page_overflow": 0
+    },
+    "credential_clear": {
+      "private_detail_and_events_immediately_removed": true,
+      "anonymous_live_gate_observed": true,
+      "old_response_epoch_races": "separate controlled Node regressions, not a network-intercept browser test"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "page_overflow": 0,
+      "diff_wrap_default": true,
+      "approval_digest_and_version_visible": true,
+      "initial_dialog_focus": "return-to-review",
+      "escape_returns_focus": "approve button"
+    },
+    "actual_browser_workflow": {
+      "run_id": "d637a8a6d38d4a2dad2f4ff1396d7e78",
+      "task_id": "batch-expiry",
+      "mode": "scripted; no model call",
+      "created_reviewed_approved_and_verified": true,
+      "result": "succeeded",
+      "runner": "podman",
+      "downloaded_report_json_valid": true
+    },
+    "captured_js_or_csp_errors": 0,
+    "new_paid_model_calls": 0
+  },
+  "repaired": [
+    "credential epoch and protected cache invalidation",
+    "unknown creation request retains key through retry precondition rejection",
+    "incomplete verification evidence is not attributed to patch failure",
+    "duplicate tool-name React keys"
+  ],
+  "limits": [
+    "no real touch-device acceptance",
+    "no Safari/Firefox or screen-reader validation in this review",
+    "no user artistic/interview acceptance",
+    "future actual ACME renewal event not exercised"
+  ]
+}

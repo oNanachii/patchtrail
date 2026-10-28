@@ -1,0 +1,28 @@
+{
+  "name": "patchtrail-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "PatchTrail frontend. Builds to ../web for same-origin static serving by the FastAPI app.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/createGuard.test.js tests/evidence.test.js"
+  },
+  "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "5.3.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "typescript": "5.9.3",
+    "vite": "8.3.5"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
+}

@@ -1,0 +1,115 @@
+/* Color means something here: neutrals carry the interface, hues are reserved for run
+   state, diff lines and the demo/live distinction. */
+:root {
+  color-scheme: light;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Noto Sans SC", "Noto Sans CJK SC", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, "Noto Sans Mono CJK SC", monospace;
+
+  --bg: #f4f3ef;
+  --surface: #ffffff;
+  --surface-2: #faf9f6;
+  --sunken: #eeece6;
+  --ink: #16181b;
+  --ink-2: #3b4046;
+  --muted: #676d75;
+  --faint: #979ca3;
+  --line: #e2dfd7;
+  --line-strong: #cbc7bd;
+  --focus: #2f6feb;
+  --primary-bg: #16181b;
+  --primary-ink: #f8f7f3;
+  --shadow: 0 1px 2px rgb(20 20 18 / 6%), 0 4px 16px rgb(20 20 18 / 5%);
+  --shadow-pop: 0 12px 40px rgb(20 20 18 / 18%);
+
+  --neutral: #5a6470;  --neutral-soft: #eceef0;
+  --info: #1f5fbf;     --info-soft: #e7effb;
+  --attention: #92570a; --attention-soft: #fcf1dd; --attention-line: #ecc98b;
+  --success: #17703d;  --success-soft: #e4f3ea;
+  --danger: #b4232a;   --danger-soft: #fbe9ea;
+  --warning: #a84d0b;  --warning-soft: #fcebdd;
+  --muted-tone: #6a7078; --muted-soft: #eeede9;
+  --live: #6337d0;     --live-soft: #efe9fc;
+  --demo: #4b5563;     --demo-soft: #eceef1;
+
+  --add-bg: #e8f5ec; --add-strong: #c6e8d0; --add-ink: #145a2e;
+  --del-bg: #fbeceb; --del-strong: #f4cfcf; --del-ink: #8a1c22;
+  --hunk-bg: #eef2f8; --hunk-ink: #4d5f7c;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  --topbar-h: 56px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0d0f11;
+    --surface: #15181b;
+    --surface-2: #1a1d21;
+    --sunken: #0a0c0d;
+    --ink: #e9eaeb;
+    --ink-2: #c4c8cd;
+    --muted: #949ba4;
+    --faint: #656c75;
+    --line: #262a30;
+    --line-strong: #363b42;
+    --focus: #79a8ff;
+    --primary-bg: #ebe9e3;
+    --primary-ink: #121416;
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+    --shadow-pop: 0 16px 48px rgb(0 0 0 / 55%);
+    --neutral: #a3adb8;  --neutral-soft: rgb(163 173 184 / 12%);
+    --info: #7eaaff;     --info-soft: rgb(90 140 255 / 14%);
+    --attention: #f2b54f; --attention-soft: rgb(242 181 79 / 13%); --attention-line: rgb(242 181 79 / 45%);
+    --success: #52c48e;  --success-soft: rgb(82 196 142 / 13%);
+    --danger: #ff7474;   --danger-soft: rgb(255 116 116 / 13%);
+    --warning: #ff9f57;  --warning-soft: rgb(255 159 87 / 13%);
+    --muted-tone: #8d949c; --muted-soft: rgb(141 148 156 / 12%);
+    --live: #ad92ff;     --live-soft: rgb(173 146 255 / 15%);
+    --demo: #a7b0bb;     --demo-soft: rgb(167 176 187 / 12%);
+    --add-bg: rgb(82 196 142 / 11%); --add-strong: rgb(82 196 142 / 26%); --add-ink: #a3e6c3;
+    --del-bg: rgb(255 116 116 / 11%); --del-strong: rgb(255 116 116 / 26%); --del-ink: #ffb8b8;
+    --hunk-bg: rgb(126 170 255 / 9%); --hunk-ink: #9db6e0;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d0f11;
+  --surface: #15181b;
+  --surface-2: #1a1d21;
+  --sunken: #0a0c0d;
+  --ink: #e9eaeb;
+  --ink-2: #c4c8cd;
+  --muted: #949ba4;
+  --faint: #656c75;
+  --line: #262a30;
+  --line-strong: #363b42;
+  --focus: #79a8ff;
+  --primary-bg: #ebe9e3;
+  --primary-ink: #121416;
+  --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow-pop: 0 16px 48px rgb(0 0 0 / 55%);
+  --neutral: #a3adb8;  --neutral-soft: rgb(163 173 184 / 12%);
+  --info: #7eaaff;     --info-soft: rgb(90 140 255 / 14%);
+  --attention: #f2b54f; --attention-soft: rgb(242 181 79 / 13%); --attention-line: rgb(242 181 79 / 45%);
+  --success: #52c48e;  --success-soft: rgb(82 196 142 / 13%);
+  --danger: #ff7474;   --danger-soft: rgb(255 116 116 / 13%);
+  --warning: #ff9f57;  --warning-soft: rgb(255 159 87 / 13%);
+  --muted-tone: #8d949c; --muted-soft: rgb(141 148 156 / 12%);
+  --live: #ad92ff;     --live-soft: rgb(173 146 255 / 15%);
+  --demo: #a7b0bb;     --demo-soft: rgb(167 176 187 / 12%);
+  --add-bg: rgb(82 196 142 / 11%); --add-strong: rgb(82 196 142 / 26%); --add-ink: #a3e6c3;
+  --del-bg: rgb(255 116 116 / 11%); --del-strong: rgb(255 116 116 / 26%); --del-ink: #ffb8b8;
+  --hunk-bg: rgb(126 170 255 / 9%); --hunk-ink: #9db6e0;
+}
+
+.tone-neutral { --tone: var(--neutral); --tone-soft: var(--neutral-soft); }
+.tone-info { --tone: var(--info); --tone-soft: var(--info-soft); }
+.tone-attention { --tone: var(--attention); --tone-soft: var(--attention-soft); }
+.tone-success { --tone: var(--success); --tone-soft: var(--success-soft); }
+.tone-danger { --tone: var(--danger); --tone-soft: var(--danger-soft); }
+.tone-warning { --tone: var(--warning); --tone-soft: var(--warning-soft); }
+.tone-muted { --tone: var(--muted-tone); --tone-soft: var(--muted-soft); }
+.tone-live { --tone: var(--live); --tone-soft: var(--live-soft); }

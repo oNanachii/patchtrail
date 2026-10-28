@@ -10,3 +10,7 @@ var/
 artifacts/private/
 *.sqlite3*
 *.log
+frontend/node_modules/
+
+# Original Claude design screenshots remain local; selected independent evidence is tracked.
+artifacts/browser/frontend/
