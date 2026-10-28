@@ -1,0 +1,45 @@
+{
+  "date": "2026-10-28",
+  "scope": "CLI import discoverability and explanation; no web upload added",
+  "code_commit": "f6dcf84",
+  "release": "20261028-import-guide-01",
+  "backend_runtime_hash_unchanged": "a8950cfb3b94daa8a05d9a416dc4e7cdcf239c9fc885593914c4d8ad374242f8",
+  "public_assets_match": [
+    "/assets/THIRD_PARTY_LICENSES.txt",
+    "/assets/favicon.svg",
+    "/assets/import_manifest.example.json",
+    "/assets/index-BYabvZl3.js",
+    "/assets/index-DE_Lnq9A.css",
+    "/",
+    "/assets/jetbrains-mono-cyrillic-ext-wght-normal-EocZY2iu.woff2",
+    "/assets/jetbrains-mono-cyrillic-wght-normal-D73BlboJ.woff2",
+    "/assets/jetbrains-mono-greek-wght-normal-Bw9x6K1M.woff2",
+    "/assets/jetbrains-mono-latin-ext-wght-normal-DBQx-q_a.woff2",
+    "/assets/jetbrains-mono-latin-wght-normal-B9CIFXIH.woff2",
+    "/assets/jetbrains-mono-vietnamese-wght-normal-Bt-aOZkq.woff2"
+  ],
+  "manifest_template_schema_valid": true,
+  "node_existing_checks": 22,
+  "frontend_python_asset_checks": 3,
+  "typescript_build": "passed",
+  "paid_model_calls": 0,
+  "browser": {
+    "environment": "production HTTPS; independent Chromium",
+    "desktop": {
+      "width": 1280,
+      "height": 720,
+      "page_overflow": 0,
+      "dialog_overflow": 0
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "page_overflow": 0,
+      "dialog_overflow": 0
+    },
+    "escape_returns_focus_to_cli_guide": true,
+    "captured_console_or_csp_errors_warnings": 0
+  },
+  "temporary_design_server_stopped": true,
+  "web_source_upload_implemented": false
+}
