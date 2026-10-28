@@ -3,6 +3,7 @@ import type { PendingCreate } from "../lib/createGuard.js";
 import { shortHash } from "../lib/format.js";
 import type { Health, Task, TokenStatus } from "../types";
 import { Dialog, ErrorLine, Icon, ModeTag, Spinner } from "./ui";
+import { ImportGuide, ImportGuideButton } from "./ImportGuide";
 
 type Mode = "demo" | "live";
 export type CreateFailure = { message: string; code: string; status: number; server?: string; outcome: string };
@@ -23,6 +24,7 @@ export function NewRun({ tasks, tasksError, health, online, token, tokenStatus, 
   const [taskId, setTaskId] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("demo");
   const [confirmLive, setConfirmLive] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   useEffect(() => {
     if (tasks?.length && !tasks.some((task) => task.id === taskId)) setTaskId(tasks[0].id);
   }, [tasks, taskId]);
@@ -55,6 +57,9 @@ export function NewRun({ tasks, tasksError, health, online, token, tokenStatus, 
   return (
     <section className="panel new-run" aria-labelledby="new-run-title">
       <h2 id="new-run-title" className="panel-title">新建运行</h2>
+      <ImportGuideButton onClick={() => setImportOpen(true)} />
+      <p className="small muted">自己的源码先通过后端 CLI 导入，再载入令牌选择；网页不提供文件上传。</p>
+      <ImportGuide open={importOpen} onClose={() => setImportOpen(false)} />
       {locked && pending && (
         <div className="pending-box" role="status">
           <p className="pending-title"><Icon name="alert" size={15} />上次创建请求的结果未确认</p>

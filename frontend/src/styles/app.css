@@ -565,6 +565,11 @@ details.raw .code-block { margin-top: 6px; }
 .dialog-head { border-radius: 14px 14px 0 0; }
 .dialog-content { display: grid; gap: 12px; padding: 4px 18px 16px; overflow-y: auto; font-size: 14px; }
 .dialog-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--line); background: var(--surface-2); border-radius: 0 0 14px 14px; }
+.import-instructions { display: grid; gap: 14px; min-width: 0; }
+.import-instructions .plain-list { gap: 18px; }
+.import-instructions li { min-width: 0; }
+.import-instructions li > p { margin-top: 8px; }
+.import-instructions .code-block { white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0 10px; }
 
 /* ---------- Footer ---------- */
 .footer {

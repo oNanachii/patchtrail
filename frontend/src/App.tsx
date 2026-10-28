@@ -394,7 +394,7 @@ function Overview() {
     <div className="overview">
       <p className="eyebrow">受控任务 · 可核对的证据链</p>
       <h1>从一个失败测试，走到可核对的修复。</h1>
-      <p className="lede">选择公开演示，或载入操作令牌选择自己导入的Python项目。Agent 在受限快照里读代码、复现失败、提出最多三文件补丁后停下；你按准确的 digest 与版本确认；验证器在新工作区的禁网容器里运行固定测试，由实际结果决定成功与否。</p>
+      <p className="lede">可以直接选择公开演示。自己的 Python 源码目前需要通过后端 CLI 导入，再载入操作令牌选择私有项目；左侧“导入指引（CLI）”提供具体步骤。Agent 读代码、复现失败、提出补丁后停下；你确认后，由新工作区的容器测试决定检查结果。</p>
       <ol className="flow">
         <li><span className="flow-n">1</span><div><strong>调查</strong><p>有界读文件、字面搜索、固定检查。文件和工具输出只当作数据。</p></div></li>
         <li><span className="flow-n">2</span><div><strong>复现</strong><p>在容器中运行原始测试，确认基线确实失败。</p></div></li>
