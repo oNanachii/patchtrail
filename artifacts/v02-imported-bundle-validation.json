@@ -1,0 +1,131 @@
+{
+  "recorded_at_utc": "2026-10-28T15:12:15.274907+00:00",
+  "status": "passed",
+  "scope": "curated imported snapshot and atomic two-file bundle through actual OCI checks",
+  "fixture_origin": "self-authored small Python runtime regression",
+  "model_called": false,
+  "provider_used": false,
+  "model_effectiveness_evaluated": false,
+  "binary": "podman",
+  "image": "docker.io/library/python@sha256:1148dbb014615300fa7e713b2f94f550c0d1c69780c0805f84f093ceee34dd0b",
+  "runtime_code_hash": "a8950cfb3b94daa8a05d9a416dc4e7cdcf239c9fc885593914c4d8ad374242f8",
+  "task_id": "project-e74049fc72cc343bbeb6158445456fa7d8581fc03b54bc9c24108a4c",
+  "snapshot_id": "e74049fc72cc343bbeb6158445456fa7d8581fc03b54bc9c24108a4c1b6a68d4",
+  "source_hash": "4d5795abbf86f10137d2b42eb6f154ad850b0a643677724d2314e5353334444e",
+  "original_path_moved": true,
+  "catalog_resolves_without_original_path": true,
+  "baseline": {
+    "exit_code": 1,
+    "output": "test_add_negative (tests.test_values.Values.test_add_negative) ... FAIL\ntest_add_positive (tests.test_values.Values.test_add_positive) ... FAIL\ntest_double_positive (tests.test_values.Values.test_double_positive) ... FAIL\ntest_double_zero (tests.test_values.Values.test_double_zero) ... ok\n\n======================================================================\nFAIL: test_add_negative (tests.test_values.Values.test_add_negative)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/tests/test_values.py\", line 7, in test_add_negative\n    def test_add_negative(self): self.assertEqual(add_one(-2), -1)\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: -2 != -1\n\n======================================================================\nFAIL: test_add_positive (tests.test_values.Values.test_add_positive)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/tests/test_values.py\", line 6, in test_add_positive\n    def test_add_positive(self): self.assertEqual(add_one(3), 4)\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 3 != 4\n\n======================================================================\nFAIL: test_double_positive (tests.test_values.Values.test_double_positive)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/tests/test_values.py\", line 8, in test_double_positive\n    def test_double_positive(self): self.assertEqual(double(3), 6)\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 3 != 6\n\n----------------------------------------------------------------------\nRan 4 tests in 0.002s\n\nFAILED (failures=3)\n",
+    "duration_ms": 1465,
+    "timed_out": false,
+    "truncated": false,
+    "runner": "podman",
+    "check_profile": "unittest",
+    "passed": false,
+    "tests_run": 4,
+    "complete": true,
+    "framework": "unittest",
+    "test_outcomes": [
+      {
+        "name": "test_add_negative (tests.test_values.Values.test_add_negative)",
+        "state": "failed"
+      },
+      {
+        "name": "test_add_positive (tests.test_values.Values.test_add_positive)",
+        "state": "failed"
+      },
+      {
+        "name": "test_double_positive (tests.test_values.Values.test_double_positive)",
+        "state": "failed"
+      },
+      {
+        "name": "test_double_zero (tests.test_values.Values.test_double_zero)",
+        "state": "passed"
+      }
+    ]
+  },
+  "proposal": {
+    "digest": "f5b9f4c7ee1389d4e4e68c41b529a230431e4ba3fe41924d8e2c3fb3e0accec4",
+    "source_hash": "4d5795abbf86f10137d2b42eb6f154ad850b0a643677724d2314e5353334444e",
+    "files": [
+      {
+        "path": "left.py",
+        "old_sha256": "7f115b0f9cb49cecf9774c32fe6dec050b7d1bc907cd95f770c2981150808f25",
+        "new_sha256": "eb03dcb53008b66099f4a3324d5335b3cf0a3e93fefc7836afbb6a9eb88cfbdd"
+      },
+      {
+        "path": "right.py",
+        "old_sha256": "917c6062e85db2fef958d03975d4e2cbdae2cfa7bcd9db2ded274f1f621b2d7c",
+        "new_sha256": "e77335c804a116a2e8a7445a96ea133bd60d7bbe5361606d933bcb5509392962"
+      }
+    ],
+    "diff": "--- a/left.py\n+++ b/left.py\n@@ -1,2 +1,2 @@\n def add_one(value):\n-    return value\n+    return value + 1\n--- a/right.py\n+++ b/right.py\n@@ -1,2 +1,2 @@\n def double(value):\n-    return value\n+    return value * 2\n"
+  },
+  "tamper_checks": [
+    {
+      "path": "left.py",
+      "field": "old_sha256",
+      "rejected": true,
+      "no_partial_application": true
+    },
+    {
+      "path": "left.py",
+      "field": "new_sha256",
+      "rejected": true,
+      "no_partial_application": true
+    },
+    {
+      "path": "right.py",
+      "field": "old_sha256",
+      "rejected": true,
+      "no_partial_application": true
+    },
+    {
+      "path": "right.py",
+      "field": "new_sha256",
+      "rejected": true,
+      "no_partial_application": true
+    }
+  ],
+  "verification": {
+    "exit_code": 0,
+    "output": "test_add_negative (tests.test_values.Values.test_add_negative) ... ok\ntest_add_positive (tests.test_values.Values.test_add_positive) ... ok\ntest_double_positive (tests.test_values.Values.test_double_positive) ... ok\ntest_double_zero (tests.test_values.Values.test_double_zero) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.001s\n\nOK\n",
+    "duration_ms": 1637,
+    "timed_out": false,
+    "truncated": false,
+    "runner": "podman",
+    "check_profile": "unittest",
+    "passed": true,
+    "tests_run": 4,
+    "complete": true,
+    "framework": "unittest",
+    "test_outcomes": [
+      {
+        "name": "test_add_negative (tests.test_values.Values.test_add_negative)",
+        "state": "passed"
+      },
+      {
+        "name": "test_add_positive (tests.test_values.Values.test_add_positive)",
+        "state": "passed"
+      },
+      {
+        "name": "test_double_positive (tests.test_values.Values.test_double_positive)",
+        "state": "passed"
+      },
+      {
+        "name": "test_double_zero (tests.test_values.Values.test_double_zero)",
+        "state": "passed"
+      }
+    ]
+  },
+  "original_source_unchanged": true,
+  "snapshot_source_unchanged": true,
+  "investigation_unchanged": true,
+  "immutable_tests_unchanged": true,
+  "verification_used_fresh_snapshot_copy": true,
+  "test_hashes": {
+    "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tests/test_values.py": "bacb316c53aebcfbd150a209ec000b2890d68cca58fb93dc8c0119c2552db27b"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "status": "passed",
+  "scope": "actual rootless OCI pytest execution",
+  "model_called": false,
+  "image": "sha256:6896b73045bc7adf6dc64c94d6932aff6a14e20e4d6a8b79b392a801bd81d4f7",
+  "runtime_code_hash": "ed55e4c62a376b491672f4f0c32c3f3ef61134395944dadbb62ffa4d32bf2080",
+  "results": [
+    {
+      "case": "passed",
+      "exit_code": 0,
+      "output": "============================= test session starts ==============================\nplatform linux -- Python 3.12.16, pytest-9.0.3, pluggy-1.5.0 -- /usr/local/bin/python\nrootdir: /workspace\nconfigfile: ../dev/null\ncollecting ... collected 2 items\n\ntests/test_cases.py::test_one PASSED                                     [ 50%]\ntests/test_cases.py::test_two PASSED                                     [100%]\n\n============================== 2 passed in 0.01s ===============================\n",
+      "duration_ms": 9052,
+      "timed_out": false,
+      "truncated": false,
+      "runner": "podman",
+      "check_profile": "pytest",
+      "passed": true,
+      "tests_run": 2,
+      "complete": true,
+      "framework": "pytest",
+      "test_outcomes": [
+        {
+          "name": "tests/test_cases.py::test_one",
+          "state": "passed"
+        },
+        {
+          "name": "tests/test_cases.py::test_two",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "case": "failed",
+      "exit_code": 1,
+      "output": "============================= test session starts ==============================\nplatform linux -- Python 3.12.16, pytest-9.0.3, pluggy-1.5.0 -- /usr/local/bin/python\nrootdir: /workspace\nconfigfile: ../dev/null\ncollecting ... collected 1 item\n\ntests/test_cases.py::test_failure FAILED                                 [100%]\n\n=================================== FAILURES ===================================\n_________________________________ test_failure _________________________________\ntests/test_cases.py:1: in test_failure\n    def test_failure(): assert 2 + 2 == 5\n                        ^^^^^^^^^^^^^^^^^\nE   assert (2 + 2) == 5\n=========================== short test summary info ============================\nFAILED tests/test_cases.py::test_failure - assert (2 + 2) == 5\n============================== 1 failed in 0.09s ===============================\n",
+      "duration_ms": 2467,
+      "timed_out": false,
+      "truncated": false,
+      "runner": "podman",
+      "check_profile": "pytest",
+      "passed": false,
+      "tests_run": 1,
+      "complete": true,
+      "framework": "pytest",
+      "test_outcomes": [
+        {
+          "name": "tests/test_cases.py::test_failure",
+          "state": "failed"
+        }
+      ]
+    },
+    {
+      "case": "zero",
+      "exit_code": 5,
+      "output": "============================= test session starts ==============================\nplatform linux -- Python 3.12.16, pytest-9.0.3, pluggy-1.5.0 -- /usr/local/bin/python\nrootdir: /workspace\nconfigfile: ../dev/null\ncollecting ... collected 0 items\n\n============================ no tests ran in 0.01s =============================\n",
+      "duration_ms": 1728,
+      "timed_out": false,
+      "truncated": false,
+      "runner": "podman",
+      "check_profile": "pytest",
+      "passed": false,
+      "tests_run": 0,
+      "complete": false,
+      "framework": "pytest",
+      "test_outcomes": []
+    },
+    {
+      "case": "all_skipped",
+      "exit_code": 0,
+      "output": "============================= test session starts ==============================\nplatform linux -- Python 3.12.16, pytest-9.0.3, pluggy-1.5.0 -- /usr/local/bin/python\nrootdir: /workspace\nconfigfile: ../dev/null\ncollecting ... collected 1 item\n\ntests/test_cases.py::test_skipped SKIPPED (profile evidence)             [100%]\n\n============================== 1 skipped in 0.06s ==============================\n",
+      "duration_ms": 1568,
+      "timed_out": false,
+      "truncated": false,
+      "runner": "podman",
+      "check_profile": "pytest",
+      "passed": false,
+      "tests_run": 1,
+      "complete": false,
+      "framework": "pytest",
+      "test_outcomes": [
+        {
+          "name": "tests/test_cases.py::test_skipped",
+          "state": "skipped"
+        }
+      ]
+    }
+  ]
+}

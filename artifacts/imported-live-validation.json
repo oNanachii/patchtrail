@@ -1,0 +1,663 @@
+{
+  "recorded_at_utc": "2026-10-28T15:46:56.795210+00:00",
+  "status": "completed_with_recorded_rejections",
+  "scope": "Three pre-registered owned-source small features across two repositories; not a blind benchmark or general repair rate. All attempts, internal review rejections and infrastructure failures retained.",
+  "approval_actor": "Codex internal code review and operator endpoint confirmation; not human user acceptance",
+  "logical_case_count": 3,
+  "attempt_count": 5,
+  "registered_source_projects": [
+    "patchtrail",
+    "text-classification-lab"
+  ],
+  "complete_latest_cases": 2,
+  "complete_latest_source_projects": [
+    "text-classification-lab"
+  ],
+  "review_rejected_attempt_count": 2,
+  "recorded_failed_attempt_count": 1,
+  "additional_model_attempts_planned": false,
+  "total_model_calls": 20,
+  "total_tool_calls": 26,
+  "total_model_tokens": 88253,
+  "attempts": [
+    {
+      "case": "textlab-storage-revision",
+      "attempt": 1,
+      "previous_run_id": null,
+      "iteration_reason": null,
+      "run_id": "67da728850b54ca2a87eb73109c95388",
+      "task_id": "project-8047c3ab9c45dc9d8a7d7debd95c19d6905f8ec89f917e3cee2bd6f7",
+      "project_id": "text-classification-lab",
+      "task_kind": "pre-registered small feature on owned repository source",
+      "snapshot_id": "8047c3ab9c45dc9d8a7d7debd95c19d6905f8ec89f917e3cee2bd6f78ba15182",
+      "source_hash": "cd7f9692f2b9e9a78cb0720d4b8c315a19dc7a0d94ddbb0ac1ef4db90576345f",
+      "profile": "unittest",
+      "container_image": "docker.io/library/python@sha256:1148dbb014615300fa7e713b2f94f550c0d1c69780c0805f84f093ceee34dd0b",
+      "state": "failed",
+      "stop_reason": "baseline_unconfirmed",
+      "model_calls": 3,
+      "tool_calls": 3,
+      "usage": {
+        "completion_tokens": 146,
+        "prompt_cache_hit_tokens": 4608,
+        "prompt_tokens": 9316,
+        "total_tokens": 9462
+      },
+      "configured_model": "deepseek-flash",
+      "reported_models": [
+        "deepseek-flash"
+      ],
+      "run_origin_runtime_code_hash": "ed55e4c62a376b491672f4f0c32c3f3ef61134395944dadbb62ffa4d32bf2080",
+      "initial_check": {
+        "check_profile": "unittest",
+        "complete": false,
+        "duration_ms": 1878,
+        "exit_code": 1,
+        "framework": "unittest",
+        "output_evidence": {
+          "sha256": "434141136b3e4787daf31c7d61642c837c036515a16cc04324d79696d88f5bd1",
+          "bytes": 6091
+        },
+        "passed": false,
+        "runner": "podman",
+        "reported_outcome_entry_count": 8,
+        "reported_outcome_states": {
+          "error": 7,
+          "passed": 1
+        },
+        "test_outcomes_evidence": {
+          "sha256": "fb8524aef5f847900a41fa613dddb5de1936d614b2d88d14889371ebce3955e4",
+          "bytes": 1484
+        },
+        "tests_run": 5,
+        "timed_out": false,
+        "truncated": false
+      },
+      "approval": null,
+      "review_rejection": null,
+      "verification": {
+        "error": "No complete baseline test run was confirmed; inspect the container check event"
+      },
+      "independent_replay": null,
+      "private_report_evidence": {
+        "id": "imported-live/67da728850b54ca2a87eb73109c95388.json",
+        "sha256": "3588bad118cd62477d9a8a2769aacf20c41c6a0fcfe87438f15c2a25c07910aa",
+        "bytes": 36673
+      }
+    },
+    {
+      "case": "textlab-storage-revision",
+      "attempt": 2,
+      "previous_run_id": "67da728850b54ca2a87eb73109c95388",
+      "iteration_reason": "The human user explicitly approved this one engineering retry via call_08be04bf0821486fa513291b2748a3e7 after the legitimate unittest subTest parser fix in release4113a23; original failed run67da728850b54ca2a87eb73109c95388 remains recorded, source/tests/task unchanged.",
+      "run_id": "c81e5da299c441c9895c21acdd6e3a3d",
+      "task_id": "project-8047c3ab9c45dc9d8a7d7debd95c19d6905f8ec89f917e3cee2bd6f7",
+      "project_id": "text-classification-lab",
+      "task_kind": "pre-registered small feature on owned repository source",
+      "snapshot_id": "8047c3ab9c45dc9d8a7d7debd95c19d6905f8ec89f917e3cee2bd6f78ba15182",
+      "source_hash": "cd7f9692f2b9e9a78cb0720d4b8c315a19dc7a0d94ddbb0ac1ef4db90576345f",
+      "profile": "unittest",
+      "container_image": "docker.io/library/python@sha256:1148dbb014615300fa7e713b2f94f550c0d1c69780c0805f84f093ceee34dd0b",
+      "state": "succeeded",
+      "stop_reason": "verifier_passed",
+      "model_calls": 4,
+      "tool_calls": 5,
+      "usage": {
+        "completion_tokens": 2251,
+        "prompt_cache_hit_tokens": 9984,
+        "prompt_tokens": 15966,
+        "total_tokens": 18217
+      },
+      "configured_model": "deepseek-flash",
+      "reported_models": [
+        "deepseek-flash"
+      ],
+      "run_origin_runtime_code_hash": "a8950cfb3b94daa8a05d9a416dc4e7cdcf239c9fc885593914c4d8ad374242f8",
+      "initial_check": {
+        "check_profile": "unittest",
+        "complete": true,
+        "duration_ms": 1828,
+        "exit_code": 1,
+        "framework": "unittest",
+        "output_evidence": {
+          "sha256": "dc6c2efec4100c499a1d129d66faa9d965b4b93d562044b31e129be385de13d3",
+          "bytes": 6091
+        },
+        "passed": false,
+        "runner": "podman",
+        "reported_outcome_entry_count": 8,
+        "reported_outcome_states": {
+          "error": 7,
+          "passed": 1
+        },
+        "test_outcomes_evidence": {
+          "sha256": "fb8524aef5f847900a41fa613dddb5de1936d614b2d88d14889371ebce3955e4",
+          "bytes": 1484
+        },
+        "tests_run": 5,
+        "timed_out": false,
+        "truncated": false
+      },
+      "approval": {
+        "run_id": "c81e5da299c441c9895c21acdd6e3a3d",
+        "reviewer": "Codex internal code review; not user acceptance",
+        "note": "Actual diff reviewed: only SampleStore.correct_label adds an optional keyword-only expected_revision; type validation excludes bool/float/string and negative values before DB access; matching revision is checked inside the existing BEGIN IMMEDIATE transaction before the unchanged-label branch. Existing legacy callers, unknown-ID behavior and label/history write logic remain intact. Codex internal review, not human user acceptance.",
+        "digest": "07d5ed484f5cc31747a99f8e97ad3a032318cfdb9ab46100dd69935dcad388b1",
+        "expected_version": 13,
+        "files": [
+          "storage.py"
+        ],
+        "reviewed_at_utc": "2026-10-28T15:27:12.291487+00:00"
+      },
+      "review_rejection": null,
+      "verification": {
+        "check_profile": "unittest",
+        "complete": true,
+        "duration_ms": 2044,
+        "exit_code": 0,
+        "framework": "unittest",
+        "output_evidence": {
+          "sha256": "5a5389d7569fdf29bd5d4053f5af0cbb8995d91b9e5f9dd0c75fb865e247a0fc",
+          "bytes": 851
+        },
+        "passed": true,
+        "runner": "podman",
+        "reported_outcome_entry_count": 5,
+        "reported_outcome_states": {
+          "passed": 5
+        },
+        "test_outcomes_evidence": {
+          "sha256": "877c0c6c2cbbd9b6e2543640dfea965588e049acd2c16a834b6c67f64eea0294",
+          "bytes": 859
+        },
+        "tests_run": 5,
+        "timed_out": false,
+        "truncated": false
+      },
+      "independent_replay": {
+        "case": "textlab-storage-revision",
+        "run_id": "c81e5da299c441c9895c21acdd6e3a3d",
+        "task_id": "project-8047c3ab9c45dc9d8a7d7debd95c19d6905f8ec89f917e3cee2bd6f7",
+        "snapshot_id": "8047c3ab9c45dc9d8a7d7debd95c19d6905f8ec89f917e3cee2bd6f78ba15182",
+        "source_hash": "cd7f9692f2b9e9a78cb0720d4b8c315a19dc7a0d94ddbb0ac1ef4db90576345f",
+        "image": "docker.io/library/python@sha256:1148dbb014615300fa7e713b2f94f550c0d1c69780c0805f84f093ceee34dd0b",
+        "profile": "unittest",
+        "patch_sha256": "433d1901df599223a819753f84127a88312661f54c8c5e7c81f6589def7ff8e0",
+        "git_apply_location": "local isolated copy of the same immutable source hash; source was never executed on the host",
+        "git_apply": [
+          {
+            "argv": [
+              "git",
+              "apply",
+              "--check",
+              "-"
+            ],
+            "exit_code": 0,
+            "stdout_evidence": {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0
+            },
+            "stderr_evidence": {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0
+            }
+          },
+          {
+            "argv": [
+              "git",
+              "apply",
+              "-"
+            ],
+            "exit_code": 0,
+            "stdout_evidence": {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0
+            },
+            "stderr_evidence": {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0
+            }
+          }
+        ],
+        "remote_replacements_match_git_applied_sha256": {
+          "storage.py": "1c34ef5a0d2a605f75bfd744994d943421f8b71a828011c56b99e1ff0217b1b9"
+        },
+        "before": {
+          "exit_code": 1,
+          "output_evidence": {
+            "sha256": "eb556942556594eb3678256a970706d3b4fb44fbda4af44d2c7403f179f1a52e",
+            "bytes": 6091
+          },
+          "duration_ms": 2012,
+          "timed_out": false,
+          "truncated": false,
+          "runner": "podman",
+          "check_profile": "unittest",
+          "passed": false,
+          "tests_run": 5,
+          "complete": true,
+          "framework": "unittest",
+          "reported_outcome_entry_count": 8,
+          "reported_outcome_states": {
+            "error": 7,
+            "passed": 1
+          },
+          "test_outcomes_evidence": {
+            "sha256": "fb8524aef5f847900a41fa613dddb5de1936d614b2d88d14889371ebce3955e4",
+            "bytes": 1484
+          }
+        },
+        "after": {
+          "exit_code": 0,
+          "output_evidence": {
+            "sha256": "29a47b710269e8bf867dd061640715594831fba209e8d9290eb97dc5c4d2c690",
+            "bytes": 851
+          },
+          "duration_ms": 1662,
+          "timed_out": false,
+          "truncated": false,
+          "runner": "podman",
+          "check_profile": "unittest",
+          "passed": true,
+          "tests_run": 5,
+          "complete": true,
+          "framework": "unittest",
+          "reported_outcome_entry_count": 5,
+          "reported_outcome_states": {
+            "passed": 5
+          },
+          "test_outcomes_evidence": {
+            "sha256": "877c0c6c2cbbd9b6e2543640dfea965588e049acd2c16a834b6c67f64eea0294",
+            "bytes": 859
+          }
+        },
+        "original_snapshot_unchanged": true,
+        "immutable_test_files_unchanged": true,
+        "actual_oci": true,
+        "host_source_execution": false,
+        "passed": true,
+        "attempt": 2
+      },
+      "private_report_evidence": {
+        "id": "imported-live/c81e5da299c441c9895c21acdd6e3a3d.json",
+        "sha256": "dbea2c0954742def1c54c13a5e2bc07964738600c50c568d93da9d4ced93512d",
+        "bytes": 48163
+      }
+    },
+    {
+      "case": "textlab-storage-inventory",
+      "attempt": 1,
+      "previous_run_id": null,
+      "iteration_reason": null,
+      "run_id": "d3a46d8cad304ffdb329eb7a161ce419",
+      "task_id": "project-157559d42b5330bb183fae86005f9e6a79b6d45425eeb1e0fa96351e",
+      "project_id": "text-classification-lab",
+      "task_kind": "pre-registered small feature on owned repository source",
+      "snapshot_id": "157559d42b5330bb183fae86005f9e6a79b6d45425eeb1e0fa96351e6233d140",
+      "source_hash": "ca1d64cac9828f140475ba22da89cb110669a9c415e973829205b2476c9b88dd",
+      "profile": "unittest",
+      "container_image": "docker.io/library/python@sha256:1148dbb014615300fa7e713b2f94f550c0d1c69780c0805f84f093ceee34dd0b",
+      "state": "succeeded",
+      "stop_reason": "verifier_passed",
+      "model_calls": 5,
+      "tool_calls": 6,
+      "usage": {
+        "completion_tokens": 2399,
+        "prompt_cache_hit_tokens": 13312,
+        "prompt_tokens": 18731,
+        "total_tokens": 21130
+      },
+      "configured_model": "deepseek-flash",
+      "reported_models": [
+        "deepseek-flash"
+      ],
+      "run_origin_runtime_code_hash": "ed55e4c62a376b491672f4f0c32c3f3ef61134395944dadbb62ffa4d32bf2080",
+      "initial_check": {
+        "check_profile": "unittest",
+        "complete": true,
+        "duration_ms": 1913,
+        "exit_code": 1,
+        "framework": "unittest",
+        "output_evidence": {
+          "sha256": "3491a5f0f20e88a110e2fd5494176562d61276fae26ef1c09596f7494619d432",
+          "bytes": 3528
+        },
+        "passed": false,
+        "runner": "podman",
+        "reported_outcome_entry_count": 5,
+        "reported_outcome_states": {
+          "failed": 4,
+          "passed": 1
+        },
+        "test_outcomes_evidence": {
+          "sha256": "28a2c3f76364bbb77f1f8ceb4f322f1d85c93c840530f4ae01a59f1ff6d9d19b",
+          "bytes": 972
+        },
+        "tests_run": 5,
+        "timed_out": false,
+        "truncated": false
+      },
+      "approval": {
+        "run_id": "d3a46d8cad304ffdb329eb7a161ce419",
+        "reviewer": "Codex internal code review; not user acceptance",
+        "note": "Reviewed the actual diff: only storage.py existing-database branch changes; source IDs/text/original_label are compared independent of order and duplicates rejected inside the existing transaction; corrected labels/history and creation branch remain unchanged. Codex internal operator review, not human user acceptance.",
+        "digest": "5e58a07c84c3510c5f3b9131a3c48addfad2010e543ebce39823151718742e22",
+        "expected_version": 16,
+        "files": [
+          "storage.py"
+        ],
+        "reviewed_at_utc": "2026-10-28T14:53:05.288106+00:00"
+      },
+      "review_rejection": null,
+      "verification": {
+        "check_profile": "unittest",
+        "complete": true,
+        "duration_ms": 1810,
+        "exit_code": 0,
+        "framework": "unittest",
+        "output_evidence": {
+          "sha256": "5ee987f2369174c3b093502b59cee16774c1597805fda117f2cb2e4b4c7b5f70",
+          "bytes": 964
+        },
+        "passed": true,
+        "runner": "podman",
+        "reported_outcome_entry_count": 5,
+        "reported_outcome_states": {
+          "passed": 5
+        },
+        "test_outcomes_evidence": {
+          "sha256": "6a9acbd704c97af4e9740dd11f6a4b346653d6e14bc0dc980d18edc4348fe6b6",
+          "bytes": 972
+        },
+        "tests_run": 5,
+        "timed_out": false,
+        "truncated": false
+      },
+      "independent_replay": {
+        "case": "textlab-storage-inventory",
+        "run_id": "d3a46d8cad304ffdb329eb7a161ce419",
+        "task_id": "project-157559d42b5330bb183fae86005f9e6a79b6d45425eeb1e0fa96351e",
+        "snapshot_id": "157559d42b5330bb183fae86005f9e6a79b6d45425eeb1e0fa96351e6233d140",
+        "source_hash": "ca1d64cac9828f140475ba22da89cb110669a9c415e973829205b2476c9b88dd",
+        "image": "docker.io/library/python@sha256:1148dbb014615300fa7e713b2f94f550c0d1c69780c0805f84f093ceee34dd0b",
+        "profile": "unittest",
+        "patch_sha256": "26665a7d26609ca8c242729bc843883be624a6d15b67e0f34c74bce44a7c5e8c",
+        "git_apply_location": "local isolated copy of the same immutable source hash; source was never executed on the host",
+        "git_apply": [
+          {
+            "argv": [
+              "git",
+              "apply",
+              "--check",
+              "-"
+            ],
+            "exit_code": 0,
+            "stdout_evidence": {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0
+            },
+            "stderr_evidence": {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0
+            }
+          },
+          {
+            "argv": [
+              "git",
+              "apply",
+              "-"
+            ],
+            "exit_code": 0,
+            "stdout_evidence": {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0
+            },
+            "stderr_evidence": {
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0
+            }
+          }
+        ],
+        "remote_replacements_match_git_applied_sha256": {
+          "storage.py": "9254ba8130e8818e341f3353391a2e4bee1a4c4e1b3c0432a0fe6f6f2bbf80f1"
+        },
+        "before": {
+          "exit_code": 1,
+          "output_evidence": {
+            "sha256": "0a1a374c28c97fcab44731e5994f949b78c270390fd3b9a5336feb20f8623a42",
+            "bytes": 3528
+          },
+          "duration_ms": 1767,
+          "timed_out": false,
+          "truncated": false,
+          "runner": "podman",
+          "check_profile": "unittest",
+          "passed": false,
+          "tests_run": 5,
+          "complete": true,
+          "framework": "unittest",
+          "reported_outcome_entry_count": 5,
+          "reported_outcome_states": {
+            "failed": 4,
+            "passed": 1
+          },
+          "test_outcomes_evidence": {
+            "sha256": "28a2c3f76364bbb77f1f8ceb4f322f1d85c93c840530f4ae01a59f1ff6d9d19b",
+            "bytes": 972
+          }
+        },
+        "after": {
+          "exit_code": 0,
+          "output_evidence": {
+            "sha256": "c88b03b811b0bb1dfefc61b76324223deb41528f42fc3c7638126d7ee408961b",
+            "bytes": 964
+          },
+          "duration_ms": 2245,
+          "timed_out": false,
+          "truncated": false,
+          "runner": "podman",
+          "check_profile": "unittest",
+          "passed": true,
+          "tests_run": 5,
+          "complete": true,
+          "framework": "unittest",
+          "reported_outcome_entry_count": 5,
+          "reported_outcome_states": {
+            "passed": 5
+          },
+          "test_outcomes_evidence": {
+            "sha256": "6a9acbd704c97af4e9740dd11f6a4b346653d6e14bc0dc980d18edc4348fe6b6",
+            "bytes": 972
+          }
+        },
+        "original_snapshot_unchanged": true,
+        "immutable_test_files_unchanged": true,
+        "actual_oci": true,
+        "host_source_execution": false,
+        "passed": true
+      },
+      "private_report_evidence": {
+        "id": "imported-live/d3a46d8cad304ffdb329eb7a161ce419.json",
+        "sha256": "b5165331836a62364e912b38efbeca06d1488482642e8946337a44473e469974",
+        "bytes": 47202
+      }
+    },
+    {
+      "case": "patchtrail-pytest-evidence",
+      "attempt": 1,
+      "previous_run_id": null,
+      "iteration_reason": null,
+      "run_id": "bb23c9fc1c2c42c994f25b66ef0e6ce0",
+      "task_id": "project-b188131f547b236808905494f71d2d737c41c481dc510bbcc601abd2",
+      "project_id": "patchtrail",
+      "task_kind": "pre-registered small feature on owned repository source",
+      "snapshot_id": "b188131f547b236808905494f71d2d737c41c481dc510bbcc601abd2603002be",
+      "source_hash": "62ebddf725ad4b242a9a5ffdf707ccf93e19e699cb6418db71a2f98613d7a792",
+      "profile": "pytest",
+      "container_image": "sha256:6896b73045bc7adf6dc64c94d6932aff6a14e20e4d6a8b79b392a801bd81d4f7",
+      "state": "cancelled",
+      "stop_reason": "operator_cancelled",
+      "model_calls": 4,
+      "tool_calls": 5,
+      "usage": {
+        "completion_tokens": 2723,
+        "prompt_cache_hit_tokens": 10368,
+        "prompt_tokens": 15403,
+        "total_tokens": 18126
+      },
+      "configured_model": "deepseek-flash",
+      "reported_models": [
+        "deepseek-flash"
+      ],
+      "run_origin_runtime_code_hash": "ed55e4c62a376b491672f4f0c32c3f3ef61134395944dadbb62ffa4d32bf2080",
+      "initial_check": {
+        "check_profile": "pytest",
+        "complete": true,
+        "duration_ms": 2170,
+        "exit_code": 1,
+        "framework": "pytest",
+        "output_evidence": {
+          "sha256": "a08cda1ec8bd7cc246d003598486354d9dd3377565eed2fb5561faaa78589a68",
+          "bytes": 2591
+        },
+        "passed": false,
+        "runner": "podman",
+        "reported_outcome_entry_count": 6,
+        "reported_outcome_states": {
+          "failed": 3,
+          "passed": 3
+        },
+        "test_outcomes_evidence": {
+          "sha256": "28f3ec2f9e5abda6a74494f0c1467617f2fa4711acfe175364fd8ef2d98e0e11",
+          "bytes": 621
+        },
+        "tests_run": 6,
+        "timed_out": false,
+        "truncated": false
+      },
+      "approval": null,
+      "review_rejection": {
+        "run_id": "bb23c9fc1c2c42c994f25b66ef0e6ce0",
+        "case": "patchtrail-pytest-evidence",
+        "reviewer": "Codex internal code review, not user acceptance",
+        "approved": false,
+        "digest": "e56af4a66231ce9c04ac1e49ac5766c5b753049fcc4f4c882511cfa6781e36ca",
+        "expected_version": 13,
+        "findings": [
+          "The proposed diff removes the existing SandboxUnavailable exception used by DockerRunner, violating preserved behavior.",
+          "The proposed pytest counter includes collection errors in tests_run; pre-registered acceptance requires collection failures to remain zero/unconfirmed.",
+          "The proposed passed property accepts all-skipped summaries because it checks total > 0 and no failing outcome, violating the explicit all-skipped rejection requirement."
+        ],
+        "decision": "Do not approve; preserve proposal and ask root to cancel/reconcile this attempt. No automatic extra model attempt."
+      },
+      "verification": null,
+      "independent_replay": null,
+      "record_corrections": [
+        {
+          "recorded_at_utc": "2026-10-28T15:12:05.886176+00:00",
+          "field": "validation_context.container_image",
+          "previous_value": "docker.io/library/python@sha256:6896b73045bc7adf6dc64c94d6932aff6a14e20e4d6a8b79b392a801bd81d4f7",
+          "correct_value": "sha256:6896b73045bc7adf6dc64c94d6932aff6a14e20e4d6a8b79b392a801bd81d4f7",
+          "reason": "The helper incorrectly prefixed a locally built pytest image ID with the Docker Hub Python repository. Root confirmed the deployed PATCHTRAIL_PYTEST_IMAGE is the local content-addressed image ID; this was a capture-context error, not a change to model output or run outcome.",
+          "original_report_file_sha256": "fe8ae8d28c386b0162c8b2821f9816792d28344f8fa0af1545d5c9ae08e9b456",
+          "run_and_events_unchanged": true
+        }
+      ],
+      "private_report_evidence": {
+        "id": "imported-live/bb23c9fc1c2c42c994f25b66ef0e6ce0.json",
+        "sha256": "6405ce680b9fec241eb905e21e303b96302285ec3658549df057de28dd2cc1e2",
+        "bytes": 40977
+      }
+    },
+    {
+      "case": "patchtrail-pytest-evidence",
+      "attempt": 2,
+      "previous_run_id": "bb23c9fc1c2c42c994f25b66ef0e6ce0",
+      "iteration_reason": "The human user directly approved exactly one review-feedback iteration via call_08be04bf0821486fa513291b2748a3e7. Original rejected/cancelled runbb23c9fc1c2c42c994f25b66ef0e6ce0 is retained. Only task-description constraints were appended; original source and tests remain unchanged, no solution supplied.",
+      "run_id": "d09f938c7c1648868a1ea95f72dc5e8a",
+      "task_id": "project-e9b47319d4035dc40ff85edd4366c8ddd52de9f6adb212af22bf5488",
+      "project_id": "patchtrail",
+      "task_kind": "pre-registered small feature on owned repository source",
+      "snapshot_id": "e9b47319d4035dc40ff85edd4366c8ddd52de9f6adb212af22bf548851d9183e",
+      "source_hash": "62ebddf725ad4b242a9a5ffdf707ccf93e19e699cb6418db71a2f98613d7a792",
+      "profile": "pytest",
+      "container_image": "sha256:6896b73045bc7adf6dc64c94d6932aff6a14e20e4d6a8b79b392a801bd81d4f7",
+      "state": "cancelled",
+      "stop_reason": "operator_cancelled",
+      "model_calls": 4,
+      "tool_calls": 7,
+      "usage": {
+        "completion_tokens": 3053,
+        "prompt_cache_hit_tokens": 12544,
+        "prompt_tokens": 18265,
+        "total_tokens": 21318
+      },
+      "configured_model": "deepseek-flash",
+      "reported_models": [
+        "deepseek-flash"
+      ],
+      "run_origin_runtime_code_hash": "a8950cfb3b94daa8a05d9a416dc4e7cdcf239c9fc885593914c4d8ad374242f8",
+      "initial_check": {
+        "check_profile": "pytest",
+        "complete": true,
+        "duration_ms": 2274,
+        "exit_code": 1,
+        "framework": "pytest",
+        "output_evidence": {
+          "sha256": "edd5efb46bc80463d089afc72bc485a0ec4758fdf76ba068dac33105d2f82fcc",
+          "bytes": 2591
+        },
+        "passed": false,
+        "runner": "podman",
+        "reported_outcome_entry_count": 6,
+        "reported_outcome_states": {
+          "failed": 3,
+          "passed": 3
+        },
+        "test_outcomes_evidence": {
+          "sha256": "28f3ec2f9e5abda6a74494f0c1467617f2fa4711acfe175364fd8ef2d98e0e11",
+          "bytes": 621
+        },
+        "tests_run": 6,
+        "timed_out": false,
+        "truncated": false
+      },
+      "approval": null,
+      "review_rejection": {
+        "run_id": "d09f938c7c1648868a1ea95f72dc5e8a",
+        "case": "patchtrail-pytest-evidence",
+        "attempt": 2,
+        "reviewer": "Codex internal review; not user acceptance",
+        "approved": false,
+        "digest": "23a1399220f2ac634ecbc0f510fc613d5d5bb04f4ab40f72d2e10d175f97e452",
+        "expected_version": 13,
+        "findings": [
+          "Although it preserves SandboxUnavailable and fixes the first proposal's skip/error requirements, _pytest_counts scans prior output lines instead of using a terminal pytest summary.",
+          "This changes existing completed unittest count/pass behavior when an expected nested pytest failure summary appears earlier. Pure-data counterexample yields legacy4/pass versus proposed3/fail."
+        ],
+        "decision": "Reject and cancel; do not apply a known compatibility regression even if the six pre-registered examples may pass. Stop real model calls after the two explicitly authorized additional attempts."
+      },
+      "verification": null,
+      "independent_replay": null,
+      "private_report_evidence": {
+        "id": "imported-live/d09f938c7c1648868a1ea95f72dc5e8a.json",
+        "sha256": "971d6533b9b8a56e76717644512a222f77619756b5e098dd8c4a1e913a4101eb",
+        "bytes": 47538
+      }
+    }
+  ],
+  "notes": [
+    "The first revision case initially stopped because legitimate unittest subTest error counts exceeded top-level test count; original failure evidence is retained. A separately authorized engineering retry after the runtime correction completed.",
+    "Both pytest-evidence proposals were rejected before approval: the first removed an existing exception and accepted all-skipped outcomes; the feedback iteration still changed legacy unittest behavior when earlier nested pytest output was present. Neither model-proposed patch was applied or executed.",
+    "The additional engineering retry and review-feedback iteration were separately authorized by the human user; original attempts and usage remain included. No further model attempts are planned.",
+    "The server has no Git; independent downloaded-diff application used local Git on an exact source-hash copy, then matching bytes were verified by actual server Podman. No imported source was executed on the host.",
+    "Check counts from API verification and independent replay refer to the same tests and must not be added as unique tests.",
+    "DeepSeek reported its configured model alias; this does not identify an immutable model-weight snapshot."
+  ],
+  "private_evidence_archive": {
+    "id": "imported-live/full-summary.json",
+    "sha256": "5048882960f09af4db3b3fdd5481b29fd974849ac0516a44ec15359612a1c188",
+    "bytes": 70579
+  },
+  "publication_policy": "Operator-only raw stdout, source/proposals and filesystem paths remain private; this summary exposes outcomes, counts, review findings and evidence hashes only."
+}
