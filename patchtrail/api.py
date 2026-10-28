@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
 from . import __version__
-from .config import ROOT, Settings, load_local_env
+from .config import ROOT, Settings, load_local_env, runtime_code_hash
 from .service import RunService, ServiceError, public_run
 from .storage import RunNotFound, StoreConflict
 from .tasks import list_tasks
@@ -117,6 +117,7 @@ def create_app(service=None):
     @app.get("/api/health")
     def health():
         return {"status": "ok", "version": __version__, "model_configured": bool(active.settings.api_key),
+                "runtime_code_hash": runtime_code_hash(),
                 "model": active.settings.model, "operator_configured": bool(active.settings.admin_token),
                 "container_available": active.runner.available(), "public_demo": active.settings.public_demo,
                 "demo_mode": "scripted provider; actual container verifier required",

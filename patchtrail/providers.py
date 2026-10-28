@@ -48,8 +48,10 @@ class DeepSeekProvider:
     def __init__(self, settings: Settings, transport=None):
         self.settings = settings
         self.transport = transport
+        self.last_completion_metadata = {}
 
     def complete(self, messages, task, call_number, remaining_seconds):
+        self.last_completion_metadata = {}
         if not self.settings.api_key:
             raise ProviderError("DeepSeek API key is not configured")
         payload = {"model": self.settings.model, "messages": messages, "tools": TOOL_SCHEMAS,
@@ -106,6 +108,9 @@ class DeepSeekProvider:
                 raise ValueError("invalid usage")
             usage = {k: v for k, v in raw_usage.items()
                      if k in {"prompt_tokens", "completion_tokens", "total_tokens", "prompt_cache_hit_tokens"} and type(v) is int}
+            self.last_completion_metadata = {key: value[:256] for key, value in {
+                "reported_model": body.get("model"), "response_id": body.get("id"),
+                "finish_reason": choice.get("finish_reason")}.items() if isinstance(value, str)}
             return clean, usage
         except (KeyError, IndexError, TypeError, ValueError):
             raise ProviderError("DeepSeek returned an invalid completion message") from None

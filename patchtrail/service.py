@@ -9,7 +9,7 @@ import threading
 import time
 import uuid
 
-from .config import Settings
+from .config import Settings, runtime_code_hash
 from .providers import DeepSeekProvider, ProviderError, ScriptedProvider, initial_messages
 from .sandbox import DockerRunner, SandboxUnavailable
 from .storage import Store, StoreConflict
@@ -43,6 +43,9 @@ def public_run(row):
     if result.get("proposal"):
         result["proposal"].pop("content", None)
     result["provider_label"] = ScriptedProvider.label if row["mode"] == "demo" else "DeepSeek live model"
+    result["configured_model"] = checkpoint.get("configured_model")
+    result["observed_models"] = sorted({m["reported_model"] for m in checkpoint.get("provider_metadata", [])
+                                       if isinstance(m.get("reported_model"), str)})
     return result
 
 
@@ -115,6 +118,7 @@ class RunService:
         if row["created"]:
             self.store.append_event(row["id"], "run_created", {"mode": mode,
                 "provider": self.demo_provider.label if mode == "demo" else self.settings.model,
+                "runtime_code_hash": runtime_code_hash(),
                 "task_version": next(t["source_hash"] for t in list_tasks() if t["id"] == task_id)})
         if row["state"] == "queued":
             self._submit(row["id"], self.diagnose)
@@ -142,6 +146,8 @@ class RunService:
             workspace = prepare_workspace(self.settings.data_dir / "workspaces", run_id, task)
             cp = row["checkpoint"] or {"messages": initial_messages(task), "calls": 0, "steps": 0,
                                       "seen": [], "usage": {}, "elapsed_ms": 0}
+            cp.setdefault("configured_model", self.settings.model if row["mode"] == "live" else "scripted")
+            cp.setdefault("provider_metadata", [])
             prior_elapsed = cp.get("elapsed_ms", 0)
             if cp.get("pending_model_request"):
                 self.store.append_event(run_id, "explicit_resume_after_unknown_model_outcome",
@@ -170,25 +176,37 @@ class RunService:
                 cp.pop("pending_model_request", None)
                 for key, value in usage.items():
                     cp["usage"][key] = cp["usage"].get(key, 0) + value
-                cp["elapsed_ms"] = prior_elapsed + int((time.monotonic() - start) * 1000)
-                self._checkpoint(run_id, cp)
                 if not isinstance(message, dict):
                     raise ProviderError("Invalid model message")
                 calls = message.get("tool_calls") or []
-                if not calls:
-                    self._fail(run_id, "no_patch_proposal", "A model answer cannot complete a run without a verified proposal")
-                    return
                 if (not isinstance(calls, list) or len(calls) > 8
                         or any(not isinstance(c, dict) or not isinstance(c.get("function"), dict) for c in calls)
                         or len({c.get("id") for c in calls}) != len(calls)):
                     raise ProviderError("Invalid tool-call batch")
+                metadata = getattr(provider, "last_completion_metadata", {})
+                if not isinstance(metadata, dict):
+                    metadata = {}
+                metadata = {key: value[:256] for key, value in metadata.items()
+                            if key in {"reported_model", "response_id", "finish_reason"} and isinstance(value, str)}
+                cp["provider_metadata"].append({"call": cp["calls"], **metadata})
+                content = message.get("content") or ""
+                self.store.append_event(run_id, "model_response", {"call": cp["calls"],
+                    "content": content[:2000], "content_truncated": len(content) > 2000,
+                    "content_sha256": hashlib.sha256(content.encode()).hexdigest(),
+                    "tool_names": [c["function"].get("name") for c in calls], **metadata})
                 cp["messages"].append(message)
+                cp["elapsed_ms"] = prior_elapsed + int((time.monotonic() - start) * 1000)
+                self._checkpoint(run_id, cp)
+                if not calls:
+                    self._fail(run_id, "no_patch_proposal", "A model answer cannot complete a run without a verified proposal")
+                    return
                 proposal = None
                 for call in calls:
                     remaining = self.settings.max_seconds - (prior_elapsed / 1000 + time.monotonic() - start)
                     if remaining <= 0:
                         raise BudgetExceeded()
                     call_id = call.get("id")
+                    event_call_id = f"{cp['calls']}:{call_id}"
                     fn = call.get("function", {})
                     if not isinstance(call_id, str) or not call_id or call.get("type") != "function":
                         raise ProviderError("Invalid tool-call identity")
@@ -208,12 +226,15 @@ class RunService:
                             cp["seen"].append(signature)
                             cp["steps"] += 1
                             self.store.append_event(run_id, "tool_requested", {"name": name, "arguments":
-                                {k: (f"<{len(v)} characters>" if k == "content" and isinstance(v, str) else v) for k, v in args.items()}}, call_id)
+                                {k: (f"<{len(v)} characters>" if k == "content" and isinstance(v, str) else v) for k, v in args.items()},
+                                "provider_call_id": call_id, "model_call": cp["calls"]}, event_call_id)
                             result, proposal = self._tool(name, args, task, workspace, cp, run_id, remaining)
-                        self.store.append_event(run_id, "tool_result", {"name": name, "result": result}, call_id)
+                        self.store.append_event(run_id, "tool_result", {"name": name, "result": result,
+                            "provider_call_id": call_id, "model_call": cp["calls"]}, event_call_id)
                     except (ValueError, TypeError, KeyError) as exc:
                         result = {"error": str(exc)[:300]}
-                        self.store.append_event(run_id, "tool_rejected", {"name": name, "error": result["error"]}, call_id)
+                        self.store.append_event(run_id, "tool_rejected", {"name": name, "error": result["error"],
+                            "provider_call_id": call_id, "model_call": cp["calls"]}, event_call_id)
                     cp["last_tool"] = name
                     context_result = copy.deepcopy(result)
                     if isinstance(context_result.get("output"), str) and len(context_result["output"]) > 8000:

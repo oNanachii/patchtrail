@@ -1,9 +1,19 @@
 """Small explicit configuration; secrets never appear in public configuration."""
 from dataclasses import dataclass, field
 import os
+import hashlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def runtime_code_hash():
+    digest = hashlib.sha256()
+    for path in sorted((ROOT / "patchtrail").glob("*.py")):
+        digest.update(path.name.encode())
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+    return digest.hexdigest()
 
 
 def load_local_env(path: Path = ROOT / ".env") -> None:
