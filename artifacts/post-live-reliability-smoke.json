@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "runtime_code_hash": "a573edee22cb60ed86816cd9725ae1f92dd00e531cb519cd668e6dff81c82646",
+  "prior_live_results_preserved": 3,
+  "postfix_mode": "scripted with actual OCI; no new model calls",
+  "run_id": "92751dd45bb4479b86682e99448eeee1",
+  "state": "succeeded",
+  "poll_reads": 7,
+  "new_model_calls": 0
+}

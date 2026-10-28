@@ -1,29 +1,20 @@
 # PatchTrail当前状态
 
-2026年10月28日。用户确认主投Agent应用与Python后端，同时覆盖前端与全栈；准备两个互补主项目，当前先完成PatchTrail。
+2026年10月28日。第一主项目面向Agent应用和Python后端，同时保留全栈展示；用户本人操作Claude设计前端。
 
-## 已完成
+## 已验证
 
-- 单Agent工具循环、DeepSeek传输、脚本provider、状态/事件、创建与确认幂等、哈希/版本审批、明确恢复、权限及功能前端已实现。
-- 74项后端独立候选单元与契约检查通过（保留已提交的功能前端基线，用户Claude正在修改的前端未纳入本次验收）。假runner/provider、受信fixture开发测试和前端Node VM状态检查有明确范围，不当作真实模型或浏览器验收。
-- 自编3项已知回归任务，每项4条测试。服务器rootless Podman中已真实确认原版本失败、内置修复通过，见artifacts/container-integration.json。
-- 独立账户及仅回环3110的后端已启动，health与tasks实际200；容器可用，DeepSeek已配置且首轮真实调用验收通过。尚无公网入口。
-- 实际容器预检12项通过；同机既有服务PID/启动时间及监听端口不变。原始防火墙hash有动态变化，未有准备前归一化基线，不声称逐字节一致；私有证据不进入Git。
-- 前端设计交接和面试关键验收材料已准备。用户本人操作Claude Code。
+- 后端工具循环、状态/事件、幂等、版本与digest审批、明确恢复、权限及受限OCI验证已实现。
+- 74项后端独立候选检查通过。候选保留已提交的功能前端基线，用户Claude正在修改的前端不纳入本次后端验收。
+- 真实DeepSeek在3个预先选定的已知自编任务上各运行一次：全部进入确认与实际容器检查，修复后共12条用例通过，10轮模型调用、16998 Token。见artifacts/live-model-validation.json；不支持通用或未知任务准确率。
+- 后端可靠性修正已部署至独立backend-03 release，仍仅监听服务器回环3110。原3个live结果保留；修正后一个脚本任务的实际HTTP/OCI链路通过，没有新增模型调用，见artifacts/post-live-reliability-smoke.json。
+- 首次live查询发生SQLite锁竞争，核对原run_id后继续验证，没有重建付费任务。增加同Store实例数据库操作串行化、存储忙503与有界只读重试，未声称解释全部锁根因或跨进程协调。
+- 原本的脚本回归、真实容器、HTTP及桌面流程证据分别保存；密钥、数据库、完整live记录及服务器基线不进入Git。
 
-## 当前执行与下一步
+## 交付与待办
 
-1. 真实HTTP三任务及创建/确认重试均通过；桌面浏览器创建、diff确认与实际容器结果流程通过。当前GitHub OAuth缺workflow scope，CI模板暂存deploy/ci-workflow.yml.example，不能称CI通过。
-2. 首轮真实DeepSeek三任务各一次通过，共10轮调用、16998 Token、修复后12条容器用例通过；是已知自编任务回归，不是未知准确率。记录见artifacts/live-model-validation.json。
-3. 用户按docs/CLAUDE_FRONTEND_PROMPT.txt在Claude Code中设计前端，交回独立复核。
-4. 完成前端、真实模型与用户演示验收后，再配置独立公网HTTPS入口、公开演示及最终简历描述。
+源码已公开：https://github.com/oNanachii/patchtrail 。当前CLI缺workflow scope，连接器写workflow也返回403；自动CI未启用，模板位于deploy/ci-workflow.yml.example。
 
-## 边界
+用户Claude产生的frontend/web/相关测试与设计文件保留在工作区，未随本次后端提交发布。下一步是独立复核前端，再完成公网HTTPS入口、公开演示和本人面试关键修改验收。第二个互补业务全栈项目尚未选定。
 
-当前是有限任务的工程项目，不是通用自动修复平台、生产安全认证或独立未知benchmark。实现完成不代表用户已独立掌握面试内容。第二个业务型全栈项目尚未选定，不另建空项目充数量。
-
-GitHub源码已公开：https://github.com/oNanachii/patchtrail 。当前OAuth缺workflow scope，连接器启用workflow也返回403；自动CI未启用，模板已保留。
-
-本地前端预览辅助服务的页面、脚本及真实后端代理均实际200；Claude可以修改本地web文件并通过回环代理复用后端。
-
-2026-10-28真实调用补充：已修正跨响应工具ID事件冲突、保留纯文本失败答复及实际返回模型标识。真实状态查询出现SQLite锁竞争后核对原任务，没有重建付费运行；同实例串行化、存储忙503与只读重试的后端修正已通过74项独立候选回归，正在切换部署，前端由用户Claude并行修改，不随本次后端提交发布。
+DeepSeek API返回模型标识为deepseek-flash别名，未提供不可变模型权重快照。操作端确认由本轮Codex审查后调用确认接口完成，不等于用户或外部人员已验收。有限任务、运行时测试、真实模型效果、设备/设计验收和本人能力分别判断。

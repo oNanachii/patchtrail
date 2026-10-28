@@ -55,5 +55,12 @@
     "retryable SQLITE_BUSY/LOCKED API errors",
     "bounded read-only driver retries; no automatic write retries"
   ],
-  "test_environment_note": "A Python fake OCI CLI cold-start probe timed out in an output-cap unit test; that test now isolates the separately tested availability probe while still launching the actual fake output process. Production timeout and retry behavior were not relaxed; original diagnostics remain private."
+  "test_environment_note": "A Python fake OCI CLI cold-start probe timed out in an output-cap unit test; that test now isolates the separately tested availability probe while still launching the actual fake output process. Production timeout and retry behavior were not relaxed; original diagnostics remain private.",
+  "post_live_reliability_deployment": {
+    "release": "20261028-backend-03",
+    "record": "artifacts/post-live-reliability-smoke.json",
+    "prior_live_results_preserved": 3,
+    "new_model_calls": 0,
+    "frontend_user_changes_published": false
+  }
 }
