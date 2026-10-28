@@ -1,4 +1,5 @@
 """Test selection is data; arbitrary runner flags and commands are never accepted."""
+import io
 import unittest
 
 from patchtrail.check_profiles import build_check_command, parse_check_command
@@ -114,7 +115,105 @@ class OutcomeTests(unittest.TestCase):
         self.assertTrue(skipped.passed)
         self.assertFalse(self.result(0, "Ran 4 tests in 0.01s\n\nOK (skipped=4)\n").complete)
         self.assertFalse(self.result(1, "unittest.loader._FailedTest\nRan 1 test in 0s\n\nFAILED (errors=1)\n").complete)
-        self.assertFalse(self.result(1, "Ran 2 tests in 0s\n\nFAILED (failures=3)\n").complete)
+        # Failure counts include subTests; they are not bounded by method count.
+        self.assertTrue(self.result(1, "Ran 2 tests in 0s\n\nFAILED (failures=3)\n").complete)
+        self.assertFalse(self.result(1, "Ran 2 tests in 0s\n\nFAILED (failures=0)\n").complete)
+
+    def authored_output(self, case):
+        """Execute only the deliberately authored local TestCase below."""
+        stream = io.StringIO()
+        result = unittest.TextTestRunner(stream=stream, verbosity=2).run(
+            unittest.defaultTestLoader.loadTestsFromTestCase(case))
+        output = stream.getvalue()
+        return result, self.result(0 if result.wasSuccessful() else 1, output, profile="unittest")
+
+    def test_real_verbose_subtest_errors_can_exceed_top_level_test_count(self):
+        class AuthoredErrors(unittest.TestCase):
+            def test_a_subtests(self):
+                for number in range(4):
+                    with self.subTest(number=number):
+                        raise ValueError("deliberately authored error")
+
+            def test_b_error(self):
+                raise ValueError("deliberately authored error")
+
+            def test_c_error(self):
+                raise ValueError("deliberately authored error")
+
+            def test_d_error(self):
+                raise ValueError("deliberately authored error")
+
+            def test_e_pass(self):
+                self.assertEqual(1, 1)
+
+        native, check = self.authored_output(AuthoredErrors)
+        self.assertEqual(native.testsRun, 5)
+        self.assertEqual(len(native.errors), 7)
+        self.assertTrue(check.complete)
+        self.assertFalse(check.passed)
+        self.assertEqual(check.tests_run, 5)
+        for changed in (
+            CheckResult(1, check.output, 1, True, False, "trusted-fixture", "unittest"),
+            CheckResult(1, check.output, 1, False, True, "trusted-fixture", "unittest"),
+            CheckResult(0, check.output, 1, False, False, "trusted-fixture", "unittest"),
+            CheckResult(1, check.output + "unfinished\n", 1, False, False, "trusted-fixture", "unittest"),
+        ):
+            self.assertFalse(changed.complete)
+
+    def test_real_subtest_failures_and_lifecycle_errors_are_complete_failures(self):
+        class AuthoredFailures(unittest.TestCase):
+            def test_nested(self):
+                for number in range(7):
+                    with self.subTest(number=number):
+                        self.assertEqual(number, -1)
+
+            def tearDown(self):
+                raise ValueError("deliberately authored teardown error")
+
+        native, check = self.authored_output(AuthoredFailures)
+        self.assertEqual(native.testsRun, 1)
+        self.assertEqual(len(native.failures), 7)
+        self.assertEqual(len(native.errors), 1)
+        self.assertTrue(check.complete)
+        self.assertFalse(check.passed)
+
+    def test_real_partial_subtest_skips_do_not_skip_the_successful_parent(self):
+        class AuthoredPartialSkips(unittest.TestCase):
+            def test_nested(self):
+                """A docstring also exercises unittest's wrapped description."""
+                for number in range(7):
+                    with self.subTest(number=number):
+                        if number < 6:
+                            self.skipTest("deliberately authored nested skip")
+                        self.assertEqual(number, 6)
+
+            @unittest.skip("deliberately authored top-level skip")
+            def test_top_skip(self):
+                pass
+
+        native, check = self.authored_output(AuthoredPartialSkips)
+        self.assertEqual(native.testsRun, 2)
+        self.assertEqual(len(native.skipped), 7)
+        self.assertTrue(check.complete)
+        self.assertTrue(check.passed)
+        self.assertEqual(check.tests_run, 2)
+
+    def test_real_all_top_level_skipped_and_ambiguous_skip_counts_do_not_pass(self):
+        class AuthoredAllSkipped(unittest.TestCase):
+            @unittest.skip("deliberately authored top-level skip")
+            def test_one(self):
+                pass
+
+            @unittest.skip("deliberately authored top-level skip")
+            def test_two(self):
+                pass
+
+        native, check = self.authored_output(AuthoredAllSkipped)
+        self.assertEqual(native.testsRun, 2)
+        self.assertEqual(len(native.skipped), 2)
+        self.assertFalse(check.complete)
+        self.assertFalse(check.passed)
+        self.assertFalse(self.result(0, "Ran 2 tests in 0s\n\nOK (skipped=7)\n").complete)
 
 
 if __name__ == "__main__":

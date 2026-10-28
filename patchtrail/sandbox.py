@@ -16,6 +16,34 @@ from .workspace import RUN_ID, WorkspaceError, tree_hash
 OUTPUT_LIMIT = 64 * 1024
 
 
+def _unittest_subtest_skips(lines: list[str]) -> int:
+    """Count verbose nested skips separately from top-level skipped methods.
+
+    unittest's ``Ran N tests`` counts methods, while ``skipped=`` also counts
+    individual subTests. A parent can therefore run successfully with more
+    nested skips than N. Only attribute a nested line to a previously observed
+    top-level method; summary-only ambiguous output stays conservative.
+    """
+    observed = set()
+    pending_subtest = False
+    skipped = 0
+    identity = re.compile(r"^(\S+ \([^)]+\))(?: .*)?$")
+    for line in lines:
+        top = identity.fullmatch(line)
+        if top:
+            observed.add(top.group(1))
+            pending_subtest = False
+        nested = identity.fullmatch(line[2:]) if line.startswith("  ") else None
+        if nested and nested.group(1) in observed:
+            pending_subtest = True
+        if pending_subtest:
+            tail = re.search(r" \.\.\. (ok|FAIL|ERROR|skipped(?: .*)?|expected failure|unexpected success)$", line)
+            if tail:
+                skipped += tail.group(1).startswith("skipped")
+                pending_subtest = False
+    return skipped
+
+
 class SandboxUnavailable(RuntimeError):
     """The configured container CLI or daemon is unavailable; no host fallback exists."""
 
@@ -51,7 +79,12 @@ class CheckResult:
                         counts[match.group(1)] = int(match.group(2))
                 failed = counts.get("failures", 0) + counts.get("errors", 0) + counts.get("unexpected successes", 0)
                 skipped = counts.get("skipped", 0) + counts.get("expected failures", 0)
-                valid = (count > 0 and count > skipped and failed + skipped <= count
+                nested_skipped = _unittest_subtest_skips(lines)
+                top_skipped = skipped - nested_skipped
+                # Failure/error entries include subTests and lifecycle phases,
+                # so their count is not bounded by the number of test methods.
+                valid = (count > 0 and 0 <= nested_skipped <= counts.get("skipped", 0)
+                         and 0 <= top_skipped < count
                          and ((terminal.group(1) == "OK" and self.exit_code == 0 and failed == 0)
                               or (terminal.group(1) == "FAILED" and self.exit_code == 1 and failed > 0))
                          and "unittest.loader._FailedTest" not in text)
