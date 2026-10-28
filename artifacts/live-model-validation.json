@@ -1,0 +1,127 @@
+{
+  "date": "2026-10-28",
+  "scope": "Three predeclared authored known regression tasks, one live run per task; not a blind or external benchmark",
+  "provider": "DeepSeek official API",
+  "configured_model": "deepseek-flash",
+  "model_identifier_note": "API reported the alias deepseek-flash; no immutable model weight snapshot was provided",
+  "runtime_commit": "a1a52f0",
+  "run_origin_runtime_code_hashes": [
+    "ccda1b9a450b78fc272116d65ed41896bd786e5e37e0137b667f1d4dc69f01d3"
+  ],
+  "container_image": "docker.io/library/python@sha256:1148dbb014615300fa7e713b2f94f550c0d1c69780c0805f84f093ceee34dd0b",
+  "approval_actor": "Codex code review and operator confirmation endpoint; user acceptance remains pending",
+  "scripted_provider_used": false,
+  "all_attempts": [
+    {
+      "task_id": "quantity-shortfall",
+      "run_id": "0b9d830a161b42a69553b83c74194113",
+      "state": "succeeded",
+      "attempts": 1,
+      "model_calls": 3,
+      "tool_steps": 5,
+      "usage": {
+        "completion_tokens": 576,
+        "prompt_cache_hit_tokens": 2048,
+        "prompt_tokens": 4496,
+        "total_tokens": 5072
+      },
+      "reported_models": [
+        "deepseek-flash"
+      ],
+      "task_source_hash": "e2ceea16706f4ce94d0befb7cca2c8b81d027c1f58c547367b713d027304ce3e",
+      "proposal_digest": "81e089894b5170c34092060529017980db40270fdf7e2849ffa120c50fafd7b0",
+      "approved_from_version": 10,
+      "baseline": {
+        "exit_code": 1,
+        "tests_run": 4,
+        "timed_out": false,
+        "truncated": false
+      },
+      "verification": {
+        "exit_code": 0,
+        "tests_run": 4,
+        "timed_out": false,
+        "truncated": false,
+        "runner": "podman"
+      },
+      "diff": "--- a/src/quantities.py\n+++ b/src/quantities.py\n@@ -18,7 +18,7 @@\n     _validate(stock)\n     result = {}\n     for ingredient, amount in required.items():\n-        missing = amount if ingredient not in stock else 0\n+        missing = amount - stock.get(ingredient, 0)\n         if missing > 0:\n             result[ingredient] = missing\n     return result\n"
+    },
+    {
+      "task_id": "batch-expiry",
+      "run_id": "78b3e26d809a4597b1e2650570e1c99c",
+      "state": "succeeded",
+      "attempts": 1,
+      "model_calls": 4,
+      "tool_steps": 5,
+      "usage": {
+        "completion_tokens": 573,
+        "prompt_cache_hit_tokens": 4096,
+        "prompt_tokens": 6432,
+        "total_tokens": 7005
+      },
+      "reported_models": [
+        "deepseek-flash"
+      ],
+      "task_source_hash": "c38d198064730aaa5af01c4e77ab5cc72890493a06bf85437ff80fb430b1bc67",
+      "proposal_digest": "1e4720ca0840aef8d3e1c13ac3a0b42d33db080669722fd8cabc6a27b5e6b36d",
+      "approved_from_version": 13,
+      "baseline": {
+        "exit_code": 1,
+        "tests_run": 4,
+        "timed_out": false,
+        "truncated": false
+      },
+      "verification": {
+        "exit_code": 0,
+        "tests_run": 4,
+        "timed_out": false,
+        "truncated": false,
+        "runner": "podman"
+      },
+      "diff": "--- a/src/batches.py\n+++ b/src/batches.py\n@@ -16,9 +16,9 @@\n     date.fromisoformat(expires_on)\n     result = [dict(batch) for batch in batches]\n     for batch in result:\n-        if batch[\"name\"].strip().casefold() == name:\n+        if (batch[\"name\"].strip().casefold() == name\n+                and batch[\"expires_on\"] == expires_on):\n             batch[\"quantity\"] += quantity\n-            batch[\"expires_on\"] = expires_on\n             return result\n     result.append({\"name\": name, \"quantity\": quantity, \"expires_on\": expires_on})\n     return result\n"
+    },
+    {
+      "task_id": "label-transaction",
+      "run_id": "6a0a3ad5daca44148495a60bdfcae8e5",
+      "state": "succeeded",
+      "attempts": 1,
+      "model_calls": 3,
+      "tool_steps": 5,
+      "usage": {
+        "completion_tokens": 496,
+        "prompt_cache_hit_tokens": 2304,
+        "prompt_tokens": 4425,
+        "total_tokens": 4921
+      },
+      "reported_models": [
+        "deepseek-flash"
+      ],
+      "task_source_hash": "ac180cee6134ea3e963510a704f5783262711abfab65beb2b7b73af4aa52fd05",
+      "proposal_digest": "9e831e505e046e34d2347a0d62ac6b3afdb034e74c51d9d0105ed986aa4198dd",
+      "approved_from_version": 10,
+      "baseline": {
+        "exit_code": 1,
+        "tests_run": 4,
+        "timed_out": false,
+        "truncated": false
+      },
+      "verification": {
+        "exit_code": 0,
+        "tests_run": 4,
+        "timed_out": false,
+        "truncated": false,
+        "runner": "podman"
+      },
+      "diff": "--- a/src/labels.py\n+++ b/src/labels.py\n@@ -14,7 +14,6 @@\n         if old_label == label:\n             return {\"changed\": False, \"label\": label}\n         connection.execute(\"UPDATE samples SET label = ? WHERE id = ?\", (label, sample_id))\n-        connection.commit()\n         connection.execute(\n             \"INSERT INTO history(sample_id, old_label, new_label, note) VALUES (?, ?, ?, ?)\",\n             (sample_id, old_label, label, note),\n"
+    }
+  ],
+  "totals": {
+    "tasks": 3,
+    "succeeded": 3,
+    "model_calls": 10,
+    "tool_steps": 15,
+    "total_tokens": 16998,
+    "verification_tests": 12
+  },
+  "incident": "First run status polling returned HTTP500 with SQLite database-is-locked; the existing run was reconciled and completed without recreating a paid task. Same-instance serialization, retryable storage API errors and bounded read retries were added afterward. This does not establish the entire lock root cause."
+}

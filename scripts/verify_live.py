@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import re
 from pathlib import Path
 import sys
 import time
@@ -12,6 +13,28 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from patchtrail.config import ROOT, Settings, load_local_env
 
 import httpx
+
+
+def request(client, method, path, **kwargs):
+    """Retry only reads. Unknown write outcomes keep their original request identity."""
+    attempts = 3 if method == "GET" else 1
+    for attempt in range(attempts):
+        try:
+            response = client.request(method, path, **kwargs)
+        except httpx.HTTPError:
+            if attempt + 1 < attempts:
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            raise RuntimeError("Private API response was not confirmed; inspect the existing run before retrying") from None
+        if response.status_code in {500, 502, 503, 504} and attempt + 1 < attempts:
+            time.sleep(0.5 * (attempt + 1))
+            continue
+        if response.status_code >= 400:
+            raise RuntimeError(f"Private API returned HTTP {response.status_code}; inspect the run before retrying")
+        try:
+            return response.json()
+        except ValueError:
+            raise RuntimeError("Private API returned invalid JSON; no write was automatically retried") from None
 
 
 def main():
@@ -29,6 +52,8 @@ def main():
         parser.error("Use the explicit private loopback preview URL")
     if not 1 <= args.wait <= 180:
         parser.error("Wait must be between1 and180 seconds")
+    if args.request_key and not re.fullmatch(r"[A-Za-z0-9_-]{8,128}", args.request_key):
+        parser.error("Request key must be8–128 letters, digits, underscores or hyphens")
     load_local_env()
     settings = Settings()
     if not settings.admin_token:
@@ -36,12 +61,6 @@ def main():
     evidence = ROOT / "artifacts" / "private" / "live"
     evidence.mkdir(parents=True, exist_ok=True)
     evidence.chmod(0o700)
-
-    def request(client, method, path, **kwargs):
-        response = client.request(method, path, **kwargs)
-        if response.status_code >= 400:
-            raise RuntimeError(f"Private API returned HTTP {response.status_code}; inspect the run before retrying")
-        return response.json()
 
     with httpx.Client(base_url=args.base_url, headers={"Authorization": "Bearer " + settings.admin_token},
                       timeout=15, trust_env=False, follow_redirects=False) as client:
@@ -71,8 +90,10 @@ def main():
             time.sleep(0.5)
             row = request(client, "GET", "/api/runs/" + row["id"])
         report = request(client, "GET", "/api/runs/" + row["id"] + "/report")
-        report["validation_context"] = {"configured_model": health["model"],
-            "runtime_code_hash": health.get("runtime_code_hash"),
+        origin = next((event["payload"] for event in report["events"] if event["kind"] == "run_created"), {})
+        report["validation_context"] = {"configured_model": row.get("configured_model") or health["model"],
+            "run_origin_runtime_code_hash": origin.get("runtime_code_hash"),
+            "controller_runtime_code_hash_at_capture": health.get("runtime_code_hash"),
             "container_image": "docker.io/library/python@sha256:1148dbb014615300fa7e713b2f94f550c0d1c69780c0805f84f093ceee34dd0b",
             "approval_actor": "Codex code review during validation; not user acceptance",
             "scope": "one attempt on an authored, known regression task; not a blind benchmark"}
@@ -92,4 +113,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except RuntimeError as exc:
+        print(str(exc), file=sys.stderr)
+        raise SystemExit(2)

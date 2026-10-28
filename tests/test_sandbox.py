@@ -91,10 +91,16 @@ if sys.argv[1] == "run":
 
     def test_output_is_drained_but_bounded_and_cannot_pass_when_truncated(self):
         binary = self.fake_cli('    print("x" * 100000)\n    print("Ran 4 tests in 0.001s\\n\\nOK")')
-        result = DockerRunner(binary=binary).run(self.workspace, CHECK_COMMAND, "run")
+        # Probe success/failure is covered separately. A fresh Python shebang
+        # fixture can exceed the probe's 3s before its own first log write on
+        # this host; interpreter startup is outside this output-drain contract.
+        # The run itself still starts the real fixture process below.
+        with patch.object(DockerRunner, "available", return_value=True):
+            result = DockerRunner(binary=binary).run(self.workspace, CHECK_COMMAND, "run")
         self.assertTrue(result.truncated)
         self.assertEqual(len(result.output.encode()), OUTPUT_LIMIT)
         self.assertFalse(result.passed)
+        self.assertEqual(sum(call[0] == "run" for call in self.calls()), 1)
 
     def test_timeout_is_bounded_and_cleans_its_own_named_container(self):
         binary = self.fake_cli('    print("started", flush=True)\n    time.sleep(10)')

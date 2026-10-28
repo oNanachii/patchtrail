@@ -2,9 +2,11 @@
 
 from contextlib import contextmanager
 from datetime import datetime, timezone
+from functools import wraps
 import json
 from pathlib import Path
 import sqlite3
+import threading
 import uuid
 
 
@@ -55,8 +57,22 @@ def _event(row):
     return result
 
 
+def _serialized_operation(operation):
+    """Keep this instance's short-lived database connections from overlapping.
+
+    This is an in-process boundary, not coordination across Store instances or
+    processes. SQLite's existing busy timeout still governs external contention.
+    """
+    @wraps(operation)
+    def serialized(self, *args, **kwargs):
+        with self._operation_lock:
+            return operation(self, *args, **kwargs)
+    return serialized
+
+
 class Store:
     def __init__(self, database: Path):
+        self._operation_lock = threading.RLock()
         self.database = Path(database).resolve()
         self.database.parent.mkdir(parents=True, exist_ok=True)
         connection = self._connect()
@@ -129,6 +145,7 @@ class Store:
         )
         return connection.execute("SELECT * FROM events WHERE id = ?", (cursor.lastrowid,)).fetchone()
 
+    @_serialized_operation
     def create_run(self, task_id: str, mode: str, request_key: str, limits: dict) -> dict:
         if not all(isinstance(value, str) and value for value in (task_id, mode, request_key)):
             raise ValueError("Task, mode and request key must be non-empty strings")
@@ -150,6 +167,7 @@ class Store:
             )
             return {**_run(self._find(connection, run_id)), "created": True}
 
+    @_serialized_operation
     def get_run(self, run_id: str) -> dict:
         connection = self._connect()
         try:
@@ -157,6 +175,7 @@ class Store:
         finally:
             connection.close()
 
+    @_serialized_operation
     def find_request(self, request_key: str) -> dict | None:
         """Read a prior request before checking capacity or external availability."""
         if not isinstance(request_key, str) or not request_key:
@@ -170,6 +189,7 @@ class Store:
         finally:
             connection.close()
 
+    @_serialized_operation
     def list_runs(self, limit: int = 30) -> list[dict]:
         if type(limit) is not int or limit < 1:
             raise ValueError("Limit must be a positive integer")
@@ -181,6 +201,7 @@ class Store:
         finally:
             connection.close()
 
+    @_serialized_operation
     def transition(self, run_id: str, expected_states: set[str], state: str,
                    updates: dict | None = None, expected_version: int | None = None) -> dict:
         if state not in TRANSITIONS:
@@ -222,6 +243,7 @@ class Store:
                                {"from": previous["state"], "to": state, "version": next_version})
             return _run(self._find(connection, run_id))
 
+    @_serialized_operation
     def append_event(self, run_id: str, kind: str, payload: dict, call_id: str | None = None) -> dict:
         if not isinstance(kind, str) or not kind or not isinstance(payload, dict):
             raise ValueError("Event kind must be non-empty and payload must be an object")
@@ -241,6 +263,7 @@ class Store:
                     return _event(previous)
             return _event(self._insert_event(connection, run_id, kind, payload, call_id))
 
+    @_serialized_operation
     def events(self, run_id: str, after: int = 0) -> list[dict]:
         if type(after) is not int or after < 0:
             raise ValueError("Event cursor must be a non-negative integer")
@@ -253,6 +276,7 @@ class Store:
         finally:
             connection.close()
 
+    @_serialized_operation
     def recover_active(self) -> list[str]:
         with self._transaction() as connection:
             rows = connection.execute(

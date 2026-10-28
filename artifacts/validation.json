@@ -1,9 +1,10 @@
 {
   "date": "2026-10-28",
   "unit_and_contract_tests": {
-    "passed": 63,
-    "seconds": 13.542,
-    "scope": "includes explicit fake runner/provider tests; authored fixture development checks; Node VM frontend retry state"
+    "passed": 74,
+    "seconds": 4.848,
+    "scope": "isolated backend candidate based on committed functional frontend baseline; user Claude frontend changes excluded",
+    "candidate_base_commit": "a1a52f0"
   },
   "actual_oci_tasks": {
     "count": 3,
@@ -16,7 +17,14 @@
     "create_and_approval_retries_verified": true,
     "provider": "scripted; no model calls"
   },
-  "live_model_effectiveness": "pending user API configuration",
+  "live_model_effectiveness": {
+    "status": "three known authored tasks passed one live attempt each",
+    "record": "artifacts/live-model-validation.json",
+    "model_calls": 10,
+    "total_tokens": 16998,
+    "verification_tests": 12,
+    "scope": "not a blind/general benchmark; Codex review not user acceptance"
+  },
   "frontend_design": "functional baseline; user-owned Claude design pending",
   "interview_mastery": "user acceptance pending",
   "browser_functional_check": {
@@ -39,5 +47,13 @@
   "frontend_preview_helper": {
     "page_assets_and_api_http_200": true,
     "scope": "loopback static files and loopback backend proxy; no new model calls"
-  }
+  },
+  "reliability_updates": [
+    "response-scoped internal event identities",
+    "bounded model-response evidence and actual reported model metadata",
+    "same-Store database operation serialization",
+    "retryable SQLITE_BUSY/LOCKED API errors",
+    "bounded read-only driver retries; no automatic write retries"
+  ],
+  "test_environment_note": "A Python fake OCI CLI cold-start probe timed out in an output-cap unit test; that test now isolates the separately tested availability probe while still launching the actual fake output process. Production timeout and retry behavior were not relaxed; original diagnostics remain private."
 }

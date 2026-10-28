@@ -5,6 +5,7 @@ import hmac
 from pathlib import Path
 import threading
 import time
+import sqlite3
 from typing import Literal
 
 from fastapi import FastAPI, Header, Request
@@ -108,6 +109,15 @@ def create_app(service=None):
     @app.exception_handler(RunNotFound)
     async def absent(request, exc):
         return JSONResponse({"error": {"code": "not_found", "message": "Run not found"}}, status_code=404)
+
+    @app.exception_handler(sqlite3.OperationalError)
+    async def database_error(request, exc):
+        busy = (getattr(exc, "sqlite_errorcode", 0) & 255) in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED)
+        if busy:
+            return JSONResponse({"error": {"code": "storage_busy", "message":
+                "Storage is temporarily busy; retry reads or reuse the original request key"}},
+                status_code=503, headers={"Retry-After": "1"})
+        return JSONResponse({"error": {"code": "storage_error", "message": "Storage operation failed"}}, status_code=500)
 
     @app.exception_handler(RequestValidationError)
     async def invalid(request, exc):
