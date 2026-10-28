@@ -22,7 +22,8 @@ class ProviderTests(unittest.TestCase):
             self.assertEqual(request.headers["Authorization"], "Bearer test-provider-secret")
             self.assertEqual(body["thinking"], {"type": "disabled"})
             self.assertEqual(body["model"], "deepseek-flash")
-            self.assertEqual(len(body["tools"]), 4)
+            self.assertEqual({tool["function"]["name"] for tool in body["tools"]},
+                             {"read_file", "search_code", "run_check", "propose_patch", "propose_patch_bundle"})
             return httpx.Response(200, json={"choices": [{"finish_reason": "tool_calls", "message": {
                 "role": "assistant", "content": None, "tool_calls": [{"id": "call-a", "type": "function",
                  "function": {"name": "read_file", "arguments": '{"path":"src/inventory.py"}'}}]}}],

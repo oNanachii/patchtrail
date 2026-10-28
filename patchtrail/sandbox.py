@@ -9,7 +9,7 @@ import signal
 import subprocess
 import time
 
-from .tasks import CHECK_COMMAND
+from .check_profiles import parse_check_command
 from .workspace import RUN_ID, WorkspaceError, tree_hash
 
 
@@ -28,20 +28,105 @@ class CheckResult:
     timed_out: bool
     truncated: bool
     runner: str = "docker"
+    check_profile: str = ""
+
+    def _summary(self) -> dict:
+        # The output check is deliberately a finite-regression contract, not a
+        # defense against a hostile Python test forging the runner's stdout.
+        text = re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", self.output)
+        lines = text.rstrip().splitlines()
+        last = lines[-1].strip() if lines else ""
+        if self.check_profile in {"", "unittest"}:
+            runs = re.findall(r"(?m)^Ran ([0-9]{1,6}) tests? in [^\n]+$", text)
+            terminal = re.fullmatch(r"(OK|FAILED)(?: \(([^\n]+)\))?", last)
+            if runs and terminal:
+                count = int(runs[-1])
+                counts = {}
+                detail = terminal.group(2)
+                if detail:
+                    for part in detail.split(", "):
+                        match = re.fullmatch(r"(failures|errors|skipped|expected failures|unexpected successes)=([0-9]{1,6})", part)
+                        if not match or match.group(1) in counts:
+                            return {"framework": "unittest", "tests": count, "valid": False}
+                        counts[match.group(1)] = int(match.group(2))
+                failed = counts.get("failures", 0) + counts.get("errors", 0) + counts.get("unexpected successes", 0)
+                skipped = counts.get("skipped", 0) + counts.get("expected failures", 0)
+                valid = (count > 0 and count > skipped and failed + skipped <= count
+                         and ((terminal.group(1) == "OK" and self.exit_code == 0 and failed == 0)
+                              or (terminal.group(1) == "FAILED" and self.exit_code == 1 and failed > 0))
+                         and "unittest.loader._FailedTest" not in text)
+                return {"framework": "unittest", "tests": count, "valid": valid,
+                        "passed": terminal.group(1) == "OK", "skipped": skipped,
+                        "failed": failed}
+        if self.check_profile in {"", "pytest"}:
+            terminal = re.fullmatch(r"=+ (.+) in [0-9]+(?:\.[0-9]+)?(?:s| seconds)(?: \([0-9:]+\))? =+", last)
+            if terminal:
+                counts = {}
+                for part in terminal.group(1).split(", "):
+                    match = re.fullmatch(r"([0-9]{1,6}) (passed|failed|skipped|xfailed|xpassed|error|errors|deselected|warning|warnings)", part)
+                    if not match:
+                        return {"framework": "pytest", "tests": 0, "valid": False}
+                    key = {"errors": "error", "warnings": "warning"}.get(match.group(2), match.group(2))
+                    if key in counts:
+                        return {"framework": "pytest", "tests": 0, "valid": False}
+                    counts[key] = int(match.group(1))
+                count = sum(counts.get(key, 0) for key in ("passed", "failed", "skipped", "xfailed", "xpassed"))
+                executed = counts.get("passed", 0) + counts.get("failed", 0)
+                valid = (executed > 0 and counts.get("error", 0) == 0
+                         and ((self.exit_code == 0 and counts.get("failed", 0) == 0)
+                              or (self.exit_code == 1 and counts.get("failed", 0) > 0)))
+                collected = re.findall(r"(?m)^(?:collecting \.\.\. )?collected ([0-9]{1,6}) items?(?: / ([^\n]+))?$", text)
+                if collected:
+                    total, selection = collected[-1]
+                    selected = re.search(r"(?:^| / )([0-9]{1,6}) selected(?:$| / )", selection)
+                    expected = int(selected.group(1)) if selected else int(total) - counts.get("deselected", 0)
+                    valid = valid and expected == count
+                return {"framework": "pytest", "tests": count, "valid": valid,
+                        "passed": counts.get("passed", 0) > 0 and counts.get("failed", 0) == 0,
+                        "skipped": counts.get("skipped", 0) + counts.get("xfailed", 0),
+                        "failed": counts.get("failed", 0)}
+        return {"framework": self.check_profile or "unknown", "tests": 0, "valid": False}
 
     @property
     def tests_run(self) -> int:
-        matches = re.findall(r"(?m)^Ran ([1-9][0-9]{0,5}) tests? in [^\n]+$", self.output)
-        return int(matches[-1]) if matches else 0
+        return self._summary()["tests"]
+
+    @property
+    def framework(self) -> str:
+        return self._summary()["framework"]
+
+    @property
+    def complete(self) -> bool:
+        return not self.timed_out and not self.truncated and bool(self._summary()["valid"])
 
     @property
     def passed(self) -> bool:
-        # This confirms a finite unittest run, not adversarial-proof Python correctness.
-        return (self.exit_code == 0 and not self.timed_out and not self.truncated
-                and self.tests_run > 0 and self.output.rstrip().splitlines()[-1:] == ["OK"])
+        return self.complete and self.exit_code == 0 and bool(self._summary()["passed"])
+
+    @property
+    def test_outcomes(self) -> list[dict]:
+        outcomes = []
+        framework = self.framework
+        for line in self.output.splitlines():
+            match = re.match(r"^(\S+::\S+)\s+(PASSED|FAILED|ERROR|SKIPPED|XFAIL|XPASS)(?:\s|$)", line)
+            if match and framework == "pytest":
+                state = {"PASSED": "passed", "FAILED": "failed", "ERROR": "error",
+                         "SKIPPED": "skipped", "XFAIL": "xfailed", "XPASS": "xpassed"}[match.group(2)]
+                outcomes.append({"name": match.group(1), "state": state})
+            elif framework == "unittest":
+                match = re.match(r"^(.+ \([^)]+\)) \.\.\. (ok|FAIL|ERROR|skipped(?: .*)?|expected failure|unexpected success)$", line)
+                if match:
+                    state = {"ok": "passed", "FAIL": "failed", "ERROR": "error",
+                             "expected failure": "xfailed", "unexpected success": "xpassed"}.get(match.group(2), "skipped")
+                    outcomes.append({"name": match.group(1), "state": state})
+            if len(outcomes) >= 1000:
+                break
+        return outcomes
 
     def to_dict(self) -> dict:
-        return {**asdict(self), "passed": self.passed, "tests_run": self.tests_run}
+        return {**asdict(self), "passed": self.passed, "tests_run": self.tests_run,
+                "complete": self.complete, "framework": self.framework,
+                "test_outcomes": self.test_outcomes}
 
 
 class DockerRunner:
@@ -105,8 +190,7 @@ class DockerRunner:
             pass
 
     def run(self, workspace: Path, command: tuple[str, ...], run_id: str) -> CheckResult:
-        if not isinstance(command, tuple) or command != CHECK_COMMAND:
-            raise ValueError("Only the catalog's fixed unittest check command is allowed")
+        profile, _ = parse_check_command(command)
         if not isinstance(run_id, str) or not RUN_ID.fullmatch(run_id):
             raise ValueError("Invalid run ID")
         original = Path(workspace)
@@ -132,6 +216,7 @@ class DockerRunner:
                 "--mount", f"type=bind,source={workspace},target=/workspace,readonly",
                 "--workdir", "/workspace", "--env", "HOME=/tmp",
                 "--env", "PYTHONDONTWRITEBYTECODE=1", "--env", "PYTHONUNBUFFERED=1",
+                "--env", "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1", "--env", "PYTEST_ADDOPTS=",
                 self.image, *command]
         process = None
         output = bytearray()
@@ -172,7 +257,7 @@ class DockerRunner:
                 process.wait(timeout=max(0.05, deadline - time.monotonic()))
             return CheckResult(process.returncode, output.decode("utf-8", errors="replace"),
                                int((time.monotonic() - started) * 1000), timed_out,
-                               truncated, runner=self.runner)
+                               truncated, runner=self.runner, check_profile=profile)
         except BaseException:
             self._cleanup(name)
             if process is not None:

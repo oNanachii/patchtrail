@@ -24,13 +24,13 @@ export function NewRun({ tasks, tasksError, health, online, token, tokenStatus, 
   const [mode, setMode] = useState<Mode>("demo");
   const [confirmLive, setConfirmLive] = useState(false);
   useEffect(() => {
-    if (!taskId && tasks?.length) setTaskId(tasks[0].id);
+    if (tasks?.length && !tasks.some((task) => task.id === taskId)) setTaskId(tasks[0].id);
   }, [tasks, taskId]);
 
   const locked = Boolean(pending);
   const chosenTask = locked ? pending!.body.task_id : taskId;
-  const chosenMode: Mode = locked ? pending!.body.mode : mode;
   const task = tasks?.find((t) => t.id === chosenTask) ?? null;
+  const chosenMode: Mode = locked ? pending!.body.mode : task?.private ? "live" : mode;
 
   const blockers: { text: string; action?: "operator" }[] = [];
   if (!locked) {
@@ -69,7 +69,7 @@ export function NewRun({ tasks, tasksError, health, online, token, tokenStatus, 
       )}
 
       <fieldset className="choice-group" disabled={locked}>
-        <legend>任务 <span className="legend-note">预置回归任务，不接受任意仓库或命令</span></legend>
+        <legend>任务 <span className="legend-note">公开演示与操作者导入的私有快照</span></legend>
         {tasksError && <p className="error-line" role="alert"><Icon name="alert" size={14} />{tasksError}</p>}
         {!tasks && !tasksError && <p className="muted small"><Spinner /> 正在读取任务目录…</p>}
         {tasks?.length === 0 && <p className="muted small">任务目录为空。</p>}
@@ -77,7 +77,7 @@ export function NewRun({ tasks, tasksError, health, online, token, tokenStatus, 
           <label key={item.id} className="task-option">
             <input type="radio" name="task" value={item.id} checked={chosenTask === item.id} onChange={() => setTaskId(item.id)} />
             <span className="task-card">
-              <span className="task-title">{item.title}</span>
+              <span className="task-title">{item.private ? "私有项目 · " : ""}{item.title}</span>
               <span className="task-desc">{item.description}</span>
               <span className="task-meta">
                 <code>{item.editable_files.join(", ")}</code>
@@ -91,7 +91,7 @@ export function NewRun({ tasks, tasksError, health, online, token, tokenStatus, 
       <fieldset className="choice-group mode-group" disabled={locked}>
         <legend>执行方式</legend>
         <label className="mode-option is-demo">
-          <input type="radio" name="mode" value="demo" checked={chosenMode === "demo"} onChange={() => setMode("demo")} />
+          <input type="radio" name="mode" value="demo" disabled={task?.private} checked={chosenMode === "demo"} onChange={() => setMode("demo")} />
           <span className="mode-card">
             <ModeTag mode="demo" />
             <span className="mode-desc">预设动作，不调用模型。补丁是预置修复，用来演示运行时和验证器，不代表模型能力。</span>
@@ -108,6 +108,8 @@ export function NewRun({ tasks, tasksError, health, online, token, tokenStatus, 
           </span>
         </label>
       </fieldset>
+
+      {task?.private && <p className="small muted">本地导入的不可变快照 · {task.check_profile} · {task.editable_files.length}个可修改文件。源码、记录和补丁仅操作者可见。</p>}
 
       {blockers.length > 0 && (
         <ul className="blockers">

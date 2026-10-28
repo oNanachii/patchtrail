@@ -42,6 +42,7 @@ export const STOP_REASONS = {
   no_patch_proposal: { label: "未提出补丁", title: "模型回答了，但没有提出补丁", detail: "自然语言回答不能完成运行；只有经确认并通过验证的补丁才算成功。" },
   sandbox_unavailable: { label: "容器不可用", title: "容器不可用，代码未执行", detail: "服务不会转到宿主机执行。这不是补丁失败，也不是补丁成功：检查没有运行。", notExecuted: true },
   baseline_unconfirmed: { label: "基线未确认", title: "基线检查未能确认", detail: "基线检查没有确认实际运行的用例（可能为零用例、超时或输出截断），因此不能继续提出补丁。", notExecuted: true },
+  baseline_passed: { label: "基线已通过", title: "所选测试已通过，未接受补丁", detail: "当前快照的固定测试已经通过，请核对问题与测试范围。没有应用任何修复。", notExecuted: true },
   model_error: { label: "模型错误", title: "模型调用失败", detail: "模型请求失败或返回无效内容。不会自动重试结果未知的请求。" },
   runtime_error: { label: "运行时错误", title: "任务或运行时契约失败", detail: "请查看执行记录中的工具事件。" },
   verification_contract: { label: "契约不符", title: "确认的补丁与任务不再匹配", detail: "验证工作区与已确认补丁的哈希不一致，补丁未被执行。", notExecuted: true },
@@ -93,6 +94,9 @@ const ERRORS = {
   state_conflict: "服务端状态已变化（版本或状态冲突），已重新获取最新状态。",
   not_found: "找不到这次运行。",
   unknown_task: "任务不在目录中。",
+  private_task_requires_live: "导入项目仅支持需要操作令牌的真实运行。",
+  project_unavailable: "导入快照或清单校验失败，请在本地核对后重新导入。",
+  patch_not_available: "这次运行没有可下载的补丁提案。",
   invalid_request: "请求字段不符合 API 契约。",
   request_too_large: "控制请求过大。",
   invalid_cursor: "事件游标无效。",
@@ -117,4 +121,5 @@ export const TOOL_LABELS = {
   search_code: "搜索代码",
   run_check: "运行基线检查",
   propose_patch: "提出补丁",
+  propose_patch_bundle: "提出多文件补丁包",
 };

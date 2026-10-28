@@ -21,6 +21,8 @@ export function PatchReview({ run, events, onApprove }: {
   }, [events]);
   const awaiting = run.state === "awaiting_approval";
   const isLive = run.mode === "live";
+  const files = proposal.files?.length ? proposal.files : [{ path: proposal.path ?? "", old_sha256: proposal.old_sha256 ?? "", new_sha256: proposal.new_sha256 ?? "", diff: proposal.diff }];
+  const paths = files.map((file) => file.path).join(", ");
 
   return (
     <section className="panel patch-review" aria-labelledby="patch-title" id="patch">
@@ -38,17 +40,17 @@ export function PatchReview({ run, events, onApprove }: {
         </div>
       )}
 
-      <DiffView diff={proposal.diff} label={`补丁差异 ${proposal.path}`} />
+      {files.map((file) => <DiffView key={file.path} diff={file.diff ?? proposal.diff} label={`补丁差异 ${file.path}`} />)}
 
       <dl className="proof">
         <div className="proof-row proof-digest">
           <dt>补丁 digest</dt>
           <dd><Hash value={proposal.digest} label="补丁 digest" full /></dd>
         </div>
-        <div className="proof-row">
-          <dt>原文件 → 新文件</dt>
-          <dd className="proof-flow"><Hash value={proposal.old_sha256} label="原文件 sha256" /><Icon name="chevron" size={12} /><Hash value={proposal.new_sha256} label="新文件 sha256" /></dd>
-        </div>
+        {files.map((file) => <div className="proof-row" key={file.path}>
+          <dt><code>{file.path}</code> 原 → 新</dt>
+          <dd className="proof-flow"><Hash value={file.old_sha256} label="原文件 sha256" /><Icon name="chevron" size={12} /><Hash value={file.new_sha256} label="新文件 sha256" /></dd>
+        </div>)}
         <div className="proof-row">
           <dt>调查工作区</dt>
           <dd><Hash value={proposal.base_workspace_hash} label="调查工作区哈希" /></dd>
@@ -65,7 +67,7 @@ export function PatchReview({ run, events, onApprove }: {
             确认只针对这一份补丁：digest <code>{shortHash(proposal.digest)}</code> 与运行版本 <code>v{run.version}</code>。
             服务端随后从原始任务重建工作区，在禁网容器里运行不可修改的测试。
           </p>
-          <button type="button" className="button button-primary" onClick={() => setSnapshot({ runId: run.id, digest: proposal.digest, version: run.version, path: proposal.path })}>
+          <button type="button" className="button button-primary" onClick={() => setSnapshot({ runId: run.id, digest: proposal.digest, version: run.version, path: paths })}>
             <Icon name="check" size={15} />确认并验证…
           </button>
         </div>
@@ -103,7 +105,7 @@ function ApproveDialog({ snapshot, run, onClose, onApprove }: {
   if (!snapshot) return <Dialog open={false} onClose={onClose} title="">{null}</Dialog>;
   const stale = !attempted && (run.id !== snapshot.runId || run.version !== snapshot.version
     || run.state !== "awaiting_approval" || run.proposal?.digest !== snapshot.digest);
-  const stats = parseUnifiedDiff(run.proposal?.diff ?? "");
+  const stats = (run.proposal?.files ?? [{ diff: run.proposal?.diff ?? "" }]).map((file) => parseUnifiedDiff(file.diff ?? "")).reduce((sum, item) => ({ added: sum.added + item.added, removed: sum.removed + item.removed }), { added: 0, removed: 0 });
 
   const submit = async () => {
     setPhase("sending");

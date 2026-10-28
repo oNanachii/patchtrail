@@ -76,15 +76,17 @@ export function App() {
 
   const [tasks, setTasks] = useState<Task[] | null>(null);
   const [tasksError, setTasksError] = useState<string | null>(null);
-  usePoll(async (signal) => {
+  const refreshTasks = usePoll(async (signal) => {
+    const epoch = authEpoch.current.capture();
     try {
       const data = await request("/api/tasks", { signal });
+      authEpoch.current.assertCurrent(epoch);
       setTasks(data.tasks);
       setTasksError(null);
     } catch (error) {
       if (!isAbort(error)) setTasksError(describe(error).message);
     }
-  }, tasks ? null : 5000, [request, Boolean(tasks)]);
+  }, tasks ? 15000 : 5000, [request, token, Boolean(tasks)]);
 
   const [runs, setRuns] = useState<Run[] | null>(null);
   const [runsError, setRunsError] = useState<Described | null>(null);
@@ -220,6 +222,17 @@ export function App() {
       anchor.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     },
+    downloadPatch: async (run: Run) => {
+      try {
+        const patch = await request(`/api/runs/${run.id}/patch.diff`, { responseType: "text" });
+        const url = URL.createObjectURL(new Blob([patch], { type: "text/x-diff;charset=utf-8" }));
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `patchtrail-${run.id}.diff`;
+        anchor.click();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      } catch (error) { throw describe(error); }
+    },
   }), [request, applyRun, refreshDetail, refreshRuns]);
 
   // Idempotent creation; see lib/createGuard.js.
@@ -254,6 +267,7 @@ export function App() {
     setDetail({ id: selectedId, run: null, events: [], error });
     setRuns(null);
     setRunsError(null);
+    setTasks((current) => current?.filter((task) => !task.private) ?? null);
   };
   const replaceToken = (value: string) => {
     authEpoch.current.advance();
@@ -266,6 +280,7 @@ export function App() {
     refreshHealth();
     refreshRuns();
     refreshDetail();
+    refreshTasks();
   };
   onUnauthorized.current = (error, path) => {
     if (tokenRef.current) {
@@ -379,7 +394,7 @@ function Overview() {
     <div className="overview">
       <p className="eyebrow">受控任务 · 可核对的证据链</p>
       <h1>从一个失败测试，走到可核对的修复。</h1>
-      <p className="lede">选择一个预置任务。Agent 在受限副本里读代码、复现失败、提出单文件补丁后停下；你按准确的 digest 与版本确认；验证器在新工作区的禁网容器里运行不可修改的测试，由测试结果决定成功与否。</p>
+      <p className="lede">选择公开演示，或载入操作令牌选择自己导入的Python项目。Agent 在受限快照里读代码、复现失败、提出最多三文件补丁后停下；你按准确的 digest 与版本确认；验证器在新工作区的禁网容器里运行固定测试，由实际结果决定成功与否。</p>
       <ol className="flow">
         <li><span className="flow-n">1</span><div><strong>调查</strong><p>有界读文件、字面搜索、固定检查。文件和工具输出只当作数据。</p></div></li>
         <li><span className="flow-n">2</span><div><strong>复现</strong><p>在容器中运行原始测试，确认基线确实失败。</p></div></li>
@@ -391,6 +406,7 @@ function Overview() {
         <ul>
           <li><strong>脚本演示</strong>不调用模型，补丁是预置修复：它证明运行时与验证器可用，不证明模型能力。</li>
           <li><strong>DeepSeek 真实调用</strong>需要操作令牌；模型文本和补丁说明不会被当作结果。</li>
+          <li><strong>自己的代码</strong>由操作者在本地用清单CLI导入源码快照，载入令牌后显示私有任务；网页不接收代码上传或任意命令。</li>
           <li>三个任务是根据已观察问题独立编写的公开回归案例，不是盲评或 benchmark 成绩。</li>
           <li>容器不可用时服务返回 503，不会转到宿主机执行。</li>
         </ul>

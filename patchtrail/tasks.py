@@ -18,6 +18,12 @@ class TaskSpec:
     demo_path: str
     demo_content: str
     tags: tuple[str, ...]
+    private: bool = False
+    project_id: str = ""
+    snapshot_id: str = ""
+    check_profile: str = "unittest"
+    test_paths: tuple[str, ...] = ()
+    source_hash: str = ""
 
 
 _QUANTITY_SOLUTION = '"""Shopping quantities use a fixed unit per ingredient (for example grams)."""\nimport math\n\n\ndef _validate(values):\n    for name, quantity in values.items():\n        if not isinstance(name, str) or not name.strip():\n            raise ValueError("ingredient names must be non-empty strings")\n        if isinstance(quantity, bool) or not isinstance(quantity, (int, float)):\n            raise ValueError("quantity must be numeric")\n        if not math.isfinite(quantity) or quantity < 0:\n            raise ValueError("quantity must be finite and non-negative")\n\n\ndef shopping_shortfall(required, stock):\n    """Return strictly positive quantities still required for a meal plan."""\n    _validate(required)\n    _validate(stock)\n    result = {}\n    for ingredient, amount in required.items():\n        missing = max(0, amount - stock.get(ingredient, 0))\n        if missing > 0:\n            result[ingredient] = missing\n    return result\n'

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "project_name": "my-python-project",
+  "title": "修复自己的Python项目",
+  "description": "说明失败现象、期望行为和需要保留的原有行为。",
+  "files": ["src/app.py", "src/__init__.py", "tests/__init__.py", "tests/test_app.py"],
+  "editable_files": ["src/app.py"],
+  "check_profile": "unittest",
+  "test_paths": ["tests"],
+  "tags": ["owned-project"],
+  "provenance": "填写原项目来源和提交或快照版本；不要在这里放密钥。"
+}

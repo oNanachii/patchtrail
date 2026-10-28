@@ -9,6 +9,7 @@ import unittest
 from unittest.mock import patch
 
 from patchtrail.sandbox import CheckResult, DockerRunner, OUTPUT_LIMIT, SandboxUnavailable
+from patchtrail.check_profiles import build_check_command
 from patchtrail.tasks import CHECK_COMMAND, get_task
 from patchtrail.workspace import prepare_workspace
 
@@ -82,6 +83,21 @@ if sys.argv[1] == "run":
             runner.run(self.workspace, CHECK_COMMAND, "run")
         self.assertTrue(all(call[0] == "info" for call in self.calls()))
         self.assertFalse(DockerRunner(binary=str(self.base / "missing-cli")).available())
+
+    def test_pytest_fixed_command_and_environment_reach_only_the_container(self):
+        binary = self.fake_cli('    print("collecting ... collected 2 items")\n    print("================ 2 passed in 0.01s ================")')
+        command = build_check_command("pytest", ["tests/test_quantities.py"])
+        result = DockerRunner(binary=binary).run(self.workspace, command, "pytest-run")
+        self.assertTrue(result.passed)
+        self.assertTrue(result.complete)
+        self.assertEqual(result.framework, "pytest")
+        payload = result.to_dict()
+        self.assertEqual(payload["check_profile"], "pytest")
+        self.assertEqual(payload["tests_run"], 2)
+        argv = next(row for row in self.calls() if row[0] == "run")
+        self.assertEqual(tuple(argv[-len(command):]), command)
+        self.assertIn("PYTEST_DISABLE_PLUGIN_AUTOLOAD=1", argv)
+        self.assertIn("PYTEST_ADDOPTS=", argv)
 
     def test_arbitrary_command_is_rejected_before_cli_invocation(self):
         runner = DockerRunner(binary=str(self.base / "missing-cli"))

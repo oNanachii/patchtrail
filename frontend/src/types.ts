@@ -33,18 +33,25 @@ export interface Task {
   check_id: string;
   tags: string[];
   source_hash: string;
+  private?: boolean;
+  project_id?: string;
+  snapshot_id?: string;
+  check_profile?: string;
+  test_paths?: string[];
 }
 
 export interface Proposal {
   digest: string;
-  path: string;
+  path?: string;
   diff: string;
-  old_sha256: string;
-  new_sha256: string;
+  old_sha256?: string;
+  new_sha256?: string;
   base_workspace_hash: string;
   source_hash: string;
   task_id?: string;
   explanation?: string;
+  schema_version?: number;
+  files?: { path: string; old_sha256: string; new_sha256: string; diff?: string }[];
 }
 
 export interface CheckResultData {
@@ -56,6 +63,9 @@ export interface CheckResultData {
   runner: string;
   passed?: boolean;
   tests_run?: number;
+  complete?: boolean;
+  framework?: string;
+  test_outcomes?: { name: string; state: string }[];
 }
 
 export interface Run {
@@ -81,6 +91,7 @@ export interface Run {
   provider_label?: string;
   configured_model?: string | null;
   observed_models?: string[];
+  private?: boolean;
 }
 
 export interface RunEvent {

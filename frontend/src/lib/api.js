@@ -20,7 +20,7 @@ export class ApiError extends Error {
 }
 
 /**
- * @typedef {{method?: string, body?: unknown, headers?: Record<string, string>, signal?: AbortSignal}} RequestOptions
+ * @typedef {{method?: string, body?: unknown, headers?: Record<string, string>, signal?: AbortSignal, responseType?: "json" | "text"}} RequestOptions
  * @typedef {(path: string, options?: RequestOptions) => Promise<any>} Request
  */
 
@@ -30,7 +30,7 @@ export class ApiError extends Error {
  */
 export function createApi({ fetchImpl, getToken }) {
   const doFetch = fetchImpl ?? ((input, init) => fetch(input, init));
-  return async function request(path, { method = "GET", body, headers = {}, signal } = {}) {
+  return async function request(path, { method = "GET", body, headers = {}, signal, responseType = "json" } = {}) {
     const token = getToken().trim();
     /** @type {Record<string, string>} */
     const finalHeaders = { Accept: "application/json", ...headers };
@@ -52,6 +52,7 @@ export function createApi({ fetchImpl, getToken }) {
     }
     let data;
     try {
+      if (response.ok && responseType === "text") return await response.text();
       data = await response.json();
     } catch {
       throw new ApiError({

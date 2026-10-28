@@ -37,12 +37,13 @@ class Settings:
     admin_token: str = field(default_factory=lambda: os.getenv("PATCHTRAIL_ADMIN_TOKEN", ""), repr=False)
     container_binary: str = field(default_factory=lambda: os.getenv("PATCHTRAIL_CONTAINER_BIN", "docker"))
     container_image: str = field(default_factory=lambda: os.getenv("PATCHTRAIL_CONTAINER_IMAGE", "python:3.12-slim"))
+    pytest_image: str = field(default_factory=lambda: os.getenv("PATCHTRAIL_PYTEST_IMAGE", ""))
     public_demo: bool = field(default_factory=lambda: os.getenv("PATCHTRAIL_PUBLIC_DEMO", "true").lower() == "true")
     max_calls: int = 8
     max_steps: int = 12
     max_seconds: int = 120
     max_input_chars: int = 64000
-    max_output_tokens: int = 2048
+    max_output_tokens: int = 4096
 
     @property
     def limits(self):

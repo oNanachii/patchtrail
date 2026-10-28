@@ -9,6 +9,37 @@
 const TEST_LINE = /^(test\w*) \(([^)]+)\)(?: \.\.\. (.+))?$/;
 const STATUS_TAIL = / \.\.\. (ok|FAIL|ERROR|skipped.*|expected failure|unexpected success)$/;
 
+/** @param {string} output */
+function pytestSummary(output) {
+  const last = output.trimEnd().split("\n").at(-1)?.trim() ?? "";
+  const match = /^=+ (.+) in [0-9]+(?:\.[0-9]+)?(?:s| seconds)(?: \([0-9:]+\))? =+$/.exec(last);
+  if (!match) return null;
+  /** @type {Record<string, number>} */
+  const counts = {};
+  for (const part of match[1].split(", ")) {
+    const item = /^(\d+) (passed|failed|skipped|xfailed|xpassed|errors?|deselected|warnings?)$/.exec(part);
+    if (!item) return null;
+    const key = item[2] === "errors" ? "error" : item[2] === "warnings" ? "warning" : item[2];
+    if (key in counts) return null;
+    counts[key] = Number(item[1]);
+  }
+  return { counts, last, total: ["passed", "failed", "skipped", "xfailed", "xpassed"].reduce((sum, key) => sum + (counts[key] ?? 0), 0) };
+}
+
+/** @param {any} result @returns {ParsedOutput} */
+export function parseCheckOutput(result) {
+  const output = typeof result?.output === "string" ? result.output : "";
+  const summary = pytestSummary(output);
+  if (result?.framework !== "pytest" && !summary) return parseUnittest(output);
+  /** @type {TestLine[]} */
+  const tests = [];
+  for (const line of output.split("\n")) {
+    const match = /^(\S+::\S+)\s+(PASSED|FAILED|ERROR|SKIPPED|XFAIL|XPASS)(?:\s|$)/.exec(line);
+    if (match) tests.push({ name: match[1], id: match[1], status: ({ PASSED: "ok", FAILED: "fail", ERROR: "error", SKIPPED: "skipped", XFAIL: "skipped", XPASS: "xpassed" })[match[2]] ?? match[2] });
+  }
+  return { tests, ran: summary?.total ?? null, summary: summary?.last ?? null };
+}
+
 /** @param {string} output @returns {ParsedOutput} */
 export function parseUnittest(output) {
   /** @type {TestLine[]} */
@@ -75,12 +106,13 @@ export function verdictCriteria(result) {
   const output = typeof result?.output === "string" ? result.output : "";
   const lastLine = output.trimEnd().split("\n").at(-1) ?? "";
   const testsRun = typeof result?.tests_run === "number" ? result.tests_run : parseUnittest(output).ran ?? 0;
+  const pytest = result?.framework === "pytest" || Boolean(pytestSummary(output));
   return [
     { key: "exit", label: "退出码为 0", ok: result?.exit_code === 0, detail: result?.exit_code == null ? "无退出码" : `exit ${result.exit_code}` },
     { key: "tests", label: "实际运行了测试", ok: testsRun > 0, detail: `${testsRun} 个用例` },
     { key: "timeout", label: "未超时", ok: result?.timed_out === false, detail: result?.timed_out ? "已超时" : "按时结束" },
     { key: "truncated", label: "输出未截断", ok: result?.truncated === false, detail: result?.truncated ? "输出被截断" : "完整" },
-    { key: "ok", label: "输出以 OK 结束", ok: lastLine === "OK", detail: lastLine ? `末行 “${lastLine.slice(0, 40)}”` : "无输出" },
+    { key: "ok", label: pytest ? "测试摘要通过" : "输出以 OK 结束", ok: pytest ? verificationEvidence(result).complete && result.exit_code === 0 : /^OK(?: \([^\n]*\))?$/.test(lastLine), detail: lastLine ? `末行 “${lastLine.slice(0, 40)}”` : "无输出" },
   ];
 }
 
@@ -100,7 +132,9 @@ export function verificationEvidence(result) {
   const output = typeof result?.output === "string" ? result.output.replace(/\r\n?/g, "\n") : "";
   const lastLine = output.trimEnd().split("\n").at(-1) ?? "";
   const counts = [...output.matchAll(/^Ran (\d+) tests? in [^\n]+$/gm)];
-  const parsedCount = counts.length ? Number(counts.at(-1)?.[1]) : 0;
+  const pytest = pytestSummary(output);
+  const isPytest = result?.framework === "pytest" || Boolean(pytest);
+  const parsedCount = isPytest ? pytest?.total ?? 0 : counts.length ? Number(counts.at(-1)?.[1]) : 0;
   const testsRun = Number.isSafeInteger(parsedCount) && parsedCount > 0 ? parsedCount : 0;
   let reason = null;
   if (result?.timed_out !== false) reason = result?.timed_out === true
@@ -112,7 +146,13 @@ export function verificationEvidence(result) {
   else if (result?.exit_code !== 0 && result?.exit_code !== 1) reason = "检查进程没有按测试协议正常结束，可能未启动或只执行了一部分；不能判断补丁。";
   else if (testsRun === 0) reason = "没有确认实际运行的测试用例；不能判断补丁。";
   else if (result.tests_run != null && result.tests_run !== testsRun) reason = "用例统计与检查输出不一致，无法确认完整结果。";
-  else if (lastLine !== "OK" && !/^FAILED(?: \([^\n]*\))?$/.test(lastLine)) reason = "缺少正常的测试结束记录，可能只执行了一部分；不能判断补丁。";
-  else if ((lastLine === "OK") !== (result.exit_code === 0)) reason = "退出码与测试结束记录不一致，无法确认完整结果。";
+  else if (result.complete === false) reason = "服务端未确认完整的测试结束记录；不能判断补丁。";
+  else if (isPytest) {
+    const c = pytest?.counts ?? {};
+    if (!pytest || (c.passed ?? 0) + (c.failed ?? 0) === 0 || (c.error ?? 0) > 0) reason = "pytest没有确认实际执行并正常结束的用例。";
+    else if ((result.exit_code === 0 && (c.failed ?? 0) > 0) || (result.exit_code === 1 && (c.failed ?? 0) === 0)) reason = "pytest退出码与测试摘要不一致。";
+  }
+  else if (!/^(?:OK|FAILED)(?: \([^\n]*\))?$/.test(lastLine)) reason = "缺少正常的测试结束记录，可能只执行了一部分；不能判断补丁。";
+  else if ((/^OK(?: |$)/.test(lastLine)) !== (result.exit_code === 0)) reason = "退出码与测试结束记录不一致，无法确认完整结果。";
   return { complete: reason === null, reason, testsRun, lastLine };
 }

@@ -1,6 +1,7 @@
 """Bounded fixture workspaces and exact, approval-bound single-file proposals."""
 from contextlib import contextmanager
 import difflib
+import ctypes
 import fcntl
 import hashlib
 import json
@@ -9,16 +10,19 @@ from pathlib import Path, PurePosixPath
 import re
 import shutil
 import stat
+import sys
 import tempfile
 import time
 
 from .tasks import TaskSpec
 
 
-MAX_FILES = 128
-MAX_FILE_BYTES = 256 * 1024
+MAX_FILES = 200
+MAX_FILE_BYTES = 128 * 1024
 MAX_TREE_BYTES = 2 * 1024 * 1024
 MAX_PATCH_BYTES = 16 * 1024
+MAX_BUNDLE_FILES = 3
+MAX_BUNDLE_BYTES = 384 * 1024
 MAX_READ_CHARACTERS = 20000
 RUN_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,95}\Z")
 
@@ -96,6 +100,13 @@ def tree_hash(directory: Path) -> str:
     return _hash_files(root, _files(root))
 
 
+def _source_hash(task: TaskSpec) -> str:
+    value = tree_hash(task.source_dir)
+    if task.source_hash and value != task.source_hash:
+        raise WorkspaceError("Imported source snapshot changed after registration")
+    return value
+
+
 def _relative(path: str) -> str:
     if not isinstance(path, str) or not path or "\x00" in path or "\\" in path:
         raise WorkspaceError("A normalized relative POSIX path is required")
@@ -146,6 +157,7 @@ def _creation_lock(base: Path, run_id: str):
 
 
 def _verify_existing(target: Path, task: TaskSpec) -> Path:
+    _source_hash(task)
     root = _root(target)
     source_root = _root(task.source_dir)
     source_files = {path.relative_to(source_root).as_posix(): path for path in _files(source_root)}
@@ -167,7 +179,7 @@ def prepare_workspace(base: Path, run_id: str, task: TaskSpec) -> Path:
     base.mkdir(parents=True, exist_ok=True)
     base = _root(base)
     source = _root(task.source_dir)
-    source_hash = tree_hash(source)
+    source_hash = _source_hash(task)
     target = base / run_id
     with _creation_lock(base, run_id):
         if target.exists() or target.is_symlink():
@@ -249,8 +261,9 @@ def build_proposal(task: TaskSpec, workspace: Path, path: str, content: str) -> 
         replacement = content.encode("utf-8")
     except UnicodeEncodeError as exc:
         raise WorkspaceError("Replacement content must be valid UTF-8") from exc
-    if len(replacement) > MAX_PATCH_BYTES:
-        raise WorkspaceError("Replacement content exceeds 16 KiB")
+    limit = MAX_FILE_BYTES if task.private else MAX_PATCH_BYTES
+    if len(replacement) > limit:
+        raise WorkspaceError("Replacement content exceeds its size limit")
     _verify_existing(workspace, task)
     old = _path(workspace, path).read_bytes()
     if old == replacement:
@@ -259,11 +272,10 @@ def build_proposal(task: TaskSpec, workspace: Path, path: str, content: str) -> 
         old_text = old.decode("utf-8")
     except UnicodeDecodeError as exc:
         raise WorkspaceError("Editable source must be UTF-8 text") from exc
-    diff = "".join(difflib.unified_diff(old_text.splitlines(keepends=True), content.splitlines(keepends=True),
-                                       fromfile="a/" + path, tofile="b/" + path))
+    diff = _patch_diff(path, old_text, content)
     payload = {"task_id": task.id, "path": path, "content": content,
                "old_sha256": _sha(old), "new_sha256": _sha(replacement),
-               "base_workspace_hash": tree_hash(workspace), "source_hash": tree_hash(task.source_dir),
+               "base_workspace_hash": tree_hash(workspace), "source_hash": _source_hash(task),
                "diff": diff}
     return {"digest": _sha(_canonical(payload)), **payload}
 
@@ -271,6 +283,9 @@ def build_proposal(task: TaskSpec, workspace: Path, path: str, content: str) -> 
 def apply_proposal(task: TaskSpec, workspace: Path, proposal: dict) -> None:
     if not isinstance(proposal, dict):
         raise WorkspaceError("Proposal must be an object")
+    if "files" in proposal:
+        _apply_patch_bundle(task, workspace, proposal)
+        return
     fields = {"digest", "task_id", "path", "content", "old_sha256", "new_sha256",
               "base_workspace_hash", "source_hash", "diff"}
     if set(proposal) != fields or proposal["task_id"] != task.id:
@@ -297,3 +312,121 @@ def apply_proposal(task: TaskSpec, workspace: Path, proposal: dict) -> None:
     finally:
         if temporary is not None:
             temporary.unlink(missing_ok=True)
+
+
+def _patch_diff(path: str, old: str, new: str) -> str:
+    """Produce an exportable unified diff, including missing-final-newline markers."""
+    parts = []
+    for line in difflib.unified_diff(old.splitlines(keepends=True), new.splitlines(keepends=True),
+                                     fromfile="a/" + path, tofile="b/" + path):
+        if not line.endswith("\n"):
+            parts.extend((line + "\n", "\\ No newline at end of file\n"))
+        else:
+            parts.append(line)
+    return "".join(parts)
+
+
+def build_patch_bundle(task: TaskSpec, workspace: Path, files: list[dict]) -> dict:
+    """Bind one to three existing source replacements to one approval digest."""
+    if not isinstance(files, list) or not 1 <= len(files) <= MAX_BUNDLE_FILES:
+        raise WorkspaceError("A patch bundle requires one to three source files")
+    _verify_existing(workspace, task)
+    entries, seen, size = [], set(), 0
+    for entry in files:
+        if not isinstance(entry, dict) or set(entry) != {"path", "content"}:
+            raise WorkspaceError("Each replacement requires exactly path and content")
+        path = _relative(entry["path"])
+        if path not in task.editable_files or path in seen:
+            raise WorkspaceError("Replacement path is duplicated or not editable")
+        seen.add(path)
+        content = entry["content"]
+        if not isinstance(content, str):
+            raise WorkspaceError("Replacement content must be text")
+        try:
+            replacement = content.encode("utf-8")
+            old = _path(workspace, path).read_bytes()
+            old_text = old.decode("utf-8")
+        except (UnicodeError, OSError) as exc:
+            raise WorkspaceError("Source and replacement must be available UTF-8 text") from exc
+        size += len(replacement)
+        if len(replacement) > MAX_FILE_BYTES or size > MAX_BUNDLE_BYTES:
+            raise WorkspaceError("Patch bundle exceeds its size limit")
+        if old == replacement:
+            raise WorkspaceError("Every proposed file must make a change")
+        entries.append({"path": path, "content": content, "old_sha256": _sha(old),
+                        "new_sha256": _sha(replacement), "diff": _patch_diff(path, old_text, content)})
+    entries.sort(key=lambda entry: entry["path"])
+    payload = {"schema_version": 2, "task_id": task.id, "files": entries,
+               "base_workspace_hash": tree_hash(workspace), "source_hash": _source_hash(task),
+               "diff": "".join(entry["diff"] for entry in entries)}
+    return {"digest": _sha(_canonical(payload)), **payload}
+
+
+def _exchange_directories(left: Path, right: Path) -> None:
+    """Atomically exchange two directories on supported development/server systems.
+
+    Do not fall back to sequential publication: a missing primitive fails before
+    the original workspace changes. Linux and macOS support a directory swap.
+    """
+    library = ctypes.CDLL(None, use_errno=True)
+    left_bytes, right_bytes = os.fsencode(left), os.fsencode(right)
+    if sys.platform.startswith("linux") and hasattr(library, "renameat2"):
+        operation = library.renameat2
+        operation.argtypes = (ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_uint)
+        operation.restype = ctypes.c_int
+        result = operation(-100, left_bytes, -100, right_bytes, 2)  # RENAME_EXCHANGE
+    elif sys.platform == "darwin" and hasattr(library, "renamex_np"):
+        operation = library.renamex_np
+        operation.argtypes = (ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint)
+        operation.restype = ctypes.c_int
+        result = operation(left_bytes, right_bytes, 2)  # RENAME_SWAP
+    else:
+        raise WorkspaceError("Atomic directory exchange is unavailable on this platform")
+    if result != 0:
+        error = ctypes.get_errno()
+        raise WorkspaceError("Atomic patch publication failed") from OSError(error, os.strerror(error))
+
+
+def _apply_patch_bundle(task: TaskSpec, workspace: Path, proposal: dict) -> None:
+    fields = {"digest", "schema_version", "task_id", "files", "base_workspace_hash", "source_hash", "diff"}
+    if (set(proposal) != fields or type(proposal.get("schema_version")) is not int
+            or proposal.get("schema_version") != 2 or proposal.get("task_id") != task.id):
+        raise WorkspaceError("Patch bundle identity or fields do not match the task")
+    entries = proposal.get("files")
+    if not isinstance(entries, list) or any(not isinstance(entry, dict) for entry in entries):
+        raise WorkspaceError("Patch bundle files are invalid")
+    replacements = [{"path": entry.get("path"), "content": entry.get("content")} for entry in entries]
+    root = _root(workspace)
+    with _creation_lock(root.parent, root.name):
+        if proposal != build_patch_bundle(task, root, replacements):
+            raise WorkspaceError("Patch bundle digest, source or workspace no longer matches approval")
+        staging = Path(tempfile.mkdtemp(prefix=".bundle-", dir=root.parent))
+        published = False
+        try:
+            for original in _files(root):
+                target = staging / original.relative_to(root)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(original.read_bytes())
+                target.chmod(0o644)
+            if tree_hash(staging) != proposal["base_workspace_hash"]:
+                raise WorkspaceError("Workspace changed while copying the patch publication baseline")
+            for entry in entries:
+                (staging / entry["path"]).write_text(entry["content"], encoding="utf-8", newline="")
+            for directory in (path for path in staging.rglob("*") if path.is_dir()):
+                directory.chmod(0o755)
+            staging.chmod(0o755)
+            _verify_existing(staging, task)
+            if tree_hash(root) != proposal["base_workspace_hash"] or _source_hash(task) != proposal["source_hash"]:
+                raise WorkspaceError("Workspace or source changed before patch publication")
+            _exchange_directories(root, staging)
+            published = True
+        finally:
+            # Before exchange staging is unpublished; after exchange it is the
+            # former complete workspace. The visible path never contains a half patch.
+            try:
+                shutil.rmtree(staging)
+            except OSError:
+                if not published:
+                    raise
+                # Publication is already complete. Failure to remove the old,
+                # private tree must not misreport the approved commit as failed.

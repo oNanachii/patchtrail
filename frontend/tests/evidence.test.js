@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
-import { compareTests, parseUnittest, verdictCriteria, verificationEvidence } from "../src/lib/checks.js";
+import { compareTests, parseUnittest, parseCheckOutput, verdictCriteria, verificationEvidence } from "../src/lib/checks.js";
 import { parseUnifiedDiff } from "../src/lib/diff.js";
 import { formatDuration, parseTime } from "../src/lib/format.js";
 import { runStopReason, runTone, stateLabel } from "../src/lib/labels.js";
@@ -15,6 +15,20 @@ test("durations never show 60 seconds and microsecond timestamps parse", () => {
   assert.equal(parseTime("2026-10-28T03:00:01.123456+00:00"), Date.UTC(2026, 9, 28, 3, 0, 1, 123));
 });
 import { buildTrail, findBaseline, stageTrack } from "../src/lib/trail.js";
+
+test("pytest results distinguish full failures from collection and partial evidence", () => {
+  const output = "collected 2 items\n\ntests/test_a.py::test_a FAILED [ 50%]\ntests/test_a.py::test_b PASSED [100%]\n\n================ 1 failed, 1 passed in 0.03s ================\n";
+  const failed = { framework: "pytest", complete: true, tests_run: 2, exit_code: 1, output, timed_out: false, truncated: false };
+  assert.equal(verificationEvidence(failed).complete, true);
+  assert.equal(parseCheckOutput(failed).tests[0].status, "fail");
+  assert.equal(parseCheckOutput(failed).tests[1].name, "tests/test_a.py::test_b");
+  for (const changed of [{ complete: false }, { exit_code: 2 }, { tests_run: 3 }, { timed_out: true }, { truncated: true }]) {
+    assert.equal(verificationEvidence({ ...failed, ...changed }).complete, false);
+  }
+  const passed = { ...failed, exit_code: 0, output: "================ 2 passed in 0.03s ================\n" };
+  assert.ok(verdictCriteria(passed).every((item) => item.ok));
+  assert.equal(verificationEvidence({ ...passed, output: "================ 2 skipped in 0.03s ================\n" }).complete, false);
+});
 
 // Diff text shape recorded in artifacts/http-container-integration.json.
 const DIFF = "--- a/src/quantities.py\n+++ b/src/quantities.py\n@@ -18,7 +18,7 @@\n     _validate(stock)\n     result = {}\n     for ingredient, amount in required.items():\n-        missing = amount if ingredient not in stock else 0\n+        missing = max(0, amount - stock.get(ingredient, 0))\n         if missing > 0:\n             result[ingredient] = missing\n     return result\n";

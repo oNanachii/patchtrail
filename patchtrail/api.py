@@ -10,7 +10,7 @@ from typing import Literal
 
 from fastapi import FastAPI, Header, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -19,6 +19,7 @@ from .config import ROOT, Settings, load_local_env, runtime_code_hash
 from .service import RunService, ServiceError, public_run
 from .storage import RunNotFound, StoreConflict
 from .tasks import list_tasks
+from .workspace import WorkspaceError
 
 CSP = ("default-src 'self'; script-src 'self'; style-src 'self'; "
        "img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
@@ -112,6 +113,10 @@ def create_app(service=None):
     async def absent(request, exc):
         return JSONResponse({"error": {"code": "not_found", "message": "Run not found"}}, status_code=404)
 
+    @app.exception_handler(WorkspaceError)
+    async def invalid_project(request, exc):
+        return JSONResponse({"error": {"code": "project_unavailable", "message": "Imported project snapshot validation failed"}}, status_code=503)
+
     @app.exception_handler(sqlite3.OperationalError)
     async def database_error(request, exc):
         busy = (getattr(exc, "sqlite_errorcode", 0) & 255) in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED)
@@ -133,11 +138,17 @@ def create_app(service=None):
                 "model": active.settings.model, "operator_configured": bool(active.settings.admin_token),
                 "container_available": active.runner.available(), "public_demo": active.settings.public_demo,
                 "demo_mode": "scripted provider; actual container verifier required",
-                "scope": "curated tasks; single-process worker; no arbitrary commands or uploads"}
+                "scope": "public curated demo; private operator-imported snapshots; fixed tests; no web uploads or shell"}
 
     @app.get("/api/tasks")
-    def tasks():
-        return {"tasks": list_tasks(), "evaluation_scope": "authored regression fixtures, not blind external benchmark"}
+    def tasks(request: Request):
+        return {"tasks": active.task_list(private=is_operator(request)),
+                "evaluation_scope": "public authored fixtures and operator-only imported snapshots; not blind external benchmark"}
+
+    @app.get("/api/projects")
+    def projects(request: Request):
+        operator(request)
+        return {"projects": active.catalog.list_projects(), "import_method": "local manifest CLI; no HTTP upload"}
 
     @app.get("/api/runs")
     def runs(request: Request):
@@ -168,10 +179,20 @@ def create_app(service=None):
         return {"run": public_run(row), "events": active.store.events(run_id),
                 "evidence_boundary": "scripted runtime checks and live model outcomes are separate; no claim of general repair accuracy"}
 
+    @app.get("/api/runs/{run_id}/patch.diff", response_class=PlainTextResponse)
+    def patch(run_id: str, request: Request):
+        row = active.store.get_run(run_id)
+        access_run(request, row)
+        if not row.get("proposal"):
+            raise ServiceError("patch_not_available", "This run has no patch proposal", 404)
+        return PlainTextResponse(row["proposal"]["diff"], headers={
+            "Content-Disposition": f'attachment; filename="patchtrail-{row["id"]}.diff"',
+            "X-Proposal-Digest": row["proposal"]["digest"]})
+
     @app.post("/api/runs", status_code=201)
     def create(body: CreateRun, request: Request,
                idempotency_key: str = Header(alias="Idempotency-Key", min_length=8, max_length=128)):
-        if body.mode == "live" or not active.settings.public_demo:
+        if body.mode == "live" or body.task_id.startswith("project-") or not active.settings.public_demo:
             operator(request)
         key = request.client.host if request.client else "local"
         # A retry of an existing key does not consume another public start allowance.

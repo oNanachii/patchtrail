@@ -17,6 +17,7 @@ export type RunActions = {
   cancel: (run: Run) => Promise<void>;
   resume: (run: Run, version: number) => Promise<void>;
   download: (run: Run) => Promise<void>;
+  downloadPatch?: (run: Run) => Promise<void>;
 };
 
 export function RunDetail({ run, events, error, tasks, health, now, actions, focusKey }: {
@@ -58,6 +59,11 @@ export function RunDetail({ run, events, error, tasks, health, now, actions, foc
           </p>
         </div>
         <div className="run-head-actions">
+          {run.proposal && actions.downloadPatch && <button type="button" className="button" disabled={download.busy} onClick={async () => {
+            setDownload({ busy: true, error: null });
+            try { await actions.downloadPatch?.(run); setDownload({ busy: false, error: null }); }
+            catch (caught) { setDownload({ busy: false, error: caught as Described }); }
+          }}>下载提案 .diff</button>}
           {run.state === "interrupted" && (
             <button type="button" className="button button-primary" onClick={() => setDialog("resume")}>
               <Icon name="resume" size={15} />明确恢复…
@@ -95,7 +101,7 @@ export function RunDetail({ run, events, error, tasks, health, now, actions, foc
             <section className="panel patch-review is-empty" aria-labelledby="patch-title">
               <header className="section-head"><h3 id="patch-title"><Icon name="patch" />补丁审阅</h3></header>
               <p className="muted small">
-                {TERMINAL.has(run.state) || run.state === "interrupted" ? "这次运行没有提出补丁。" : "尚未提出补丁。Agent 提出单文件补丁后会停在这里，等待你按 digest 与版本确认。"}
+                {TERMINAL.has(run.state) || run.state === "interrupted" ? "这次运行没有提出补丁。" : "尚未提出补丁。Agent 提出补丁包后会停在这里，等待你按 digest 与版本确认。"}
               </p>
             </section>
           )}
@@ -170,7 +176,7 @@ function NextAction({ run, onResume }: { run: Run; onResume: () => void }) {
     case "succeeded": {
       const r = isCheckResult(result) ? (result as { tests_run?: number; runner: string; duration_ms: number }) : null;
       return (
-        <Callout tone="success" icon="check" title="验证通过：不可修改的测试在新工作区中全部通过">
+        <Callout tone="success" icon="check" title="验证通过：验证器确认所选检查通过，详见用例结果">
           {r && <>{r.tests_run ?? "—"} 个用例 · exit 0 · {formatDuration(r.duration_ms)} · 执行器 <code>{r.runner}</code>。</>}
           {run.mode === "demo" && " 这是预置补丁，证明的是运行时与验证器可用，不是模型能力。"}
         </Callout>

@@ -6,7 +6,7 @@ import type { Run, RunEvent } from "../types";
 import { OutputBlock, RunnerTag } from "./CheckPanel";
 import { Icon, type IconName } from "./ui";
 
-const TOOL_ICONS: Record<string, IconName> = { read_file: "file", search_code: "search", run_check: "terminal", propose_patch: "patch" };
+const TOOL_ICONS: Record<string, IconName> = { read_file: "file", search_code: "search", run_check: "terminal", propose_patch: "patch", propose_patch_bundle: "patch" };
 
 export function Trail({ run, events }: { run: Run; events: RunEvent[] }) {
   const { items, checkpoints } = useMemo(() => buildTrail(events), [events]);
@@ -170,6 +170,8 @@ function toolSummary(tool: ToolCall) {
       return r.exit_code !== undefined
         ? <><code>{a.check_id ?? "tests"}</code><span> · exit {r.exit_code ?? "—"} · {r.tests_run ?? "?"} 个用例 · {formatDuration(r.duration_ms)}</span></>
         : <code>{a.check_id ?? "tests"}</code>;
+    case "propose_patch_bundle":
+      return <><code>{(a.files ?? []).map((file: any) => file.path).join(", ")}</code><span> · 整包确认</span></>;
     case "propose_patch":
       return <><code>{a.path}</code>{a.content && <span> · {a.content}</span>}</>;
     default:
@@ -230,7 +232,7 @@ function ToolResult({ tool }: { tool: ToolCall }) {
       </>
     );
   }
-  if (tool.name === "propose_patch" && r.proposal_digest) {
+  if (["propose_patch", "propose_patch_bundle"].includes(tool.name) && r.proposal_digest) {
     return <p className="small">补丁 digest <code>{r.proposal_digest}</code> · 状态 <code>{r.status}</code></p>;
   }
   return null;

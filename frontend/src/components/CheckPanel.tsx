@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { compareTests, isCheckResult, parseUnittest, verdictCriteria, verificationEvidence } from "../lib/checks.js";
+import { compareTests, isCheckResult, parseCheckOutput, verdictCriteria, verificationEvidence } from "../lib/checks.js";
 import { formatDuration } from "../lib/format.js";
 import { runStopReason, TERMINAL } from "../lib/labels.js";
 import { findBaseline } from "../lib/trail.js";
@@ -54,8 +54,8 @@ export function CheckPanel({ run, events }: { run: Run; events: RunEvent[] }) {
   const result = run.result;
   const verified = isCheckResult(result) ? (result as CheckResultData) : null;
   const failure = result && !verified ? (result as { error?: string }) : null;
-  const before = useMemo(() => (baseline ? parseUnittest(baseline.output) : null), [baseline]);
-  const after = useMemo(() => (verified ? parseUnittest(verified.output) : null), [verified]);
+  const before = useMemo(() => (baseline ? parseCheckOutput(baseline) : null), [baseline]);
+  const after = useMemo(() => (verified ? parseCheckOutput(verified) : null), [verified]);
   const rows = compareTests(before, after);
 
   return (
