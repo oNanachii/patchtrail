@@ -18,5 +18,26 @@
   },
   "live_model_effectiveness": "pending user API configuration",
   "frontend_design": "functional baseline; user-owned Claude design pending",
-  "interview_mastery": "user acceptance pending"
+  "interview_mastery": "user acceptance pending",
+  "browser_functional_check": {
+    "passed": true,
+    "scope": "desktop in-app browser against server via private SSH forwarding",
+    "run_id": "e4d2ed05cdc44da98e3f27d16d11f552",
+    "flow": [
+      "create scripted run",
+      "inspect exact proposal",
+      "approve digest and version",
+      "observe actual OCI verifier success"
+    ],
+    "visual_design_acceptance": "pending Claude design and user review"
+  },
+  "github_actions": {
+    "enabled": false,
+    "reason": "CLI OAuth lacks workflow scope; connected integration workflow creation returned403",
+    "template": "deploy/ci-workflow.yml.example"
+  },
+  "frontend_preview_helper": {
+    "page_assets_and_api_http_200": true,
+    "scope": "loopback static files and loopback backend proxy; no new model calls"
+  }
 }

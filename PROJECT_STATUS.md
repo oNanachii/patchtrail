@@ -13,7 +13,7 @@
 
 ## 当前执行与下一步
 
-1. 真实HTTP三任务及创建/确认重试均通过；浏览器验收进行中，浏览器功能流程也已通过。当前GitHub OAuth缺workflow scope，CI模板暂存deploy/ci-workflow.yml.example，不能称CI通过。
+1. 真实HTTP三任务及创建/确认重试均通过；桌面浏览器创建、diff确认与实际容器结果流程通过。当前GitHub OAuth缺workflow scope，CI模板暂存deploy/ci-workflow.yml.example，不能称CI通过。
 2. 用户将新DeepSeek API Key填入本地.env并确认后，进行有界真实模型验收，保留成功与失败。
 3. 用户按docs/CLAUDE_FRONTEND_PROMPT.txt在Claude Code中设计前端，交回独立复核。
 4. 完成前端、真实模型与用户演示验收后，再配置独立公网HTTPS入口、公开演示及最终简历描述。
@@ -21,3 +21,7 @@
 ## 边界
 
 当前是有限任务的工程项目，不是通用自动修复平台、生产安全认证或独立未知benchmark。实现完成不代表用户已独立掌握面试内容。第二个业务型全栈项目尚未选定，不另建空项目充数量。
+
+GitHub源码已公开：https://github.com/oNanachii/patchtrail 。当前OAuth缺workflow scope，连接器启用workflow也返回403；自动CI未启用，模板已保留。
+
+本地前端预览辅助服务的页面、脚本及真实后端代理均实际200；Claude可以修改本地web文件并通过回环代理复用后端。

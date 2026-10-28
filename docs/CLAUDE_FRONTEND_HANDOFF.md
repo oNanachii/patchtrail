@@ -22,6 +22,8 @@
 
 ## API
 
+修改本地前端并继续使用已验证后端时，可先由用户建立仅回环的SSH转发：`ssh -n -o ClearAllForwardings=no -N -L 127.0.0.1:18816:127.0.0.1:3110 YOUR_SSH_HOST`。然后在项目目录运行`.venv/bin/python scripts/serve_frontend.py --api http://127.0.0.1:18816 --port 8874`，打开`http://127.0.0.1:8874`。此辅助服务只监听本机，不读取或保存令牌；只代理同一回环后端的API。若选择Vite等开发工具，也可配置等价的`/api`代理。转发不可用时应明确说明，不能把离线设计fixture当真实运行。
+
 以`patchtrail/api.py`和运行后的`/api/openapi.json`为准。状态响应中`checkpoint`已过滤内部模型消息；不要改变这一边界。匿名列表只显示公开demo，live详情、事件和报告需要操作令牌。
 
 创建：`POST /api/runs`，JSON为`{task_id,mode}`，提供`Idempotency-Key`。mode为demo或live。确认：`POST /api/runs/{id}/approve`，JSON为`{proposal_digest,expected_version}`。另有取消与明确恢复接口。错误体统一为`{error:{code,message}}`，非2xx不代表fetch自动抛错。
