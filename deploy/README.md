@@ -35,7 +35,7 @@ sudo loginctl enable-linger patchtrail
 
 确认该账户在`/etc/subuid`和`/etc/subgid`各有至少65536个不重叠的从属ID，且`newuidmap`、`newgidmap`可执行。不要复制或覆盖其他账户范围。用户级服务需要cgroup v2与资源控制委派，容器预检必须实际验证资源限制生效。
 
-将审核后的应用发布到独立的`/opt/patchtrail/releases/<release-id>`，在Linux上建立虚拟环境并按`requirements.txt`安装依赖。不要复制macOS的`.venv`。源码release由管理员管理，应用数据存入`/var/lib/patchtrail/data`；密钥文件放在`/var/lib/patchtrail/.config/patchtrail/patchtrail.env`，由服务账户持有、权限0600。home和数据父目录保持0700。
+将审核后的应用发布到独立的`/opt/patchtrail/releases/<release-id>`，在Linux上建立虚拟环境并按`requirements.lock.txt`安装依赖。不要复制macOS的`.venv`。源码release由管理员管理，应用数据存入`/var/lib/patchtrail/data`；密钥文件放在`/var/lib/patchtrail/.config/patchtrail/patchtrail.env`，由服务账户持有、权限0600。home和数据父目录保持0700。
 
 把`patchtrail.env.example`复制到该外部配置位置后由操作者填写DeepSeek新密钥及独立随机管理员令牌。不要将密钥放进命令行、Git、前端配置、任务fixture、运行trace或检查容器。配置示例中的模型应与当次确认的DeepSeek官方接口匹配。
 

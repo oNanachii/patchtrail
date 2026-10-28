@@ -2,6 +2,8 @@
 
 受控仓库排错与补丁验证工作台。选择一个失败任务，查看Agent读取代码和调用工具的过程，确认具体补丁，再由不可修改的测试决定检查结果。
 
+[HTTPS公开演示](https://math.madokanun.top:8444) · [源码](https://github.com/oNanachii/patchtrail) · [部署验收](docs/PUBLIC_DEPLOYMENT_2026-10-28.md)。公开模式运行预置脚本，不调用模型；真实DeepSeek模式及其记录需要操作令牌。
+
 项目面向Agent应用、Python后端和全栈交付实践。v0.1先支持三个公开的小型Python回归任务：库存数量缺口、补货覆盖旧批次日期、标签与历史非原子提交。它们根据已观察到的问题独立编写，是已知回归案例，不是盲评、SWE-bench成绩或通用代码修复能力证明。
 
 ## 一次完整运行
@@ -54,6 +56,17 @@ cp .env.example .env
 
 ## 检查
 
+前端采用React、TypeScript与Vite；构建后的`web/`已提交，部署时只需Python及容器运行时。修改前端或执行完整开发检查时，先安装锁定的Node依赖：
+
+```sh
+cd frontend
+npm ci
+npm test
+npm run typecheck
+npm run build
+cd ..
+```
+
 ```sh
 .venv/bin/python -m unittest discover -s tests -v
 ```
@@ -80,9 +93,10 @@ cp .env.example .env
 - [Claude前端设计交接](docs/CLAUDE_FRONTEND_HANDOFF.md)与[可复制的启动提示](docs/CLAUDE_FRONTEND_PROMPT.txt)
 - [面试讲解与独立验收](docs/INTERVIEW_WALKTHROUGH.md)
 - [服务器部署与回退](deploy/README.md)
+- [公网前端与HTTPS验收](docs/PUBLIC_DEPLOYMENT_2026-10-28.md)
 - OpenAPI契约：启动后的`/api/openapi.json`
 
-前端当前为功能基线，由用户自行在Claude Code中进行设计；后端契约、权限与验证流程应保持。项目使用AI辅助开发，代码实现、用户关键判断及用户独立能力分别说明。
+前端由用户自行在Claude Code中完成设计，再经Codex独立检查和修正。已核对真实后端、补丁确认、容器检查、报告下载及桌面/移动宽度布局；未完成实体手机、屏幕阅读器或用户面试讲解验收。项目使用AI辅助开发，代码实现、用户关键判断及用户独立能力分别说明。
 
 ## 参考与许可
 

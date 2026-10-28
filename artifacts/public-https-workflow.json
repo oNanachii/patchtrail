@@ -1,0 +1,1246 @@
+{
+  "status": "passed",
+  "scope": "actual HTTP and OCI scripted workflow",
+  "model_called": false,
+  "health": {
+    "status": "ok",
+    "version": "0.1.0",
+    "model_configured": true,
+    "runtime_code_hash": "d8ceb23fc0811e21ea763660e89267f16e1892f6ce61b35fe473e804b4e42dd3",
+    "model": "deepseek-flash",
+    "operator_configured": true,
+    "container_available": true,
+    "public_demo": true,
+    "demo_mode": "scripted provider; actual container verifier required",
+    "scope": "curated tasks; single-process worker; no arbitrary commands or uploads"
+  },
+  "results": [
+    {
+      "run": {
+        "id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+        "task_id": "quantity-shortfall",
+        "mode": "demo",
+        "state": "succeeded",
+        "version": 12,
+        "limits": {
+          "max_calls": 8,
+          "max_input_chars": 64000,
+          "max_output_tokens": 2048,
+          "max_seconds": 120,
+          "max_steps": 12
+        },
+        "checkpoint": {
+          "calls": 3,
+          "steps": 3,
+          "usage": {},
+          "elapsed_ms": 1643,
+          "last_tool": "propose_patch",
+          "unconfirmed_model_request": false
+        },
+        "proposal": {
+          "base_workspace_hash": "e2ceea16706f4ce94d0befb7cca2c8b81d027c1f58c547367b713d027304ce3e",
+          "diff": "--- a/src/quantities.py\n+++ b/src/quantities.py\n@@ -18,7 +18,7 @@\n     _validate(stock)\n     result = {}\n     for ingredient, amount in required.items():\n-        missing = amount if ingredient not in stock else 0\n+        missing = max(0, amount - stock.get(ingredient, 0))\n         if missing > 0:\n             result[ingredient] = missing\n     return result\n",
+          "digest": "aed2ed8f752e66ddfbedd2c36dfaf79f31e97dbf26829e878a2420aefd20848a",
+          "explanation": "Curated demonstration patch. Validates this runtime and verifier, not model ability.",
+          "new_sha256": "8e5dce65cfc7f247fea397efa3d70f13dc2e917bfb8b6a2c4b71bff5e1f7e3a1",
+          "old_sha256": "b98e0f4ea7a87bed32e69c879b83a3eacc007b24f33ae96376d018fffeed3b2f",
+          "path": "src/quantities.py",
+          "source_hash": "e2ceea16706f4ce94d0befb7cca2c8b81d027c1f58c547367b713d027304ce3e",
+          "task_id": "quantity-shortfall"
+        },
+        "result": {
+          "duration_ms": 1503,
+          "exit_code": 0,
+          "output": "test_existing_stock_can_still_be_insufficient (tests.test_quantities.ShoppingShortfallTests.test_existing_stock_can_still_be_insufficient) ... ok\ntest_fractional_quantities_and_input_preservation (tests.test_quantities.ShoppingShortfallTests.test_fractional_quantities_and_input_preservation) ... ok\ntest_invalid_quantities_are_rejected (tests.test_quantities.ShoppingShortfallTests.test_invalid_quantities_are_rejected) ... ok\ntest_sufficient_stock_and_zero_requirements_do_not_create_purchases (tests.test_quantities.ShoppingShortfallTests.test_sufficient_stock_and_zero_requirements_do_not_create_purchases) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.001s\n\nOK\n",
+          "passed": true,
+          "runner": "podman",
+          "tests_run": 4,
+          "timed_out": false,
+          "truncated": false
+        },
+        "stop_reason": "verifier_passed",
+        "created_at": "2026-10-28T12:36:06.149533+00:00",
+        "updated_at": "2026-10-28T12:36:10.026971+00:00",
+        "provider_label": "Scripted runtime demonstration · no model call",
+        "configured_model": "scripted",
+        "observed_models": []
+      },
+      "events": [
+        {
+          "id": 240,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "run_created",
+          "payload": {
+            "mode": "demo",
+            "provider": "Scripted runtime demonstration · no model call",
+            "runtime_code_hash": "d8ceb23fc0811e21ea763660e89267f16e1892f6ce61b35fe473e804b4e42dd3",
+            "task_version": "e2ceea16706f4ce94d0befb7cca2c8b81d027c1f58c547367b713d027304ce3e"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:06.158384+00:00"
+        },
+        {
+          "id": 241,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "state_changed",
+          "payload": {
+            "from": "queued",
+            "to": "diagnosing",
+            "version": 1
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:06.162834+00:00"
+        },
+        {
+          "id": 242,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 2
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:06.177334+00:00"
+        },
+        {
+          "id": 243,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "model_requested",
+          "payload": {
+            "call": 1,
+            "provider": "Scripted runtime demonstration · no model call"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:06.180965+00:00"
+        },
+        {
+          "id": 244,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "model_response",
+          "payload": {
+            "call": 1,
+            "content": "",
+            "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "content_truncated": false,
+            "tool_names": [
+              "read_file"
+            ]
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:06.184327+00:00"
+        },
+        {
+          "id": 245,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 3
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:06.187731+00:00"
+        },
+        {
+          "id": 246,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "tool_requested",
+          "payload": {
+            "arguments": {
+              "path": "src/quantities.py"
+            },
+            "model_call": 1,
+            "name": "read_file",
+            "provider_call_id": "call_afe4b43773304c7e9a9f513320e878b1"
+          },
+          "call_id": "1:call_afe4b43773304c7e9a9f513320e878b1",
+          "created_at": "2026-10-28T12:36:06.190848+00:00"
+        },
+        {
+          "id": 247,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "tool_result",
+          "payload": {
+            "model_call": 1,
+            "name": "read_file",
+            "provider_call_id": "call_afe4b43773304c7e9a9f513320e878b1",
+            "result": {
+              "content_sha256": "b98e0f4ea7a87bed32e69c879b83a3eacc007b24f33ae96376d018fffeed3b2f",
+              "end": 24,
+              "path": "src/quantities.py",
+              "start": 1,
+              "text": "1: \"\"\"Shopping quantities use a fixed unit per ingredient (for example grams).\"\"\"\n2: import math\n3: \n4: \n5: def _validate(values):\n6:     for name, quantity in values.items():\n7:         if not isinstance(name, str) or not name.strip():\n8:             raise ValueError(\"ingredient names must be non-empty strings\")\n9:         if isinstance(quantity, bool) or not isinstance(quantity, (int, float)):\n10:             raise ValueError(\"quantity must be numeric\")\n11:         if not math.isfinite(quantity) or quantity < 0:\n12:             raise ValueError(\"quantity must be finite and non-negative\")\n13: \n14: \n15: def shopping_shortfall(required, stock):\n16:     \"\"\"Return strictly positive quantities still required for a meal plan.\"\"\"\n17:     _validate(required)\n18:     _validate(stock)\n19:     result = {}\n20:     for ingredient, amount in required.items():\n21:         missing = amount if ingredient not in stock else 0\n22:         if missing > 0:\n23:             result[ingredient] = missing\n24:     return result",
+              "truncated": false
+            }
+          },
+          "call_id": "1:call_afe4b43773304c7e9a9f513320e878b1",
+          "created_at": "2026-10-28T12:36:06.194446+00:00"
+        },
+        {
+          "id": 248,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 4
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:06.197644+00:00"
+        },
+        {
+          "id": 249,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 5
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:06.201513+00:00"
+        },
+        {
+          "id": 250,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "model_requested",
+          "payload": {
+            "call": 2,
+            "provider": "Scripted runtime demonstration · no model call"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:06.205027+00:00"
+        },
+        {
+          "id": 251,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "model_response",
+          "payload": {
+            "call": 2,
+            "content": "",
+            "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "content_truncated": false,
+            "tool_names": [
+              "run_check"
+            ]
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:06.208741+00:00"
+        },
+        {
+          "id": 252,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 6
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:06.211883+00:00"
+        },
+        {
+          "id": 253,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "tool_requested",
+          "payload": {
+            "arguments": {
+              "check_id": "tests"
+            },
+            "model_call": 2,
+            "name": "run_check",
+            "provider_call_id": "call_4a6151fbc62f419b85d907a48f7e2f1a"
+          },
+          "call_id": "2:call_4a6151fbc62f419b85d907a48f7e2f1a",
+          "created_at": "2026-10-28T12:36:06.215123+00:00"
+        },
+        {
+          "id": 254,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "tool_result",
+          "payload": {
+            "model_call": 2,
+            "name": "run_check",
+            "provider_call_id": "call_4a6151fbc62f419b85d907a48f7e2f1a",
+            "result": {
+              "duration_ms": 1482,
+              "exit_code": 1,
+              "output": "test_existing_stock_can_still_be_insufficient (tests.test_quantities.ShoppingShortfallTests.test_existing_stock_can_still_be_insufficient) ... FAIL\ntest_fractional_quantities_and_input_preservation (tests.test_quantities.ShoppingShortfallTests.test_fractional_quantities_and_input_preservation) ... FAIL\ntest_invalid_quantities_are_rejected (tests.test_quantities.ShoppingShortfallTests.test_invalid_quantities_are_rejected) ... ok\ntest_sufficient_stock_and_zero_requirements_do_not_create_purchases (tests.test_quantities.ShoppingShortfallTests.test_sufficient_stock_and_zero_requirements_do_not_create_purchases) ... ok\n\n======================================================================\nFAIL: test_existing_stock_can_still_be_insufficient (tests.test_quantities.ShoppingShortfallTests.test_existing_stock_can_still_be_insufficient)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/tests/test_quantities.py\", line 7, in test_existing_stock_can_still_be_insufficient\n    self.assertEqual(shopping_shortfall({\"spinach\": 150, \"pasta\": 250}, {\"spinach\": 100}),\nAssertionError: {'pasta': 250} != {'spinach': 50, 'pasta': 250}\n- {'pasta': 250}\n+ {'pasta': 250, 'spinach': 50}\n\n======================================================================\nFAIL: test_fractional_quantities_and_input_preservation (tests.test_quantities.ShoppingShortfallTests.test_fractional_quantities_and_input_preservation)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/tests/test_quantities.py\", line 15, in test_fractional_quantities_and_input_preservation\n    self.assertEqual(shopping_shortfall(required, stock), {\"milk\": 1.25})\nAssertionError: {} != {'milk': 1.25}\n- {}\n+ {'milk': 1.25}\n\n----------------------------------------------------------------------\nRan 4 tests in 0.006s\n\nFAILED (failures=2)\n",
+              "passed": false,
+              "runner": "podman",
+              "tests_run": 4,
+              "timed_out": false,
+              "truncated": false
+            }
+          },
+          "call_id": "2:call_4a6151fbc62f419b85d907a48f7e2f1a",
+          "created_at": "2026-10-28T12:36:07.770666+00:00"
+        },
+        {
+          "id": 255,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 7
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:07.775688+00:00"
+        },
+        {
+          "id": 256,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 8
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:07.780599+00:00"
+        },
+        {
+          "id": 257,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "model_requested",
+          "payload": {
+            "call": 3,
+            "provider": "Scripted runtime demonstration · no model call"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:07.784347+00:00"
+        },
+        {
+          "id": 258,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "model_response",
+          "payload": {
+            "call": 3,
+            "content": "",
+            "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "content_truncated": false,
+            "tool_names": [
+              "propose_patch"
+            ]
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:07.787387+00:00"
+        },
+        {
+          "id": 259,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 9
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:07.790271+00:00"
+        },
+        {
+          "id": 260,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "tool_requested",
+          "payload": {
+            "arguments": {
+              "content": "<931 characters>",
+              "explanation": "Curated demonstration patch. Validates this runtime and verifier, not model ability.",
+              "path": "src/quantities.py"
+            },
+            "model_call": 3,
+            "name": "propose_patch",
+            "provider_call_id": "call_44d2b450d0a44abaa7b58911f58dc5c2"
+          },
+          "call_id": "3:call_44d2b450d0a44abaa7b58911f58dc5c2",
+          "created_at": "2026-10-28T12:36:07.793914+00:00"
+        },
+        {
+          "id": 261,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "tool_result",
+          "payload": {
+            "model_call": 3,
+            "name": "propose_patch",
+            "provider_call_id": "call_44d2b450d0a44abaa7b58911f58dc5c2",
+            "result": {
+              "proposal_digest": "aed2ed8f752e66ddfbedd2c36dfaf79f31e97dbf26829e878a2420aefd20848a",
+              "status": "awaiting_approval"
+            }
+          },
+          "call_id": "3:call_44d2b450d0a44abaa7b58911f58dc5c2",
+          "created_at": "2026-10-28T12:36:07.801836+00:00"
+        },
+        {
+          "id": 262,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "awaiting_approval",
+            "version": 10
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:07.805595+00:00"
+        },
+        {
+          "id": 263,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "state_changed",
+          "payload": {
+            "from": "awaiting_approval",
+            "to": "verifying",
+            "version": 11
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:08.428349+00:00"
+        },
+        {
+          "id": 264,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "verification_started",
+          "payload": {
+            "proposal_digest": "aed2ed8f752e66ddfbedd2c36dfaf79f31e97dbf26829e878a2420aefd20848a",
+            "runner": "OCI container",
+            "workspace_hash": "5092ca5f0dc6d3461482fc975a6ae93eced2f541ebe116a5212d74d63cb2115b"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:08.453260+00:00"
+        },
+        {
+          "id": 265,
+          "run_id": "76ad333e5abc44dcb8fc144c4fff0bb1",
+          "kind": "state_changed",
+          "payload": {
+            "from": "verifying",
+            "to": "succeeded",
+            "version": 12
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:10.027455+00:00"
+        }
+      ],
+      "evidence_boundary": "scripted runtime checks and live model outcomes are separate; no claim of general repair accuracy"
+    },
+    {
+      "run": {
+        "id": "ae234266bfa942e1abc2efb56a7ce71a",
+        "task_id": "batch-expiry",
+        "mode": "demo",
+        "state": "succeeded",
+        "version": 12,
+        "limits": {
+          "max_calls": 8,
+          "max_input_chars": 64000,
+          "max_output_tokens": 2048,
+          "max_seconds": 120,
+          "max_steps": 12
+        },
+        "checkpoint": {
+          "calls": 3,
+          "steps": 3,
+          "usage": {},
+          "elapsed_ms": 1562,
+          "last_tool": "propose_patch",
+          "unconfirmed_model_request": false
+        },
+        "proposal": {
+          "base_workspace_hash": "c38d198064730aaa5af01c4e77ab5cc72890493a06bf85437ff80fb430b1bc67",
+          "diff": "--- a/src/batches.py\n+++ b/src/batches.py\n@@ -16,7 +16,7 @@\n     date.fromisoformat(expires_on)\n     result = [dict(batch) for batch in batches]\n     for batch in result:\n-        if batch[\"name\"].strip().casefold() == name:\n+        if batch[\"name\"].strip().casefold() == name and batch[\"expires_on\"] == expires_on:\n             batch[\"quantity\"] += quantity\n             batch[\"expires_on\"] = expires_on\n             return result\n",
+          "digest": "a42cfc3c3389cda3433ae6c015c515f682d96a8a37b71ee798b54f8fd08d80f7",
+          "explanation": "Curated demonstration patch. Validates this runtime and verifier, not model ability.",
+          "new_sha256": "ee736ba2ae96480d3c031b25bfe75bde50aee700997d86e9fba3d1ae571ce014",
+          "old_sha256": "ffd137f53e2099ef32a151035af885803c8ea8302e7dc998ad0d2747aaa79194",
+          "path": "src/batches.py",
+          "source_hash": "c38d198064730aaa5af01c4e77ab5cc72890493a06bf85437ff80fb430b1bc67",
+          "task_id": "batch-expiry"
+        },
+        "result": {
+          "duration_ms": 2965,
+          "exit_code": 0,
+          "output": "test_identical_expiry_can_merge (tests.test_batches.BatchExpiryTests.test_identical_expiry_can_merge) ... ok\ntest_invalid_new_batch_is_rejected_before_changes (tests.test_batches.BatchExpiryTests.test_invalid_new_batch_is_rejected_before_changes) ... ok\ntest_newer_stock_does_not_extend_old_expiry (tests.test_batches.BatchExpiryTests.test_newer_stock_does_not_extend_old_expiry) ... ok\ntest_unrelated_ingredient_is_preserved (tests.test_batches.BatchExpiryTests.test_unrelated_ingredient_is_preserved) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.002s\n\nOK\n",
+          "passed": true,
+          "runner": "podman",
+          "tests_run": 4,
+          "timed_out": false,
+          "truncated": false
+        },
+        "stop_reason": "verifier_passed",
+        "created_at": "2026-10-28T12:36:11.141029+00:00",
+        "updated_at": "2026-10-28T12:36:16.477888+00:00",
+        "provider_label": "Scripted runtime demonstration · no model call",
+        "configured_model": "scripted",
+        "observed_models": []
+      },
+      "events": [
+        {
+          "id": 266,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "run_created",
+          "payload": {
+            "mode": "demo",
+            "provider": "Scripted runtime demonstration · no model call",
+            "runtime_code_hash": "d8ceb23fc0811e21ea763660e89267f16e1892f6ce61b35fe473e804b4e42dd3",
+            "task_version": "c38d198064730aaa5af01c4e77ab5cc72890493a06bf85437ff80fb430b1bc67"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:11.150487+00:00"
+        },
+        {
+          "id": 267,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "state_changed",
+          "payload": {
+            "from": "queued",
+            "to": "diagnosing",
+            "version": 1
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:11.156325+00:00"
+        },
+        {
+          "id": 268,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 2
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:11.166552+00:00"
+        },
+        {
+          "id": 269,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "model_requested",
+          "payload": {
+            "call": 1,
+            "provider": "Scripted runtime demonstration · no model call"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:11.169505+00:00"
+        },
+        {
+          "id": 270,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "model_response",
+          "payload": {
+            "call": 1,
+            "content": "",
+            "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "content_truncated": false,
+            "tool_names": [
+              "read_file"
+            ]
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:11.172911+00:00"
+        },
+        {
+          "id": 271,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 3
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:11.176173+00:00"
+        },
+        {
+          "id": 272,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "tool_requested",
+          "payload": {
+            "arguments": {
+              "path": "src/batches.py"
+            },
+            "model_call": 1,
+            "name": "read_file",
+            "provider_call_id": "call_8c887cac337e4001852b51751a22af71"
+          },
+          "call_id": "1:call_8c887cac337e4001852b51751a22af71",
+          "created_at": "2026-10-28T12:36:11.179379+00:00"
+        },
+        {
+          "id": 273,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "tool_result",
+          "payload": {
+            "model_call": 1,
+            "name": "read_file",
+            "provider_call_id": "call_8c887cac337e4001852b51751a22af71",
+            "result": {
+              "content_sha256": "ffd137f53e2099ef32a151035af885803c8ea8302e7dc998ad0d2747aaa79194",
+              "end": 24,
+              "path": "src/batches.py",
+              "start": 1,
+              "text": "1: \"\"\"Keep fixed-unit ingredient quantities with their own batch expiry dates.\"\"\"\n2: from datetime import date\n3: \n4: \n5: def _quantity(value):\n6:     if type(value) is not int or value <= 0:\n7:         raise ValueError(\"quantity must be a positive integer\")\n8: \n9: \n10: def add_batch(batches, name, quantity, expires_on):\n11:     \"\"\"Return new inventory without changing the caller's batch records.\"\"\"\n12:     if not isinstance(name, str) or not name.strip():\n13:         raise ValueError(\"name is required\")\n14:     name = name.strip().casefold()\n15:     _quantity(quantity)\n16:     date.fromisoformat(expires_on)\n17:     result = [dict(batch) for batch in batches]\n18:     for batch in result:\n19:         if batch[\"name\"].strip().casefold() == name:\n20:             batch[\"quantity\"] += quantity\n21:             batch[\"expires_on\"] = expires_on\n22:             return result\n23:     result.append({\"name\": name, \"quantity\": quantity, \"expires_on\": expires_on})\n24:     return result",
+              "truncated": false
+            }
+          },
+          "call_id": "1:call_8c887cac337e4001852b51751a22af71",
+          "created_at": "2026-10-28T12:36:11.182781+00:00"
+        },
+        {
+          "id": 274,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 4
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:11.189401+00:00"
+        },
+        {
+          "id": 275,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 5
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:11.192867+00:00"
+        },
+        {
+          "id": 276,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "model_requested",
+          "payload": {
+            "call": 2,
+            "provider": "Scripted runtime demonstration · no model call"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:11.195865+00:00"
+        },
+        {
+          "id": 277,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "model_response",
+          "payload": {
+            "call": 2,
+            "content": "",
+            "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "content_truncated": false,
+            "tool_names": [
+              "run_check"
+            ]
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:11.199554+00:00"
+        },
+        {
+          "id": 278,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 6
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:11.202594+00:00"
+        },
+        {
+          "id": 279,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "tool_requested",
+          "payload": {
+            "arguments": {
+              "check_id": "tests"
+            },
+            "model_call": 2,
+            "name": "run_check",
+            "provider_call_id": "call_f6efe0e8fccb41b599d349bdfa48e328"
+          },
+          "call_id": "2:call_f6efe0e8fccb41b599d349bdfa48e328",
+          "created_at": "2026-10-28T12:36:11.205465+00:00"
+        },
+        {
+          "id": 280,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "tool_result",
+          "payload": {
+            "model_call": 2,
+            "name": "run_check",
+            "provider_call_id": "call_f6efe0e8fccb41b599d349bdfa48e328",
+            "result": {
+              "duration_ms": 1390,
+              "exit_code": 1,
+              "output": "test_identical_expiry_can_merge (tests.test_batches.BatchExpiryTests.test_identical_expiry_can_merge) ... ok\ntest_invalid_new_batch_is_rejected_before_changes (tests.test_batches.BatchExpiryTests.test_invalid_new_batch_is_rejected_before_changes) ... ok\ntest_newer_stock_does_not_extend_old_expiry (tests.test_batches.BatchExpiryTests.test_newer_stock_does_not_extend_old_expiry) ... FAIL\ntest_unrelated_ingredient_is_preserved (tests.test_batches.BatchExpiryTests.test_unrelated_ingredient_is_preserved) ... ok\n\n======================================================================\nFAIL: test_newer_stock_does_not_extend_old_expiry (tests.test_batches.BatchExpiryTests.test_newer_stock_does_not_extend_old_expiry)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/tests/test_batches.py\", line 9, in test_newer_stock_does_not_extend_old_expiry\n    self.assertEqual(actual, [\nAssertionError: Lists differ: [{'na[23 chars]ty': 300, 'expires_on': '2026-11-07'}] != [{'na[23 chars]ty': 200, 'expires_on': '2026-10-29'}, {'name'[53 chars]07'}]\n\nFirst differing element 0:\n{'name': 'spinach', 'quantity': 300, 'expires_on': '2026-11-07'}\n{'name': 'spinach', 'quantity': 200, 'expires_on': '2026-10-29'}\n\nSecond list contains 1 additional elements.\nFirst extra element 1:\n{'name': 'spinach', 'quantity': 100, 'expires_on': '2026-11-07'}\n\n+ [{'expires_on': '2026-10-29', 'name': 'spinach', 'quantity': 200},\n- [{'expires_on': '2026-11-07', 'name': 'spinach', 'quantity': 300}]\n? ^                                                            ^\n\n+  {'expires_on': '2026-11-07', 'name': 'spinach', 'quantity': 100}]\n? ^                                                            ^\n\n\n----------------------------------------------------------------------\nRan 4 tests in 0.005s\n\nFAILED (failures=1)\n",
+              "passed": false,
+              "runner": "podman",
+              "tests_run": 4,
+              "timed_out": false,
+              "truncated": false
+            }
+          },
+          "call_id": "2:call_f6efe0e8fccb41b599d349bdfa48e328",
+          "created_at": "2026-10-28T12:36:12.672548+00:00"
+        },
+        {
+          "id": 281,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 7
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:12.677484+00:00"
+        },
+        {
+          "id": 282,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 8
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:12.683235+00:00"
+        },
+        {
+          "id": 283,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "model_requested",
+          "payload": {
+            "call": 3,
+            "provider": "Scripted runtime demonstration · no model call"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:12.688705+00:00"
+        },
+        {
+          "id": 284,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "model_response",
+          "payload": {
+            "call": 3,
+            "content": "",
+            "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "content_truncated": false,
+            "tool_names": [
+              "propose_patch"
+            ]
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:12.692137+00:00"
+        },
+        {
+          "id": 285,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 9
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:12.695166+00:00"
+        },
+        {
+          "id": 286,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "tool_requested",
+          "payload": {
+            "arguments": {
+              "content": "<938 characters>",
+              "explanation": "Curated demonstration patch. Validates this runtime and verifier, not model ability.",
+              "path": "src/batches.py"
+            },
+            "model_call": 3,
+            "name": "propose_patch",
+            "provider_call_id": "call_3913a85d57dd468a8b9ca2c70b64c650"
+          },
+          "call_id": "3:call_3913a85d57dd468a8b9ca2c70b64c650",
+          "created_at": "2026-10-28T12:36:12.699421+00:00"
+        },
+        {
+          "id": 287,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "tool_result",
+          "payload": {
+            "model_call": 3,
+            "name": "propose_patch",
+            "provider_call_id": "call_3913a85d57dd468a8b9ca2c70b64c650",
+            "result": {
+              "proposal_digest": "a42cfc3c3389cda3433ae6c015c515f682d96a8a37b71ee798b54f8fd08d80f7",
+              "status": "awaiting_approval"
+            }
+          },
+          "call_id": "3:call_3913a85d57dd468a8b9ca2c70b64c650",
+          "created_at": "2026-10-28T12:36:12.713305+00:00"
+        },
+        {
+          "id": 288,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "awaiting_approval",
+            "version": 10
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:12.718048+00:00"
+        },
+        {
+          "id": 289,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "state_changed",
+          "payload": {
+            "from": "awaiting_approval",
+            "to": "verifying",
+            "version": 11
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:13.420814+00:00"
+        },
+        {
+          "id": 290,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "verification_started",
+          "payload": {
+            "proposal_digest": "a42cfc3c3389cda3433ae6c015c515f682d96a8a37b71ee798b54f8fd08d80f7",
+            "runner": "OCI container",
+            "workspace_hash": "dedb29b02397ae4ef001ea578fe4328d760a8cf7b3ee6b61e486e2ec74a388b1"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:13.441231+00:00"
+        },
+        {
+          "id": 291,
+          "run_id": "ae234266bfa942e1abc2efb56a7ce71a",
+          "kind": "state_changed",
+          "payload": {
+            "from": "verifying",
+            "to": "succeeded",
+            "version": 12
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:16.478192+00:00"
+        }
+      ],
+      "evidence_boundary": "scripted runtime checks and live model outcomes are separate; no claim of general repair accuracy"
+    },
+    {
+      "run": {
+        "id": "0acebab61f064ef5bf7c2eff6d1252ee",
+        "task_id": "label-transaction",
+        "mode": "demo",
+        "state": "succeeded",
+        "version": 12,
+        "limits": {
+          "max_calls": 8,
+          "max_input_chars": 64000,
+          "max_output_tokens": 2048,
+          "max_seconds": 120,
+          "max_steps": 12
+        },
+        "checkpoint": {
+          "calls": 3,
+          "steps": 3,
+          "usage": {},
+          "elapsed_ms": 2262,
+          "last_tool": "propose_patch",
+          "unconfirmed_model_request": false
+        },
+        "proposal": {
+          "base_workspace_hash": "ac180cee6134ea3e963510a704f5783262711abfab65beb2b7b73af4aa52fd05",
+          "diff": "--- a/src/labels.py\n+++ b/src/labels.py\n@@ -7,6 +7,7 @@\n         raise ValueError(\"label must be ham or spam\")\n     connection = sqlite3.connect(database_path)\n     try:\n+        connection.execute(\"BEGIN IMMEDIATE\")\n         row = connection.execute(\"SELECT label FROM samples WHERE id = ?\", (sample_id,)).fetchone()\n         if row is None:\n             raise LookupError(\"sample not found\")\n@@ -14,7 +15,6 @@\n         if old_label == label:\n             return {\"changed\": False, \"label\": label}\n         connection.execute(\"UPDATE samples SET label = ? WHERE id = ?\", (label, sample_id))\n-        connection.commit()\n         connection.execute(\n             \"INSERT INTO history(sample_id, old_label, new_label, note) VALUES (?, ?, ?, ?)\",\n             (sample_id, old_label, label, note),\n",
+          "digest": "c45f297ca9923e08dd57640a632a163117a8974e6cc858ec6b63f82d62ac1ab9",
+          "explanation": "Curated demonstration patch. Validates this runtime and verifier, not model ability.",
+          "new_sha256": "5a8624fc95948ce594ffb10c299036c4f9876baee3cbf6cc46d17f5923f27fbb",
+          "old_sha256": "2feac9ba01d2bcb26992086d10742b3ce23ac8c81d6b40f7f020e114814d5bb2",
+          "path": "src/labels.py",
+          "source_hash": "ac180cee6134ea3e963510a704f5783262711abfab65beb2b7b73af4aa52fd05",
+          "task_id": "label-transaction"
+        },
+        "result": {
+          "duration_ms": 1644,
+          "exit_code": 0,
+          "output": "test_history_failure_rolls_back_the_label (tests.test_labels.LabelTransactionTests.test_history_failure_rolls_back_the_label) ... ok\ntest_identical_label_is_a_noop (tests.test_labels.LabelTransactionTests.test_identical_label_is_a_noop) ... ok\ntest_success_persists_label_and_history_together (tests.test_labels.LabelTransactionTests.test_success_persists_label_and_history_together) ... ok\ntest_unknown_sample_is_rejected (tests.test_labels.LabelTransactionTests.test_unknown_sample_is_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.011s\n\nOK\n",
+          "passed": true,
+          "runner": "podman",
+          "tests_run": 4,
+          "timed_out": false,
+          "truncated": false
+        },
+        "stop_reason": "verifier_passed",
+        "created_at": "2026-10-28T12:36:17.640940+00:00",
+        "updated_at": "2026-10-28T12:36:22.232548+00:00",
+        "provider_label": "Scripted runtime demonstration · no model call",
+        "configured_model": "scripted",
+        "observed_models": []
+      },
+      "events": [
+        {
+          "id": 292,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "run_created",
+          "payload": {
+            "mode": "demo",
+            "provider": "Scripted runtime demonstration · no model call",
+            "runtime_code_hash": "d8ceb23fc0811e21ea763660e89267f16e1892f6ce61b35fe473e804b4e42dd3",
+            "task_version": "ac180cee6134ea3e963510a704f5783262711abfab65beb2b7b73af4aa52fd05"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:17.648907+00:00"
+        },
+        {
+          "id": 293,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "state_changed",
+          "payload": {
+            "from": "queued",
+            "to": "diagnosing",
+            "version": 1
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:17.654807+00:00"
+        },
+        {
+          "id": 294,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 2
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:17.665892+00:00"
+        },
+        {
+          "id": 295,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "model_requested",
+          "payload": {
+            "call": 1,
+            "provider": "Scripted runtime demonstration · no model call"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:17.670088+00:00"
+        },
+        {
+          "id": 296,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "model_response",
+          "payload": {
+            "call": 1,
+            "content": "",
+            "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "content_truncated": false,
+            "tool_names": [
+              "read_file"
+            ]
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:18.029079+00:00"
+        },
+        {
+          "id": 297,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 3
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:18.034029+00:00"
+        },
+        {
+          "id": 298,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "tool_requested",
+          "payload": {
+            "arguments": {
+              "path": "src/labels.py"
+            },
+            "model_call": 1,
+            "name": "read_file",
+            "provider_call_id": "call_b40c379311d5487a8ce1d4362a232803"
+          },
+          "call_id": "1:call_b40c379311d5487a8ce1d4362a232803",
+          "created_at": "2026-10-28T12:36:18.039329+00:00"
+        },
+        {
+          "id": 299,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "tool_result",
+          "payload": {
+            "model_call": 1,
+            "name": "read_file",
+            "provider_call_id": "call_b40c379311d5487a8ce1d4362a232803",
+            "result": {
+              "content_sha256": "2feac9ba01d2bcb26992086d10742b3ce23ac8c81d6b40f7f020e114814d5bb2",
+              "end": 28,
+              "path": "src/labels.py",
+              "start": 1,
+              "text": "1: \"\"\"Update a sample label and append its audit history.\"\"\"\n2: import sqlite3\n3: \n4: \n5: def update_label(database_path, sample_id, label, note=\"\"):\n6:     if label not in {\"ham\", \"spam\"}:\n7:         raise ValueError(\"label must be ham or spam\")\n8:     connection = sqlite3.connect(database_path)\n9:     try:\n10:         row = connection.execute(\"SELECT label FROM samples WHERE id = ?\", (sample_id,)).fetchone()\n11:         if row is None:\n12:             raise LookupError(\"sample not found\")\n13:         old_label = row[0]\n14:         if old_label == label:\n15:             return {\"changed\": False, \"label\": label}\n16:         connection.execute(\"UPDATE samples SET label = ? WHERE id = ?\", (label, sample_id))\n17:         connection.commit()\n18:         connection.execute(\n19:             \"INSERT INTO history(sample_id, old_label, new_label, note) VALUES (?, ?, ?, ?)\",\n20:             (sample_id, old_label, label, note),\n21:         )\n22:         connection.commit()\n23:         return {\"changed\": True, \"label\": label}\n24:     except Exception:\n25:         connection.rollback()\n26:         raise\n27:     finally:\n28:         connection.close()",
+              "truncated": false
+            }
+          },
+          "call_id": "1:call_b40c379311d5487a8ce1d4362a232803",
+          "created_at": "2026-10-28T12:36:18.043869+00:00"
+        },
+        {
+          "id": 300,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 4
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:18.049078+00:00"
+        },
+        {
+          "id": 301,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 5
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:18.053144+00:00"
+        },
+        {
+          "id": 302,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "model_requested",
+          "payload": {
+            "call": 2,
+            "provider": "Scripted runtime demonstration · no model call"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:18.056878+00:00"
+        },
+        {
+          "id": 303,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "model_response",
+          "payload": {
+            "call": 2,
+            "content": "",
+            "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "content_truncated": false,
+            "tool_names": [
+              "run_check"
+            ]
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:18.060971+00:00"
+        },
+        {
+          "id": 304,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 6
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:18.064624+00:00"
+        },
+        {
+          "id": 305,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "tool_requested",
+          "payload": {
+            "arguments": {
+              "check_id": "tests"
+            },
+            "model_call": 2,
+            "name": "run_check",
+            "provider_call_id": "call_f7089c727b36433aa36ce8f71874b3c0"
+          },
+          "call_id": "2:call_f7089c727b36433aa36ce8f71874b3c0",
+          "created_at": "2026-10-28T12:36:18.068309+00:00"
+        },
+        {
+          "id": 306,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "tool_result",
+          "payload": {
+            "model_call": 2,
+            "name": "run_check",
+            "provider_call_id": "call_f7089c727b36433aa36ce8f71874b3c0",
+            "result": {
+              "duration_ms": 1739,
+              "exit_code": 1,
+              "output": "test_history_failure_rolls_back_the_label (tests.test_labels.LabelTransactionTests.test_history_failure_rolls_back_the_label) ... FAIL\ntest_identical_label_is_a_noop (tests.test_labels.LabelTransactionTests.test_identical_label_is_a_noop) ... ok\ntest_success_persists_label_and_history_together (tests.test_labels.LabelTransactionTests.test_success_persists_label_and_history_together) ... ok\ntest_unknown_sample_is_rejected (tests.test_labels.LabelTransactionTests.test_unknown_sample_is_rejected) ... ok\n\n======================================================================\nFAIL: test_history_failure_rolls_back_the_label (tests.test_labels.LabelTransactionTests.test_history_failure_rolls_back_the_label)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/tests/test_labels.py\", line 32, in test_history_failure_rolls_back_the_label\n    self.assertEqual(self.state(), (\"ham\", []))\nAssertionError: Tuples differ: ('spam', []) != ('ham', [])\n\nFirst differing element 0:\n'spam'\n'ham'\n\n- ('spam', [])\n?   ^^\n\n+ ('ham', [])\n?   ^\n\n\n----------------------------------------------------------------------\nRan 4 tests in 0.061s\n\nFAILED (failures=1)\n",
+              "passed": false,
+              "runner": "podman",
+              "tests_run": 4,
+              "timed_out": false,
+              "truncated": false
+            }
+          },
+          "call_id": "2:call_f7089c727b36433aa36ce8f71874b3c0",
+          "created_at": "2026-10-28T12:36:19.879789+00:00"
+        },
+        {
+          "id": 307,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 7
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:19.884212+00:00"
+        },
+        {
+          "id": 308,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 8
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:19.889725+00:00"
+        },
+        {
+          "id": 309,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "model_requested",
+          "payload": {
+            "call": 3,
+            "provider": "Scripted runtime demonstration · no model call"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:19.893534+00:00"
+        },
+        {
+          "id": 310,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "model_response",
+          "payload": {
+            "call": 3,
+            "content": "",
+            "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "content_truncated": false,
+            "tool_names": [
+              "propose_patch"
+            ]
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:19.896848+00:00"
+        },
+        {
+          "id": 311,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "diagnosing",
+            "version": 9
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:19.900133+00:00"
+        },
+        {
+          "id": 312,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "tool_requested",
+          "payload": {
+            "arguments": {
+              "content": "<1071 characters>",
+              "explanation": "Curated demonstration patch. Validates this runtime and verifier, not model ability.",
+              "path": "src/labels.py"
+            },
+            "model_call": 3,
+            "name": "propose_patch",
+            "provider_call_id": "call_3c512423fbd64066943df7ceeab3177d"
+          },
+          "call_id": "3:call_3c512423fbd64066943df7ceeab3177d",
+          "created_at": "2026-10-28T12:36:19.905380+00:00"
+        },
+        {
+          "id": 313,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "tool_result",
+          "payload": {
+            "model_call": 3,
+            "name": "propose_patch",
+            "provider_call_id": "call_3c512423fbd64066943df7ceeab3177d",
+            "result": {
+              "proposal_digest": "c45f297ca9923e08dd57640a632a163117a8974e6cc858ec6b63f82d62ac1ab9",
+              "status": "awaiting_approval"
+            }
+          },
+          "call_id": "3:call_3c512423fbd64066943df7ceeab3177d",
+          "created_at": "2026-10-28T12:36:19.913797+00:00"
+        },
+        {
+          "id": 314,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "state_changed",
+          "payload": {
+            "from": "diagnosing",
+            "to": "awaiting_approval",
+            "version": 10
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:19.917269+00:00"
+        },
+        {
+          "id": 315,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "state_changed",
+          "payload": {
+            "from": "awaiting_approval",
+            "to": "verifying",
+            "version": 11
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:20.492062+00:00"
+        },
+        {
+          "id": 316,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "verification_started",
+          "payload": {
+            "proposal_digest": "c45f297ca9923e08dd57640a632a163117a8974e6cc858ec6b63f82d62ac1ab9",
+            "runner": "OCI container",
+            "workspace_hash": "7a58e94341186cc1d6a49a2d470d0e44d889763d99bd9788b65ad2f0cbeccee0"
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:20.516522+00:00"
+        },
+        {
+          "id": 317,
+          "run_id": "0acebab61f064ef5bf7c2eff6d1252ee",
+          "kind": "state_changed",
+          "payload": {
+            "from": "verifying",
+            "to": "succeeded",
+            "version": 12
+          },
+          "call_id": null,
+          "created_at": "2026-10-28T12:36:22.232925+00:00"
+        }
+      ],
+      "evidence_boundary": "scripted runtime checks and live model outcomes are separate; no claim of general repair accuracy"
+    }
+  ]
+}
