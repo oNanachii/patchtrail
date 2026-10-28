@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-28",
+  "unit_and_contract_tests": {
+    "passed": 63,
+    "seconds": 13.542,
+    "scope": "includes explicit fake runner/provider tests; authored fixture development checks; Node VM frontend retry state"
+  },
+  "actual_oci_tasks": {
+    "count": 3,
+    "all_originals_failed_and_curated_fixes_passed": true,
+    "provider": "scripted; no model calls"
+  },
+  "actual_http_tasks": {
+    "count": 3,
+    "all_succeeded": true,
+    "create_and_approval_retries_verified": true,
+    "provider": "scripted; no model calls"
+  },
+  "live_model_effectiveness": "pending user API configuration",
+  "frontend_design": "functional baseline; user-owned Claude design pending",
+  "interview_mastery": "user acceptance pending"
+}

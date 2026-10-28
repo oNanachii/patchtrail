@@ -1,0 +1,91 @@
+{
+  "status": "passed",
+  "scope": "scripted provider through real OCI baseline, approval and fresh verification",
+  "model_effectiveness_evaluated": false,
+  "results": [
+    {
+      "task_id": "quantity-shortfall",
+      "task_source_hash": "e2ceea16706f4ce94d0befb7cca2c8b81d027c1f58c547367b713d027304ce3e",
+      "mode": "scripted demonstration",
+      "model_called": false,
+      "diagnosis_state": "awaiting_approval",
+      "baseline": {
+        "duration_ms": 1535,
+        "exit_code": 1,
+        "output": "test_existing_stock_can_still_be_insufficient (tests.test_quantities.ShoppingShortfallTests.test_existing_stock_can_still_be_insufficient) ... FAIL\ntest_fractional_quantities_and_input_preservation (tests.test_quantities.ShoppingShortfallTests.test_fractional_quantities_and_input_preservation) ... FAIL\ntest_invalid_quantities_are_rejected (tests.test_quantities.ShoppingShortfallTests.test_invalid_quantities_are_rejected) ... ok\ntest_sufficient_stock_and_zero_requirements_do_not_create_purchases (tests.test_quantities.ShoppingShortfallTests.test_sufficient_stock_and_zero_requirements_do_not_create_purchases) ... ok\n\n======================================================================\nFAIL: test_existing_stock_can_still_be_insufficient (tests.test_quantities.ShoppingShortfallTests.test_existing_stock_can_still_be_insufficient)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/tests/test_quantities.py\", line 7, in test_existing_stock_can_still_be_insufficient\n    self.assertEqual(shopping_shortfall({\"spinach\": 150, \"pasta\": 250}, {\"spinach\": 100}),\nAssertionError: {'pasta': 250} != {'spinach': 50, 'pasta': 250}\n- {'pasta': 250}\n+ {'pasta': 250, 'spinach': 50}\n\n======================================================================\nFAIL: test_fractional_quantities_and_input_preservation (tests.test_quantities.ShoppingShortfallTests.test_fractional_quantities_and_input_preservation)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/tests/test_quantities.py\", line 15, in test_fractional_quantities_and_input_preservation\n    self.assertEqual(shopping_shortfall(required, stock), {\"milk\": 1.25})\nAssertionError: {} != {'milk': 1.25}\n- {}\n+ {'milk': 1.25}\n\n----------------------------------------------------------------------\nRan 4 tests in 0.003s\n\nFAILED (failures=2)\n",
+        "passed": false,
+        "runner": "podman",
+        "tests_run": 4,
+        "timed_out": false,
+        "truncated": false
+      },
+      "final_state": "succeeded",
+      "result": {
+        "duration_ms": 1466,
+        "exit_code": 0,
+        "output": "test_existing_stock_can_still_be_insufficient (tests.test_quantities.ShoppingShortfallTests.test_existing_stock_can_still_be_insufficient) ... ok\ntest_fractional_quantities_and_input_preservation (tests.test_quantities.ShoppingShortfallTests.test_fractional_quantities_and_input_preservation) ... ok\ntest_invalid_quantities_are_rejected (tests.test_quantities.ShoppingShortfallTests.test_invalid_quantities_are_rejected) ... ok\ntest_sufficient_stock_and_zero_requirements_do_not_create_purchases (tests.test_quantities.ShoppingShortfallTests.test_sufficient_stock_and_zero_requirements_do_not_create_purchases) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.001s\n\nOK\n",
+        "passed": true,
+        "runner": "podman",
+        "tests_run": 4,
+        "timed_out": false,
+        "truncated": false
+      }
+    },
+    {
+      "task_id": "batch-expiry",
+      "task_source_hash": "c38d198064730aaa5af01c4e77ab5cc72890493a06bf85437ff80fb430b1bc67",
+      "mode": "scripted demonstration",
+      "model_called": false,
+      "diagnosis_state": "awaiting_approval",
+      "baseline": {
+        "duration_ms": 1485,
+        "exit_code": 1,
+        "output": "test_identical_expiry_can_merge (tests.test_batches.BatchExpiryTests.test_identical_expiry_can_merge) ... ok\ntest_invalid_new_batch_is_rejected_before_changes (tests.test_batches.BatchExpiryTests.test_invalid_new_batch_is_rejected_before_changes) ... ok\ntest_newer_stock_does_not_extend_old_expiry (tests.test_batches.BatchExpiryTests.test_newer_stock_does_not_extend_old_expiry) ... FAIL\ntest_unrelated_ingredient_is_preserved (tests.test_batches.BatchExpiryTests.test_unrelated_ingredient_is_preserved) ... ok\n\n======================================================================\nFAIL: test_newer_stock_does_not_extend_old_expiry (tests.test_batches.BatchExpiryTests.test_newer_stock_does_not_extend_old_expiry)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/tests/test_batches.py\", line 9, in test_newer_stock_does_not_extend_old_expiry\n    self.assertEqual(actual, [\nAssertionError: Lists differ: [{'na[23 chars]ty': 300, 'expires_on': '2026-11-07'}] != [{'na[23 chars]ty': 200, 'expires_on': '2026-10-29'}, {'name'[53 chars]07'}]\n\nFirst differing element 0:\n{'name': 'spinach', 'quantity': 300, 'expires_on': '2026-11-07'}\n{'name': 'spinach', 'quantity': 200, 'expires_on': '2026-10-29'}\n\nSecond list contains 1 additional elements.\nFirst extra element 1:\n{'name': 'spinach', 'quantity': 100, 'expires_on': '2026-11-07'}\n\n+ [{'expires_on': '2026-10-29', 'name': 'spinach', 'quantity': 200},\n- [{'expires_on': '2026-11-07', 'name': 'spinach', 'quantity': 300}]\n? ^                                                            ^\n\n+  {'expires_on': '2026-11-07', 'name': 'spinach', 'quantity': 100}]\n? ^                                                            ^\n\n\n----------------------------------------------------------------------\nRan 4 tests in 0.043s\n\nFAILED (failures=1)\n",
+        "passed": false,
+        "runner": "podman",
+        "tests_run": 4,
+        "timed_out": false,
+        "truncated": false
+      },
+      "final_state": "succeeded",
+      "result": {
+        "duration_ms": 1501,
+        "exit_code": 0,
+        "output": "test_identical_expiry_can_merge (tests.test_batches.BatchExpiryTests.test_identical_expiry_can_merge) ... ok\ntest_invalid_new_batch_is_rejected_before_changes (tests.test_batches.BatchExpiryTests.test_invalid_new_batch_is_rejected_before_changes) ... ok\ntest_newer_stock_does_not_extend_old_expiry (tests.test_batches.BatchExpiryTests.test_newer_stock_does_not_extend_old_expiry) ... ok\ntest_unrelated_ingredient_is_preserved (tests.test_batches.BatchExpiryTests.test_unrelated_ingredient_is_preserved) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.051s\n\nOK\n",
+        "passed": true,
+        "runner": "podman",
+        "tests_run": 4,
+        "timed_out": false,
+        "truncated": false
+      }
+    },
+    {
+      "task_id": "label-transaction",
+      "task_source_hash": "ac180cee6134ea3e963510a704f5783262711abfab65beb2b7b73af4aa52fd05",
+      "mode": "scripted demonstration",
+      "model_called": false,
+      "diagnosis_state": "awaiting_approval",
+      "baseline": {
+        "duration_ms": 1911,
+        "exit_code": 1,
+        "output": "test_history_failure_rolls_back_the_label (tests.test_labels.LabelTransactionTests.test_history_failure_rolls_back_the_label) ... FAIL\ntest_identical_label_is_a_noop (tests.test_labels.LabelTransactionTests.test_identical_label_is_a_noop) ... ok\ntest_success_persists_label_and_history_together (tests.test_labels.LabelTransactionTests.test_success_persists_label_and_history_together) ... ok\ntest_unknown_sample_is_rejected (tests.test_labels.LabelTransactionTests.test_unknown_sample_is_rejected) ... ok\n\n======================================================================\nFAIL: test_history_failure_rolls_back_the_label (tests.test_labels.LabelTransactionTests.test_history_failure_rolls_back_the_label)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/workspace/tests/test_labels.py\", line 32, in test_history_failure_rolls_back_the_label\n    self.assertEqual(self.state(), (\"ham\", []))\nAssertionError: Tuples differ: ('spam', []) != ('ham', [])\n\nFirst differing element 0:\n'spam'\n'ham'\n\n- ('spam', [])\n?   ^^\n\n+ ('ham', [])\n?   ^\n\n\n----------------------------------------------------------------------\nRan 4 tests in 0.015s\n\nFAILED (failures=1)\n",
+        "passed": false,
+        "runner": "podman",
+        "tests_run": 4,
+        "timed_out": false,
+        "truncated": false
+      },
+      "final_state": "succeeded",
+      "result": {
+        "duration_ms": 1760,
+        "exit_code": 0,
+        "output": "test_history_failure_rolls_back_the_label (tests.test_labels.LabelTransactionTests.test_history_failure_rolls_back_the_label) ... ok\ntest_identical_label_is_a_noop (tests.test_labels.LabelTransactionTests.test_identical_label_is_a_noop) ... ok\ntest_success_persists_label_and_history_together (tests.test_labels.LabelTransactionTests.test_success_persists_label_and_history_together) ... ok\ntest_unknown_sample_is_rejected (tests.test_labels.LabelTransactionTests.test_unknown_sample_is_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.030s\n\nOK\n",
+        "passed": true,
+        "runner": "podman",
+        "tests_run": 4,
+        "timed_out": false,
+        "truncated": false
+      }
+    }
+  ]
+}

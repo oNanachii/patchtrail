@@ -1,0 +1,31 @@
+[Unit]
+Description=PatchTrail controlled debugging workbench
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/patchtrail/current
+EnvironmentFile=%h/.config/patchtrail/patchtrail.env
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/patchtrail/current/.venv/bin/python -m uvicorn patchtrail.api:create_app --factory --host 127.0.0.1 --port 3110 --workers 1 --no-access-log
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=45
+KillMode=mixed
+Delegate=yes
+UMask=0022
+MemoryHigh=384M
+MemoryMax=512M
+TasksMax=192
+CPUQuota=75%
+
+# This is a USER unit owned by a dedicated rootless-Podman account.
+# Do not add host-service NoNewPrivileges/RestrictNamespaces/PrivateUsers:
+# rootless Podman needs user namespaces and subordinate-ID mapping helpers.
+# Every verifier container must independently drop capabilities, disable
+# networking, set no-new-privileges and enforce CPU/memory/PID limits.
+
+[Install]
+WantedBy=default.target

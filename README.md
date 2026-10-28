@@ -1,0 +1,75 @@
+# PatchTrail
+
+受控仓库排错与补丁验证工作台。选择一个失败任务，查看Agent读取代码和调用工具的过程，确认具体补丁，再由不可修改的测试决定检查结果。
+
+项目面向Agent应用、Python后端和全栈交付实践。v0.1先支持三个公开的小型Python回归任务：库存数量缺口、补货覆盖旧批次日期、标签与历史非原子提交。它们根据已观察到的问题独立编写，是已知回归案例，不是盲评、SWE-bench成绩或通用代码修复能力证明。
+
+## 一次完整运行
+
+1. 选择任务和执行方式。脚本演示不调用模型；DeepSeek模式会进行真实API调用。
+2. 在受限任务副本中读取文件、搜索代码、复现原始测试失败。
+3. 提出单文件补丁，停在等待确认状态。
+4. 操作者确认补丁digest及运行版本。
+5. 从原始任务重建验证副本，应用准确补丁，在无网络、只读挂载、非root的受限容器中检查。
+6. 保存状态、工具事件、diff和实际检查输出；成功状态由程序判定。
+
+```mermaid
+flowchart LR
+  Q[任务排队] --> D[调查与工具调用]
+  D --> A[等待补丁确认]
+  A --> V[新工作区容器检查]
+  V --> S[检查通过或失败]
+  D --> F[预算或运行失败]
+  D --> I[中断后明确恢复]
+```
+
+## 本地启动
+
+Python 3.12或3.13。先进入本项目目录：
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.lock.txt
+cp .env.example .env
+```
+
+在`.env`设置独立操作令牌及`DEEPSEEK_API_KEY`。配置文件由应用启动时读取，保存后需重启；不要覆盖已有配置。默认模型`deepseek-flash`与调用方式依据[DeepSeek官方工具调用文档](https://api-docs.deepseek.com/guides/tool_calls/)核对，模型可通过环境变量调整。
+
+容器运行时需要Docker或兼容的Podman；预先拉取所选镜像，生产配置使用完整digest。运行请求不自动拉镜像。没有容器时可以查看界面和API，创建执行任务会明确返回503，不会转到宿主机执行。
+
+```sh
+.venv/bin/python -m uvicorn patchtrail.api:create_app --factory --host 127.0.0.1 --port 8874 --workers 1 --no-access-log
+```
+
+打开`http://127.0.0.1:8874`。首版只支持单API进程和单执行worker，不要添加多个uvicorn workers。状态与工作区默认保存在被Git忽略的`var/`。
+
+## 执行边界
+
+- 公开演示仅使用内置任务与受信脚本补丁；真实模型运行及其记录需要操作令牌。
+- 不提供任意仓库上传、任意shell或公网代码提交入口。
+- 四个工具：有界读文件、字面搜索、固定检查、补丁提案。文件和工具结果作为数据，不视作用户指令。
+- OCI容器禁网、只读根与工作区、非root、移除capabilities、no-new-privileges，并限制CPU、内存、进程、文件、时间和输出。
+- 基线需确认实际执行了用例；验证需正数用例、退出码0、未超时/截断且测试输出正常结束。它是有限回归判定，不是对抗性防作弊证明。
+- 重启后活动任务标为中断，待确认提案保留；恢复需明确操作。未知模型请求不自动重试，不保证精确一次外部执行。
+
+## 检查
+
+```sh
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+单元与契约检查明确使用假runner/provider，检查状态和协议；fixture开发检查只执行受信自编源代码。实际OCI集成、真实DeepSeek效果、浏览器验收和用户面试讲解分别记录，不能合并成一个“全部通过”。当前结果与待验收项见[项目状态](PROJECT_STATUS.md)。自动CI模板位于`deploy/ci-workflow.yml.example`；启用需要仓库的workflow写入权限，尚未把本地通过当作CI通过。
+
+## 交付材料
+
+- [架构与取舍](docs/ARCHITECTURE.md)
+- [Claude前端设计交接](docs/CLAUDE_FRONTEND_HANDOFF.md)与[可复制的启动提示](docs/CLAUDE_FRONTEND_PROMPT.txt)
+- [面试讲解与独立验收](docs/INTERVIEW_WALKTHROUGH.md)
+- [服务器部署与回退](deploy/README.md)
+- OpenAPI契约：启动后的`/api/openapi.json`
+
+前端当前为功能基线，由用户自行在Claude Code中进行设计；后端契约、权限与验证流程应保持。项目使用AI辅助开发，代码实现、用户关键判断及用户独立能力分别说明。
+
+## 参考与许可
+
+实现参考了[mini-swe-agent](https://github.com/SWE-agent/mini-swe-agent)的简洁控制流、[OpenHands Software Agent SDK](https://github.com/OpenHands/software-agent-sdk)的工作区与事件分离、[Inspect AI](https://github.com/UKGovernmentBEIS/inspect_ai)的任务/评分/日志分层。没有导入这些框架或沿用它们的成绩。源码归属与参考边界见[第三方说明](THIRD_PARTY_NOTICES.md)。本项目使用MIT许可。
