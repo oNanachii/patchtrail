@@ -7,7 +7,8 @@ import { OperatorDialog, TopBar, type Connection } from "./components/TopBar";
 import { ErrorLine, Icon, Spinner } from "./components/ui";
 import { usePoll, useHashRun, useMediaQuery, useNow, useTheme } from "./hooks";
 import { createApi } from "./lib/api.js";
-import { createAuthEpoch, obsoleteAuthError } from "./lib/authEpoch.js";
+import { createAuthEpoch, obsoleteAuthError, verifyOperatorAccess } from "./lib/authEpoch.js";
+import { createCatalogGeneration } from "./lib/importState.js";
 import { pendingStore, submitCreate } from "./lib/createGuard.js";
 import { formatClock } from "./lib/format.js";
 import { describeError, stateLabel, TERMINAL, WORKING } from "./lib/labels.js";
@@ -44,6 +45,7 @@ export function App() {
   const onUnauthorized = useRef<(error: Described, path: string) => void>(() => {});
   const [tokenStatus, setTokenStatus] = useState<TokenStatus>("none");
   const [operatorOpen, setOperatorOpen] = useState(false);
+  const [operatorCheck, setOperatorCheck] = useState<{checking:boolean;error:string|null}>({checking:false,error:null});
 
   const [connection, setConnection] = useState<Connection>({ online: true, lastOk: null, checking: true });
   const request = useMemo(() => {
@@ -75,18 +77,35 @@ export function App() {
   }, 20000, [request]);
 
   const [tasks, setTasks] = useState<Task[] | null>(null);
+  const taskCatalogGeneration = useRef(createCatalogGeneration());
+  const importedTaskId = useRef<string | null>(null);
   const [tasksError, setTasksError] = useState<string | null>(null);
   const refreshTasks = usePoll(async (signal) => {
     const epoch = authEpoch.current.capture();
+    const catalogGeneration = taskCatalogGeneration.current.capture();
     try {
       const data = await request("/api/tasks", { signal });
       authEpoch.current.assertCurrent(epoch);
-      setTasks(data.tasks);
+      if (!taskCatalogGeneration.current.isCurrent(catalogGeneration)) return;
+      const incoming = data.tasks as Task[];
+      const pinned = incoming.find((task) => task.id === importedTaskId.current);
+      setTasks(pinned ? [pinned, ...incoming.filter((task) => task.id !== pinned.id)] : incoming);
       setTasksError(null);
     } catch (error) {
-      if (!isAbort(error)) setTasksError(describe(error).message);
+      if (!isAbort(error) && taskCatalogGeneration.current.isCurrent(catalogGeneration)) setTasksError(describe(error).message);
     }
   }, tasks ? 15000 : 5000, [request, token, Boolean(tasks)]);
+  const importedTask = (task: Task, expectedCredentialEpoch: number) => {
+    if (!tokenRef.current || !authEpoch.current.isCurrent(expectedCredentialEpoch)) return false;
+    taskCatalogGeneration.current.advance();
+    importedTaskId.current = task.id;
+    setTasks((current) => [task, ...(current ?? []).filter((entry) => entry.id !== task.id)]);
+    setTasksError(null);
+    setTokenStatus("accepted");
+    select(null);
+    refreshTasks();
+    return true;
+  };
 
   const [runs, setRuns] = useState<Run[] | null>(null);
   const [runsError, setRunsError] = useState<Described | null>(null);
@@ -98,7 +117,6 @@ export function App() {
       authEpoch.current.assertCurrent(epoch);
       setRuns(data.runs);
       setRunsError(null);
-      if (tokenRef.current && data.runs.some((run: Run) => run.mode === "live")) setTokenStatus("accepted");
     } catch (error: any) {
       if (isAbort(error) || !authEpoch.current.isCurrent(epoch)) return;
       setRunsError(describe(error));
@@ -139,7 +157,6 @@ export function App() {
       authEpoch.current.assertCurrent(epoch);
       if (signal.aborted || cursor.current.id !== id) return;
       cursor.current.after = after;
-      if (run.mode === "live" && tokenRef.current) setTokenStatus("accepted");
       setDetail((prev) => prev.id !== id ? prev : {
         id,
         run,
@@ -263,6 +280,7 @@ export function App() {
   // Clear every cached run on a credential boundary. This also covers private-demo
   // deployments, where demo records require the same operator credential as live.
   const clearRunCaches = (error: Described | null = null) => {
+    importedTaskId.current = null;
     cursor.current = { id: selectedId, after: 0 };
     setDetail({ id: selectedId, run: null, events: [], error });
     setRuns(null);
@@ -270,10 +288,11 @@ export function App() {
     setTasks((current) => current?.filter((task) => !task.private) ?? null);
   };
   const replaceToken = (value: string) => {
-    authEpoch.current.advance();
+    const ticket = authEpoch.current.advance();
     tokenRef.current = value.trim();
     setToken(tokenRef.current);
     setTokenStatus(tokenRef.current ? "unverified" : "none");
+    setOperatorCheck({checking:Boolean(tokenRef.current),error:null});
     clearRunCaches();
     setCreateFailure(null);
     setOperatorOpen(false);
@@ -281,6 +300,23 @@ export function App() {
     refreshRuns();
     refreshDetail();
     refreshTasks();
+    if (tokenRef.current) void verifyOperator(ticket);
+  };
+  const verifyOperator = async (ticket = authEpoch.current.capture()) => {
+    if (!tokenRef.current || !authEpoch.current.isCurrent(ticket)) return;
+    setTokenStatus("unverified");
+    setOperatorCheck({checking:true,error:null});
+    try {
+      await verifyOperatorAccess(request,authEpoch.current,ticket);
+      authEpoch.current.assertCurrent(ticket);
+      if (!tokenRef.current) return;
+      setTokenStatus("accepted");
+      setOperatorCheck({checking:false,error:null});
+    } catch (error) {
+      if (isAbort(error) || !authEpoch.current.isCurrent(ticket)) return;
+      setTokenStatus("unverified");
+      setOperatorCheck({checking:false,error:describe(error).message});
+    }
   };
   onUnauthorized.current = (error, path) => {
     if (tokenRef.current) {
@@ -288,6 +324,7 @@ export function App() {
       tokenRef.current = "";
       setToken("");
       setTokenStatus("rejected");
+      setOperatorCheck({checking:false,error:error.message});
       clearRunCaches(error);
     } else if (health?.public_demo === false) {
       clearRunCaches(error);
@@ -328,7 +365,8 @@ export function App() {
         <aside className="sidebar" aria-label="新建与最近运行">
           <NewRun tasks={tasks} tasksError={tasksError} health={health} online={connection.online} token={token}
             tokenStatus={tokenStatus} pending={pending} busy={creating} failure={createFailure} onStart={start}
-            onOperator={() => setOperatorOpen(true)} />
+            onOperator={() => setOperatorOpen(true)} request={request} credentialEpoch={authEpoch.current.capture()} isCredentialCurrent={(epoch) => authEpoch.current.isCurrent(epoch)} onImported={importedTask}
+            operatorCheck={operatorCheck} onVerifyOperator={() => { void verifyOperator(); }} />
           <RunList runs={runs && detail.run ? runs.map((run) => run.id === detail.run!.id && detail.run!.version > run.version ? detail.run! : run) : runs} error={runsError} tasks={tasks} selectedId={selectedId} onSelect={chooseRun}
             tokenStatus={tokenStatus} publicDemo={health?.public_demo} now={now} onOperator={() => setOperatorOpen(true)} />
         </aside>
@@ -394,7 +432,7 @@ function Overview() {
     <div className="overview">
       <p className="eyebrow">受控任务 · 可核对的证据链</p>
       <h1>从一个失败测试，走到可核对的修复。</h1>
-      <p className="lede">可以直接选择公开演示。自己的 Python 源码目前需要通过后端 CLI 导入，再载入操作令牌选择私有项目；左侧“导入指引（CLI）”提供具体步骤。Agent 读代码、复现失败、提出补丁后停下；你确认后，由新工作区的容器测试决定检查结果。</p>
+      <p className="lede">可以直接选择公开演示，也可以载入操作令牌，点击“导入Python项目”选择自己的源码和测试。上传预览并确认后，选择DeepSeek真实调用；模型提出补丁后停下，等待你审阅，再由新工作区的容器测试决定结果。</p>
       <ol className="flow">
         <li><span className="flow-n">1</span><div><strong>调查</strong><p>有界读文件、字面搜索、固定检查。文件和工具输出只当作数据。</p></div></li>
         <li><span className="flow-n">2</span><div><strong>复现</strong><p>在容器中运行原始测试，确认基线确实失败。</p></div></li>
@@ -406,7 +444,7 @@ function Overview() {
         <ul>
           <li><strong>脚本演示</strong>不调用模型，补丁是预置修复：它证明运行时与验证器可用，不证明模型能力。</li>
           <li><strong>DeepSeek 真实调用</strong>需要操作令牌；模型文本和补丁说明不会被当作结果。</li>
-          <li><strong>自己的代码</strong>由操作者在本地用清单CLI导入源码快照，载入令牌后显示私有任务；网页不接收代码上传或任意命令。</li>
+          <li><strong>自己的代码</strong>操作者可在网页选择文件并预览确认，CLI也保留。源码上传服务器不等于启动模型，真实运行需要另行确认。</li>
           <li>三个任务是根据已观察问题独立编写的公开回归案例，不是盲评或 benchmark 成绩。</li>
           <li>容器不可用时服务返回 503，不会转到宿主机执行。</li>
         </ul>

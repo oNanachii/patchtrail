@@ -5,6 +5,7 @@ Build a controlled repository debugging and patch-verification workbench for Age
 - Preserve the user's existing projects. This is a new independent project.
 - The user personally operates Claude Code. Prepare a frontend handoff; do not launch, log into, or submit work to Claude.
 - No arbitrary public repositories, uploaded code, shell strings, or user-provided commands in v0.1. Only the catalog's task fixtures and check IDs.
+- The user's later request to simplify imports authorizes v0.3 operator-only browser file imports: bounded explicit text files, private preview, manual commit, the existing immutable catalog and fixed test profiles. Anonymous uploads, archives, remote Git URLs, arbitrary commands, uploaded images/models and automatic dependency installation remain outside scope. Import must never start a model run; live execution still needs its separate user confirmation.
 - All runtime checks execute in a container with network disabled and resource limits. If the container runner is unavailable, report that state; never fall back to the host.
 - Model credentials stay on the server and out of workspaces, traces, browser state and Git. Public demo uses a clearly labelled scripted provider; live runs require operator authentication.
 - Model claims cannot mark a run successful. A proposal requires approval against its exact digest and workspace version, followed by actual verifier results.

@@ -34,7 +34,7 @@ export function ServiceStatus({ health, connection }: { health: Health | null; c
 
 const TOKEN_TEXT: Record<TokenStatus, string> = {
   none: "未载入令牌",
-  unverified: "令牌已载入",
+  unverified: "权限待确认",
   accepted: "操作者",
   rejected: "令牌被拒绝",
 };
@@ -107,14 +107,15 @@ export function OperatorDialog({ open, onClose, token, tokenStatus, health, onSa
       }>
       <form id="operator-form" className="stack" onSubmit={(event) => { event.preventDefault(); if (draft.trim()) { onSave(draft.trim()); setDraft(""); } }}>
         <p>live 运行的创建、查看、确认、取消、恢复和报告下载需要操作令牌。公开演示不需要。</p>
+        <p>操作令牌由管理员提供，或在你的本地私有配置 <code>.env</code> 中查找 <code>PATCHTRAIL_ADMIN_TOKEN</code>。这里不填写 <code>DEEPSEEK_API_KEY</code>；模型Key由服务器保管。</p>
         <ul className="plain-list small">
           <li>只保存在这个页面的内存中：不写入 localStorage、sessionStorage、Cookie 或 URL，刷新或关闭页面即清除。</li>
           <li>只通过 <code>Authorization</code> 请求头发送到同源 <code>/api</code>。</li>
-          <li>服务端在 live 操作时校验；公开模式下载入令牌本身不会被单独验证。</li>
+          <li>载入后先通过只读接口确认操作权限，不创建运行或产生模型费用。</li>
         </ul>
         {configured === false && <p className="inline-warn"><Icon name="alert" size={14} />服务端没有配置操作令牌，live 功能当前不可用。</p>}
         {tokenStatus === "rejected" && <p className="inline-warn"><Icon name="alert" size={14} />当前令牌被服务端拒绝（401）。</p>}
-        {token && tokenStatus !== "rejected" && <p className="small muted">本页已载入令牌{tokenStatus === "accepted" ? "，并已被服务端接受" : "（尚未被 live 操作验证）"}。</p>}
+        {token && tokenStatus !== "rejected" && <p className="small muted">本页已载入令牌{tokenStatus === "accepted" ? "，操作权限已验证" : "（操作权限尚未确认，可在导入窗口重试或重新载入）"}。</p>}
         <label className="field">
           <span>令牌</span>
           <input type="password" value={draft} onChange={(event) => setDraft(event.target.value)} autoComplete="off"

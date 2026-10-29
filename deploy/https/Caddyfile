@@ -9,7 +9,7 @@
 		protocols h1 h2
 		timeouts {
 			read_header 10s
-			read_body 10s
+			read_body 30s
 			write 45s
 			idle 30s
 		}
@@ -19,18 +19,34 @@
 
 https://math.madokanun.top:8444 {
 	tls {$PATCHTRAIL_TLS_CERT} {$PATCHTRAIL_TLS_KEY}
-	request_body {
-		max_size 4096
-	}
 	encode zstd gzip
 	header {
 		defer
 		X-Robots-Tag "noindex, nofollow"
 		-Strict-Transport-Security
 	}
-	reverse_proxy 127.0.0.1:3110 {
-		transport http {
-			response_header_timeout 30s
+	@sourcePreview {
+		method POST
+		path /api/imports/preview
+	}
+	handle @sourcePreview {
+		request_body {
+			max_size 4MiB
+		}
+		reverse_proxy 127.0.0.1:3110 {
+			transport http {
+				response_header_timeout 30s
+			}
+		}
+	}
+	handle {
+		request_body {
+			max_size 4096
+		}
+		reverse_proxy 127.0.0.1:3110 {
+			transport http {
+				response_header_timeout 30s
+			}
 		}
 	}
 }

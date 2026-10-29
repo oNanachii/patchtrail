@@ -570,6 +570,26 @@ details.raw .code-block { margin-top: 6px; }
 .import-instructions li { min-width: 0; }
 .import-instructions li > p { margin-top: 8px; }
 .import-instructions .code-block { white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0 10px; }
+.web-import { min-width: 0; }
+.web-import p, .web-import code, .model-help code { overflow-wrap: anywhere; }
+.import-pickers { display: flex; flex-wrap: wrap; gap: 8px; }
+.import-fields { display: grid; gap: 12px; min-width: 0; }
+.import-fields textarea, .import-fields select {
+  width: 100%; min-width: 0; padding: 8px 10px; border: 1px solid var(--line-strong);
+  border-radius: 8px; background: var(--surface-2); color: var(--ink); font: inherit;
+}
+.import-fields textarea { resize: vertical; }
+.import-test-fields { display: grid; gap: 10px; }
+.import-file-list { display: grid; gap: 8px; max-height: 240px; overflow-y: auto; min-width: 0; border: 1px solid var(--line); padding: 10px; border-radius: 8px; }
+.import-file-row { display: grid; gap: 5px; min-width: 0; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.import-file-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.import-file-row label { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; min-width: 0; font-size: 12px; }
+.import-file-row code { min-width: 0; flex: 1 1 150px; }
+.import-preview { border-top: 1px solid var(--line); padding-top: 12px; min-width: 0; }
+.import-success { color: var(--success); margin-top: 8px; }
+.model-help { margin: 10px 0; color: var(--ink-2); }
+.model-help summary { cursor: pointer; }
+.model-help .plain-list { margin: 8px 0; }
 
 /* ---------- Footer ---------- */
 .footer {

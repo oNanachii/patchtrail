@@ -1,4 +1,4 @@
-"""HTTP contract and operator boundary. Run exactly one API process in v0.1."""
+"""HTTP contract and operator boundary. Run exactly one API process."""
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
 import hmac
@@ -20,6 +20,7 @@ from .service import RunService, ServiceError, public_run
 from .storage import RunNotFound, StoreConflict
 from .tasks import list_tasks
 from .workspace import WorkspaceError
+from .web_imports import IMPORT_BODY_LIMIT, WebImportError, WebImportStore
 
 CSP = ("default-src 'self'; script-src 'self'; style-src 'self'; "
        "img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
@@ -42,6 +43,23 @@ class ResumeRun(BaseModel):
     expected_version: int = Field(ge=0, strict=True)
 
 
+class UploadedSource(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    path: str = Field(strict=True, min_length=1, max_length=512)
+    content: str = Field(strict=True, max_length=128 * 1024)
+
+
+class PreviewImport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    manifest: dict = Field(strict=True)
+    files: list[UploadedSource] = Field(min_length=2, max_length=200)
+
+
+class CommitImport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    preview_id: str = Field(strict=True, pattern=r"^upload-[a-f0-9]{64}$")
+
+
 def create_app(service=None):
     load_local_env()
     owned = service is None
@@ -56,6 +74,8 @@ def create_app(service=None):
     app = FastAPI(title="PatchTrail", version=__version__, docs_url=None, redoc_url=None,
                   openapi_url="/api/openapi.json", lifespan=lifespan)
     app.state.service = active
+    imports = WebImportStore(active.settings.data_dir / "web-imports", active.catalog)
+    app.state.web_imports = imports
     recent = defaultdict(deque)
     rate_lock = threading.Lock()
 
@@ -77,29 +97,49 @@ def create_app(service=None):
 
     @app.middleware("http")
     async def headers(request, call_next):
-        # API accepts only small control messages; there is no code-upload endpoint.
+        def finish(response):
+            response.headers["X-Content-Type-Options"] = "nosniff"
+            response.headers["Referrer-Policy"] = "no-referrer"
+            response.headers["Content-Security-Policy"] = CSP
+            if request.url.path.startswith("/api/"):
+                response.headers["Cache-Control"] = "no-store"
+            return response
+
+        is_import = request.url.path.startswith("/api/imports/")
+        # Authenticate imports before consuming a byte of the source request body.
+        if is_import:
+            try:
+                operator(request)
+            except ServiceError as exc:
+                return finish(JSONResponse({"error": {"code": exc.code, "message": str(exc)}}, status_code=exc.status))
+            if request.headers.get("content-encoding", "identity").lower() not in {"", "identity"}:
+                return finish(JSONResponse({"error": {"code": "import_invalid", "message": "Import uses uncompressed JSON text files only"}}, status_code=415))
+            if request.method == "POST" and request.headers.get("content-type", "").split(";", 1)[0].lower() != "application/json":
+                return finish(JSONResponse({"error": {"code": "import_invalid", "message": "Import requests require application/json"}}, status_code=415))
+        limit = IMPORT_BODY_LIMIT if request.method == "POST" and request.url.path == "/api/imports/preview" else 4096
         try:
             length = int(request.headers.get("content-length", "0"))
         except ValueError:
-            return JSONResponse({"error": {"code": "invalid_length", "message": "Invalid request length"}}, status_code=400)
-        if length > 4096:
-            return JSONResponse({"error": {"code": "request_too_large", "message": "Control request is too large"}}, status_code=413)
+            return finish(JSONResponse({"error": {"code": "invalid_length", "message": "Invalid request length"}}, status_code=400))
+        if length < 0:
+            return finish(JSONResponse({"error": {"code": "invalid_length", "message": "Invalid request length"}}, status_code=400))
+        if length > limit:
+            return finish(JSONResponse({"error": {"code": "request_too_large", "message": "Request exceeds this endpoint's body limit"}}, status_code=413))
         if request.method == "POST":
             parts, size = [], 0
             async for part in request.stream():
                 size += len(part)
-                if size > 4096:
-                    return JSONResponse({"error": {"code": "request_too_large", "message": "Control request is too large"}}, status_code=413)
+                if size > limit:
+                    return finish(JSONResponse({"error": {"code": "request_too_large", "message": "Request exceeds this endpoint's body limit"}}, status_code=413))
                 parts.append(part)
             # Starlette's fixed-version _CachedRequest replays this bounded body.
             request._body = b"".join(parts)
         response = await call_next(request)
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["Referrer-Policy"] = "no-referrer"
-        response.headers["Content-Security-Policy"] = CSP
-        if request.url.path.startswith("/api/"):
-            response.headers["Cache-Control"] = "no-store"
-        return response
+        return finish(response)
+
+    @app.exception_handler(WebImportError)
+    async def invalid_web_import(request, exc):
+        return JSONResponse({"error": {"code": exc.code, "message": str(exc)}}, status_code=exc.status)
 
     @app.exception_handler(ServiceError)
     async def service_error(request, exc):
@@ -137,8 +177,11 @@ def create_app(service=None):
                 "runtime_code_hash": runtime_code_hash(),
                 "model": active.settings.model, "operator_configured": bool(active.settings.admin_token),
                 "container_available": active.runner.available(), "public_demo": active.settings.public_demo,
+                "pytest_configured": bool(active.settings.pytest_image),
+                "web_import_available": bool(active.settings.admin_token),
+                "web_import_limits": {"max_files": 200, "max_file_bytes": 128 * 1024, "max_source_bytes": 2 * 1024 * 1024, "max_request_bytes": IMPORT_BODY_LIMIT},
                 "demo_mode": "scripted provider; actual container verifier required",
-                "scope": "public curated demo; private operator-imported snapshots; fixed tests; no web uploads or shell"}
+                "scope": "public curated demo; operator-only bounded source-file previews and private snapshots; fixed tests; no archives, remote Git or shell"}
 
     @app.get("/api/tasks")
     def tasks(request: Request):
@@ -148,7 +191,30 @@ def create_app(service=None):
     @app.get("/api/projects")
     def projects(request: Request):
         operator(request)
-        return {"projects": active.catalog.list_projects(), "import_method": "local manifest CLI; no HTTP upload"}
+        return {"projects": active.catalog.list_projects(), "import_method": "operator-only browser preview/commit or local manifest CLI"}
+
+    def import_call(operation, *args):
+        try:
+            return operation(*args)
+        except WebImportError:
+            raise
+        except (WorkspaceError, OSError, ValueError, TypeError):
+            raise WebImportError("import_unavailable", "Import preview storage is unavailable; inspect it before retrying", 503) from None
+
+    @app.post("/api/imports/preview")
+    def preview_import(body: PreviewImport, request: Request):
+        operator(request)
+        return import_call(imports.preview, body.manifest, [item.model_dump() for item in body.files])
+
+    @app.post("/api/imports/commit")
+    def commit_import(body: CommitImport, request: Request):
+        operator(request)
+        return import_call(imports.commit, body.preview_id)
+
+    @app.get("/api/imports/{preview_id}")
+    def import_status(preview_id: str, request: Request):
+        operator(request)
+        return import_call(imports.get, preview_id)
 
     @app.get("/api/runs")
     def runs(request: Request):

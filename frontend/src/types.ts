@@ -17,6 +17,7 @@ export interface Health {
   model: string;
   operator_configured: boolean;
   container_available: boolean;
+  pytest_configured?: boolean;
   public_demo: boolean;
   demo_mode?: string;
   scope?: string;

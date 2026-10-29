@@ -36,3 +36,17 @@ export function createAuthEpoch() {
     },
   };
 }
+
+/**
+ * A read-only auth check: no run creation, source upload or model request.
+ * @param {import('./api.js').Request} request
+ * @param {ReturnType<typeof createAuthEpoch>} epochs
+ * @param {number} ticket
+ */
+export async function verifyOperatorAccess(request, epochs, ticket) {
+  const response = await epochs.guard(ticket, () => request('/api/projects'));
+  epochs.assertCurrent(ticket);
+  if (!response || !Array.isArray(response.projects)) {
+    throw Object.assign(new Error('操作权限响应未确认，请重新验证。'), { status: 200, code: 'invalid_response' });
+  }
+}
