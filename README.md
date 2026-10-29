@@ -6,6 +6,8 @@
 
 项目面向Agent应用、Python后端和全栈交付实践。v0.3提供仅操作者可用的网页源码导入，保留原CLI。公开模式继续使用三个小型Python回归任务：库存数量缺口、补货覆盖旧批次日期、标签与历史非原子提交。它们是已知自编案例，不是盲评、SWE-bench成绩或通用代码修复能力证明。
 
+首次使用可读[中文项目讲解](docs/PROJECT_EXPLANATION.md)及[8页PDF](output/pdf/PatchTrail_项目讲解_2026-10-29.pdf)，内容包括实际操作、架构与工程取舍、面试表达和本人动手检查。最小导入练习位于[examples](examples/README.md)。
+
 ![公开脚本运行示例 没有模型调用](artifacts/browser/v02/public-demo-desktop.png)
 
 ## 一次完整运行

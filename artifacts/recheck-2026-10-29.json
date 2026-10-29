@@ -1,0 +1,85 @@
+{
+  "status": "passed",
+  "date": "2026-10-29",
+  "version": "0.3.1",
+  "runtime_hash": "4992a135b09167dc3e76eb501186875d28986d64c7331b6f6090e0c2e9d31561",
+  "static_files_matched": 12,
+  "static_file_check": "Passed in first read-only pass before an obsolete expected-live-count assertion was corrected",
+  "unauthenticated_import_projects_and_live_denied": true,
+  "private_tasks_hidden": true,
+  "observed_run_counts": {
+    "demo": 15,
+    "live": 9
+  },
+  "agent_initiated_paid_calls": 0,
+  "agent_initiated_live_runs": 0,
+  "existing_newer_live": {
+    "created_before_this_recheck": true,
+    "state": "succeeded",
+    "tests_run": 5,
+    "runner": "podman",
+    "model_calls": 4
+  },
+  "scope": "Read-only network permission/asset checks; three new scripted OCI runs; independent ASGI review and local tests. Existing newer live result observed separately, original preregistered study unchanged.",
+  "local_checks": {
+    "python": 126,
+    "node": 34,
+    "counts_overlap": true,
+    "typescript": "passed",
+    "build": "passed",
+    "build_assets_unchanged": 12,
+    "source_changes": false
+  },
+  "independent_asgi_review": {
+    "status": "no blocking findings",
+    "model_or_runner_called": false,
+    "unauthorized_body_not_read": true,
+    "idempotent_preview_and_commit": true,
+    "private_reads_and_live_only_restrictions": true,
+    "traversal_hidden_nonascii_paths_and_test_edits_refused": true
+  },
+  "actual_scripted_workflows": [
+    {
+      "task_id": "quantity-shortfall",
+      "state": "succeeded",
+      "runner": "podman",
+      "verified_tests": 4,
+      "model_called": false
+    },
+    {
+      "task_id": "batch-expiry",
+      "state": "succeeded",
+      "runner": "podman",
+      "verified_tests": 4,
+      "model_called": false
+    },
+    {
+      "task_id": "label-transaction",
+      "state": "succeeded",
+      "runner": "podman",
+      "verified_tests": 4,
+      "model_called": false
+    }
+  ],
+  "browser_read": {
+    "latest_public_result_visible": true,
+    "viewport": [
+      1280,
+      720
+    ],
+    "horizontal_overflow": 0,
+    "console_warnings_or_errors": 0,
+    "credential_loaded_this_turn": false
+  },
+  "teaching_guide": {
+    "path": "docs/PROJECT_EXPLANATION.md",
+    "pdf": "output/pdf/PatchTrail_项目讲解_2026-10-29.pdf",
+    "pages": 8,
+    "all_pages_visual_review": "passed",
+    "does_not_credit_independent_learner_mastery": true,
+    "sha256": "fe937bf47347c813f619ccd810c3de7b36613923540131dfc624e4d7358f9f2c",
+    "pdf_text_bounds": "passed",
+    "independent_fact_review": "passed",
+    "teaching_fixture_executed": false
+  }
+}

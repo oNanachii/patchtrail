@@ -1,5 +1,7 @@
 # PatchTrail implementation contract
 
+Historical contract: this document records v0.1 and does not describe the full current feature set. Current additions are specified in [v0.2 scope](V0_2_SCOPE.md) and the [v0.3 web-import contract](WEB_IMPORT_CONTRACT.md); see [project status](../PROJECT_STATUS.md) for current delivery evidence. The original v0.1 contract below is preserved.
+
 v0.1 contract, 2026-10-28. Build independent code referencing mini-swe-agent's small agent/environment interfaces, OpenHands' event/workspace separation, and Inspect's task/verifier separation. Do not import a large framework or copy source by default.
 
 ## Product scope
