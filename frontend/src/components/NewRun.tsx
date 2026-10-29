@@ -45,7 +45,7 @@ export function NewRun({ tasks, tasksError, health, online, token, tokenStatus, 
   const chosenMode: Mode = locked ? pending!.body.mode : task?.private ? "live" : mode;
   const importRequest = bindImportRequest(request,credentialEpoch,isCredentialCurrent);
 
-  const blockers: { text: string; action?: "operator" }[] = [];
+  const blockers: { text: string; action?: "operator" | "verify" }[] = [];
   if (!locked) {
     if (!online) blockers.push({ text: "服务失联，暂时不能创建运行。" });
     else if (health && !health.container_available) blockers.push({ text: "容器运行环境不可用。服务不会转到宿主机执行，所以现在无法创建运行；已有记录仍可查看。" });
@@ -55,7 +55,7 @@ export function NewRun({ tasks, tasksError, health, online, token, tokenStatus, 
       if (!health.operator_configured) blockers.push({ text: "服务端没有配置操作令牌，live 功能不可用。" });
       else if (!token) blockers.push({ text: "live 运行需要操作令牌。", action: "operator" });
       else if (tokenStatus === "rejected") blockers.push({ text: "当前令牌被拒绝，请重新载入。", action: "operator" });
-      else if (tokenStatus !== "accepted") blockers.push({ text: operatorCheck.checking ? "正在确认操作权限，不会调用模型…" : "操作权限尚未确认，请重新验证或载入令牌。", action: "operator" });
+      else if (tokenStatus !== "accepted") blockers.push({ text: operatorCheck.checking ? "正在确认操作权限，不会调用模型…" : "操作权限尚未确认，请重新验证或载入令牌。", action: "verify" });
     }
     if (!health && online) blockers.push({ text: "正在读取服务状态…" });
   }
@@ -149,6 +149,7 @@ export function NewRun({ tasks, tasksError, health, online, token, tokenStatus, 
               <Icon name="info" size={14} />
               <span>{blocker.text}</span>
               {blocker.action === "operator" && <button type="button" className="link-button" onClick={onOperator}>载入令牌</button>}
+              {blocker.action === "verify" && <button type="button" className="link-button" disabled={operatorCheck.checking} onClick={onVerifyOperator}>{operatorCheck.checking ? "正在确认…" : "重新验证操作权限"}</button>}
             </li>
           ))}
         </ul>

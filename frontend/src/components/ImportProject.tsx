@@ -71,7 +71,7 @@ function ImportForm({request,health,onImported,onClose}:Props) {
   return <div className="web-import stack">
     <p>选择文件 → 填写问题 → 上传预览 → 确认导入。完成后会自动选择新私有任务，<strong>不会自动开始模型调用。</strong></p>
     <div className="import-pickers">
-      <button className="button" type="button" disabled={commitLocked} onClick={()=>folderInput.current?.click()}><Icon name="file"/>选择项目文件夹</button>
+      <button className="button" type="button" data-autofocus disabled={commitLocked} onClick={()=>folderInput.current?.click()}><Icon name="file"/>选择项目文件夹</button>
       <button className="button" type="button" disabled={commitLocked} onClick={()=>filesInput.current?.click()}>选择多个文件</button>
       <input ref={folderInput} type="file" multiple hidden aria-label="选择项目文件夹" onChange={(event)=>choose(event.currentTarget.files,true)}/>
       <input ref={filesInput} type="file" multiple hidden aria-label="选择多个文件" onChange={(event)=>choose(event.currentTarget.files,false)}/>
@@ -106,6 +106,6 @@ function ImportForm({request,health,onImported,onClose}:Props) {
       {phase==='unknown'&&<p className="small">编辑已锁定以保留原预览；也可关闭后在私有任务目录核对。</p>}
     </div>}
     {error&&<p className="error-line" role="alert">{error}</p>}
-    <button className="button" data-autofocus onClick={onClose}>关闭导入窗口</button>
+    <button className="button" onClick={onClose}>关闭导入窗口</button>
   </div>;
 }
