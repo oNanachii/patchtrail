@@ -1,0 +1,98 @@
+{
+  "date": "2026-10-29",
+  "source_commit": "23453b1",
+  "version": "0.3.1",
+  "origin": "https://math.madokanun.top:8444",
+  "status": "passed",
+  "authored_upload_only": true,
+  "new_model_calls": 0,
+  "new_runs": 0,
+  "new_code_executions": 0,
+  "http": {
+    "status": "passed",
+    "scope": "actual HTTP; authored files over4KiB; no code/model execution",
+    "origin": "https://math.madokanun.top:8444",
+    "files": 2,
+    "source_bytes": 6181,
+    "preview_retry_same_identity": true,
+    "commit_retry_same_task": true,
+    "anonymous_private_reads_denied": true,
+    "auth_rejected_before_body_sent": true,
+    "other_control_limit4096_preserved": true,
+    "model_called": false,
+    "execution_performed": false
+  },
+  "browser": {
+    "local_design_harness": {
+      "fake_runner": true,
+      "model_key_configured": false,
+      "wrong_token_rejected": true,
+      "actual_multiple_file_chooser": true,
+      "preview_and_commit_select_task": true,
+      "no_runtime_or_model_evidence_claim": true
+    },
+    "public": {
+      "actual_multiple_file_chooser": true,
+      "source_and_test_auto_identified": true,
+      "test_readonly": true,
+      "preview_and_commit_select_task": true,
+      "real_model_fee_dialog_opened_and_cancelled": true,
+      "desktop": {
+        "width": 1280,
+        "height": 720,
+        "page_horizontal_overflow": 0,
+        "dialog_horizontal_overflow": 0
+      },
+      "mobile": {
+        "width": 390,
+        "height": 844,
+        "page_horizontal_overflow": 0,
+        "dialog_horizontal_overflow": 0
+      },
+      "console_warnings_or_errors": 0,
+      "final_initial_scroll_top": {
+        "desktop": 0,
+        "mobile": 0
+      },
+      "file_choices_visible_at_open": true,
+      "credential_cleared_and_private_tasks_hidden": true,
+      "temporary_viewport_reset": true
+    }
+  },
+  "verification": {
+    "python_tests": 126,
+    "node_tests": 34,
+    "counts_overlap": true,
+    "typescript_and_production_build": "passed",
+    "independent_review": "no blocking issue"
+  },
+  "deployment": {
+    "release": "20261029-web-import-02",
+    "other_services_and_proxy_pid_unchanged": true,
+    "caddy_binaries_unchanged": true,
+    "cert_metadata_unchanged": true,
+    "live_runs_before_and_after": 8,
+    "demo_runs_before_and_after": 12
+  },
+  "screenshots": [
+    "browser/web-import/import-desktop.png",
+    "browser/web-import/import-mobile.png",
+    "browser/web-import/preview-desktop.png",
+    "browser/web-import/live-confirmation-cancelled.png"
+  ],
+  "limitations": "Authored import UI/HTTP checks only; no new model effectiveness, OCI execution, physical-device, load or independent-user acceptance.",
+  "functional_acceptance": {
+    "version": "0.3.0",
+    "source_commit": "c37bac0",
+    "http_and_browser_import": "passed",
+    "note": "0.3.1 changes only version, import dialog initial focus and a direct read-only token retry shortcut."
+  },
+  "screenshots_version": {
+    "import-desktop.png": "0.3.1",
+    "import-mobile.png": "0.3.1",
+    "preview-desktop.png": "0.3.0",
+    "live-confirmation-cancelled.png": "0.3.0"
+  },
+  "final_public_assets_receipt": "web-import-final-public-assets.json",
+  "temporary_local_harness_stopped": true
+}
