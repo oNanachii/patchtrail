@@ -1,4 +1,5 @@
 // @ts-check
+import { isSecureCredentialOrigin } from "./sessionState.js";
 /**
  * Same-origin JSON client for the PatchTrail API.
  * Every non-2xx response becomes an ApiError; fetch() alone does not throw for those.
@@ -20,7 +21,7 @@ export class ApiError extends Error {
 }
 
 /**
- * @typedef {{method?: string, body?: unknown, headers?: Record<string, string>, signal?: AbortSignal, responseType?: "json" | "text"}} RequestOptions
+ * @typedef {{method?: string, body?: unknown, headers?: Record<string, string>, signal?: AbortSignal, responseType?: "json" | "text" | "blob"}} RequestOptions
  * @typedef {(path: string, options?: RequestOptions) => Promise<any>} Request
  */
 
@@ -32,6 +33,9 @@ export function createApi({ fetchImpl, getToken }) {
   const doFetch = fetchImpl ?? ((input, init) => fetch(input, init));
   return async function request(path, { method = "GET", body, headers = {}, signal, responseType = "json" } = {}) {
     const token = getToken().trim();
+    if (token && typeof location !== "undefined" && !isSecureCredentialOrigin(location.origin)) {
+      throw new ApiError({status:0,code:"insecure_origin",message:"请通过HTTPS访问后再发送凭据。"});
+    }
     /** @type {Record<string, string>} */
     const finalHeaders = { Accept: "application/json", ...headers };
     if (body !== undefined) finalHeaders["Content-Type"] = "application/json";
@@ -53,6 +57,7 @@ export function createApi({ fetchImpl, getToken }) {
     let data;
     try {
       if (response.ok && responseType === "text") return await response.text();
+      if (response.ok && responseType === "blob") return await response.blob();
       data = await response.json();
     } catch {
       throw new ApiError({

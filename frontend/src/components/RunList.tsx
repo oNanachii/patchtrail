@@ -23,7 +23,7 @@ export function RunList({ runs, error, tasks, selectedId, onSelect, tokenStatus,
       {error && error.status === 401 ? (
         <div className="empty-inline">
           <p>此服务未开放公开演示，查看运行需要操作令牌。</p>
-          <button type="button" className="button" onClick={onOperator}>载入令牌</button>
+          <button type="button" className="button" onClick={onOperator}>连接访问</button>
         </div>
       ) : error && !runs ? (
         <ErrorLine error={error} />
@@ -36,7 +36,7 @@ export function RunList({ runs, error, tasks, selectedId, onSelect, tokenStatus,
         </div>
       ) : (
         <>
-          {publicDemo && !operator && <p className="small muted list-note">匿名访问只列出脚本演示运行；载入令牌后显示 live 运行。</p>}
+          {publicDemo && !operator && <p className="small muted list-note">匿名访问只列出脚本演示运行；连接后显示自己的真实运行。</p>}
           <ol className="runs">
             {runs.map((run) => {
               const created = parseTime(run.created_at);

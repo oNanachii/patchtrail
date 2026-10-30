@@ -110,6 +110,17 @@ class Store:
         finally:
             connection.close()
 
+    @_serialized_operation
+    def count_runs(self, active=False):
+        connection = self._connect()
+        try:
+            query = "SELECT count(*) FROM runs"
+            if active:
+                query += " WHERE state NOT IN ('succeeded','failed','cancelled')"
+            return connection.execute(query).fetchone()[0]
+        finally:
+            connection.close()
+
     def _connect(self):
         connection = sqlite3.connect(self.database, timeout=10, isolation_level=None)
         connection.row_factory = sqlite3.Row
@@ -275,6 +286,21 @@ class Store:
             )]
         finally:
             connection.close()
+
+    @_serialized_operation
+    def revoke_active(self):
+        """Atomically preserve and cancel outstanding runs of a revoked member."""
+        with self._transaction() as connection:
+            rows = connection.execute(
+                "SELECT id,state,version FROM runs WHERE state NOT IN ('succeeded','failed','cancelled')"
+            ).fetchall()
+            for row in rows:
+                version = row["version"] + 1
+                connection.execute("UPDATE runs SET state='cancelled',version=?,stop_reason='invitation_revoked',updated_at=? WHERE id=?",
+                                   (version, _now(), row["id"]))
+                self._insert_event(connection, row["id"], "state_changed", {
+                    "from": row["state"], "to": "cancelled", "version": version, "reason": "invitation_revoked"})
+            return [row["id"] for row in rows]
 
     @_serialized_operation
     def recover_active(self) -> list[str]:

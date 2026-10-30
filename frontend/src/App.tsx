@@ -7,12 +7,13 @@ import { OperatorDialog, TopBar, type Connection } from "./components/TopBar";
 import { ErrorLine, Icon, Spinner } from "./components/ui";
 import { usePoll, useHashRun, useMediaQuery, useNow, useTheme } from "./hooks";
 import { createApi } from "./lib/api.js";
-import { createAuthEpoch, obsoleteAuthError, verifyOperatorAccess } from "./lib/authEpoch.js";
+import { createAuthEpoch, obsoleteAuthError } from "./lib/authEpoch.js";
 import { createCatalogGeneration } from "./lib/importState.js";
-import { pendingStore, submitCreate } from "./lib/createGuard.js";
+import { connectInvitation, isSecureCredentialOrigin, sessionScope, validSession } from "./lib/sessionState.js";
+import { createPendingRegistry, submitCreate } from "./lib/createGuard.js";
 import { formatClock } from "./lib/format.js";
 import { describeError, stateLabel, TERMINAL, WORKING } from "./lib/labels.js";
-import type { Health, Run, RunEvent, Task, TokenStatus } from "./types";
+import type { Health, Run, RunEvent, Task, TokenStatus, SessionInfo } from "./types";
 
 type Described = ReturnType<typeof describeError> & { network?: boolean };
 
@@ -40,6 +41,10 @@ export function App() {
 
   // Operator token: React state only. Never written to storage, URL or cookies.
   const [token, setToken] = useState("");
+  const [session, setSession] = useState<SessionInfo | null>(null);
+  const [sessionNotice, setSessionNotice] = useState("");
+  const loginEpoch = useRef(createAuthEpoch());
+  const anonymousRequest = useMemo(() => createApi({getToken: () => ""}), []);
   const tokenRef = useRef("");
   const authEpoch = useRef(createAuthEpoch());
   const onUnauthorized = useRef<(error: Described, path: string) => void>(() => {});
@@ -192,10 +197,12 @@ export function App() {
 
   const actions: RunActions = useMemo(() => ({
     approve: async (snapshot: ApprovalSnapshot) => {
+      const ticket = authEpoch.current.capture();
       try {
-        applyRun(await request(`/api/runs/${snapshot.runId}/approve`, {
+        const updated = await request(`/api/runs/${snapshot.runId}/approve`, {
           method: "POST", body: { proposal_digest: snapshot.digest, expected_version: snapshot.version },
-        }));
+        });
+        authEpoch.current.assertCurrent(ticket); applyRun(updated);
       } catch (error) {
         throw describe(error);
       } finally {
@@ -204,8 +211,10 @@ export function App() {
       }
     },
     cancel: async (run: Run) => {
+      const ticket = authEpoch.current.capture();
       try {
-        applyRun(await request(`/api/runs/${run.id}/cancel`, { method: "POST" }));
+        const updated = await request(`/api/runs/${run.id}/cancel`, { method: "POST" });
+        authEpoch.current.assertCurrent(ticket); applyRun(updated);
       } catch (error) {
         throw describe(error);
       } finally {
@@ -214,8 +223,10 @@ export function App() {
       }
     },
     resume: async (run: Run, version: number) => {
+      const ticket = authEpoch.current.capture();
       try {
-        applyRun(await request(`/api/runs/${run.id}/resume`, { method: "POST", body: { expected_version: version } }));
+        const updated = await request(`/api/runs/${run.id}/resume`, { method: "POST", body: { expected_version: version } });
+        authEpoch.current.assertCurrent(ticket); applyRun(updated);
       } catch (error) {
         throw describe(error);
       } finally {
@@ -224,9 +235,11 @@ export function App() {
       }
     },
     download: async (run: Run) => {
+      const ticket = authEpoch.current.capture();
       let report;
       try {
         report = await request(`/api/runs/${run.id}/report`);
+        authEpoch.current.assertCurrent(ticket);
       } catch (error) {
         throw describe(error);
       }
@@ -239,9 +252,23 @@ export function App() {
       anchor.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     },
+    downloadFiles: async (run: Run) => {
+      const ticket = authEpoch.current.capture();
+      try {
+        const files = await request(`/api/runs/${run.id}/files.zip`, { responseType: "blob" });
+        authEpoch.current.assertCurrent(ticket);
+        const url = URL.createObjectURL(files);
+        const anchor = document.createElement("a");
+        anchor.href = url; anchor.download = `patchtrail-${run.id}-files.zip`;
+        document.body.append(anchor); anchor.click(); anchor.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      } catch (error) { throw describe(error); }
+    },
     downloadPatch: async (run: Run) => {
+      const ticket = authEpoch.current.capture();
       try {
         const patch = await request(`/api/runs/${run.id}/patch.diff`, { responseType: "text" });
+        authEpoch.current.assertCurrent(ticket);
         const url = URL.createObjectURL(new Blob([patch], { type: "text/x-diff;charset=utf-8" }));
         const anchor = document.createElement("a");
         anchor.href = url;
@@ -253,27 +280,35 @@ export function App() {
   }), [request, applyRun, refreshDetail, refreshRuns]);
 
   // Idempotent creation; see lib/createGuard.js.
-  const store = useMemo(() => pendingStore(sessionStorageOrNull()), []);
-  const [pending, setPending] = useState(store.get());
+  const pendingScope = sessionScope(session);
+  const pendingRegistry = useMemo(() => createPendingRegistry(sessionStorageOrNull()), []);
+  const store = pendingRegistry.forScope(pendingScope);
+  const [pendingRecord, setPendingRecord] = useState({scope: pendingScope, value: store.get()});
+  const pending = pendingRecord.scope === pendingScope && (!token || session) ? pendingRecord.value : null;
+  useEffect(() => { setPendingRecord({scope:pendingScope,value:store.get()}); }, [store,pendingScope]);
   const [creating, setCreating] = useState(false);
   const [createFailure, setCreateFailure] = useState<CreateFailure | null>(null);
-  const start = async (selection: { task_id: string; mode: "demo" | "live" }) => {
-    if (creating) return;
+  const start = async (selection: { task_id: string; mode: "demo" | "live"; preflight_id?: string }) => {
+    if (creating || tokenRef.current && !session) return;
+    const ticket = authEpoch.current.capture();
     setCreating(true);
     setCreateFailure(null);
     try {
       const { run } = await submitCreate({ store, request, selection, newKey });
+      authEpoch.current.assertCurrent(ticket);
       if (run.mode === "live" && tokenRef.current) setTokenStatus("accepted");
       setFocusKey((k) => k + 1);
       select(run.id);
       refreshRuns();
     } catch (error: any) {
-      if (isAbort(error)) return;
+      if (isAbort(error) || !authEpoch.current.isCurrent(ticket)) return;
       setCreateFailure({ ...describe(error), outcome: error?.createOutcome ?? "unknown" });
       if (error?.code === "sandbox_unavailable" || error?.code === "model_not_configured") refreshHealth();
     } finally {
-      setPending(store.get());
-      setCreating(false);
+      if (authEpoch.current.isCurrent(ticket)) {
+        setPendingRecord({scope:pendingScope,value:store.get()});
+        setCreating(false);
+      }
     }
   };
 
@@ -281,18 +316,33 @@ export function App() {
   // deployments, where demo records require the same operator credential as live.
   const clearRunCaches = (error: Described | null = null) => {
     importedTaskId.current = null;
+    taskCatalogGeneration.current.advance();
     cursor.current = { id: selectedId, after: 0 };
     setDetail({ id: selectedId, run: null, events: [], error });
     setRuns(null);
     setRunsError(null);
     setTasks((current) => current?.filter((task) => !task.private) ?? null);
   };
-  const replaceToken = (value: string) => {
+  const discardSession = async (value: string) => {
+    if (!value) return;
+    const isolated = createApi({getToken: () => value});
+    await isolated("/api/session", {method:"DELETE",signal:AbortSignal.timeout(15000)});
+  };
+  const replaceToken = (value: string, identity: SessionInfo | null = null) => {
+    if (value.trim() && !isSecureCredentialOrigin(window.location.origin)) {
+      setSessionNotice("请通过HTTPS访问后再连接凭据。"); return;
+    }
+    loginEpoch.current.advance();
+    const previous = tokenRef.current;
+    if (previous && previous !== value.trim()) void discardSession(previous).catch(() => {});
     const ticket = authEpoch.current.advance();
     tokenRef.current = value.trim();
     setToken(tokenRef.current);
-    setTokenStatus(tokenRef.current ? "unverified" : "none");
-    setOperatorCheck({checking:Boolean(tokenRef.current),error:null});
+    setSession(identity);
+    setTokenStatus(tokenRef.current ? identity ? "accepted" : "unverified" : "none");
+    setOperatorCheck({checking:Boolean(tokenRef.current) && !identity,error:null});
+    setCreating(false);
+    setSessionNotice("");
     clearRunCaches();
     setCreateFailure(null);
     setOperatorOpen(false);
@@ -307,9 +357,11 @@ export function App() {
     setTokenStatus("unverified");
     setOperatorCheck({checking:true,error:null});
     try {
-      await verifyOperatorAccess(request,authEpoch.current,ticket);
+      const identity = await request("/api/session");
+      if (!validSession(identity)) throw new Error("会话身份未确认，请重新连接。");
       authEpoch.current.assertCurrent(ticket);
       if (!tokenRef.current) return;
+      setSession(identity);
       setTokenStatus("accepted");
       setOperatorCheck({checking:false,error:null});
     } catch (error) {
@@ -318,11 +370,49 @@ export function App() {
       setOperatorCheck({checking:false,error:describe(error).message});
     }
   };
+  const connectMember = async (invitation: string, apiKey: string) => {
+    const ticket = loginEpoch.current.advance();
+    const result = await connectInvitation({
+      request:(path,options) => anonymousRequest(path,{...options,signal:AbortSignal.timeout(20000)}),
+      invitation,apiKey,epochs:loginEpoch.current,ticket,discard:discardSession,origin:window.location.origin,
+    });
+    if (!loginEpoch.current.isCurrent(ticket)) { void discardSession(result.session_token).catch(() => {}); throw obsoleteAuthError(); }
+    replaceToken(result.session_token,{role:"member",member_id:result.member_id,expires_at:result.expires_at,model:result.model});
+  };
+  const disconnect = async () => {
+    const previous = tokenRef.current;
+    const previousRole = session?.role;
+    loginEpoch.current.advance();
+    authEpoch.current.advance();
+    tokenRef.current = ""; setToken(""); setSession(null); setTokenStatus("none");
+    setOperatorCheck({checking:false,error:null}); setCreating(false); setCreateFailure(null);
+    clearRunCaches(); select(null); setOperatorOpen(false);
+    setSessionNotice("本页已断开，正在结束服务器会话…");
+    const ticket = authEpoch.current.capture();
+    try {
+      await discardSession(previous);
+      if (authEpoch.current.isCurrent(ticket)) setSessionNotice(previousRole === "operator"
+        ? "本页操作令牌已清除。已启动的操作者运行会继续；需要停止时，请重新连接并取消运行。"
+        : "已退出。服务器不会再为此会话发起新模型请求；已发出的请求仍可能完成并计费。");
+    } catch (error: any) {
+      if (authEpoch.current.isCurrent(ticket)) setSessionNotice(error?.status === 401
+        ? "会话已失效，本页凭据已清除。"
+        : previousRole === "operator" ? "本页操作令牌已清除，已有操作者运行可能继续。请检查连接与运行记录。"
+        : "本页凭据已清除，但服务器退出结果未确认；已有运行仍可能继续到会话到期。请检查连接与运行记录。");
+    }
+  };
+  useEffect(() => {
+    if (!session?.expires_at) return;
+    const timer = window.setTimeout(() => { void disconnect(); }, Math.max(0, session.expires_at * 1000 - Date.now()));
+    return () => window.clearTimeout(timer);
+  }, [session?.expires_at]);
   onUnauthorized.current = (error, path) => {
     if (tokenRef.current) {
       authEpoch.current.advance();
       tokenRef.current = "";
       setToken("");
+      setSession(null);
+      setCreating(false);
       setTokenStatus("rejected");
       setOperatorCheck({checking:false,error:error.message});
       clearRunCaches(error);
@@ -346,7 +436,7 @@ export function App() {
   return (
     <div className="app" data-view={view}>
       <a className="skip-link" href="#run-heading" onClick={(event) => { event.preventDefault(); mainRef.current?.focus(); }}>跳到运行详情</a>
-      <TopBar health={health} connection={connection} tokenStatus={tokenStatus} onOperator={() => setOperatorOpen(true)}
+      <TopBar health={health} connection={connection} tokenStatus={tokenStatus} onOperator={() => setOperatorOpen(true)} session={session}
         theme={theme} onTheme={cycleTheme} />
       {health?.design_harness && (
         <div className="banner banner-harness" role="note">
@@ -361,10 +451,11 @@ export function App() {
           <button type="button" className="button" onClick={() => { refreshHealth(); refreshRuns(); refreshDetail(); }}>立即重试</button>
         </div>
       )}
+      {sessionNotice && <div className="banner" role="status"><Icon name="info" size={16}/><p>{sessionNotice}</p></div>}
       <div className="shell">
         <aside className="sidebar" aria-label="新建与最近运行">
           <NewRun tasks={tasks} tasksError={tasksError} health={health} online={connection.online} token={token}
-            tokenStatus={tokenStatus} pending={pending} busy={creating} failure={createFailure} onStart={start}
+            tokenStatus={tokenStatus} session={session} pending={pending} busy={creating} failure={createFailure} onStart={start}
             onOperator={() => setOperatorOpen(true)} request={request} credentialEpoch={authEpoch.current.capture()} isCredentialCurrent={(epoch) => authEpoch.current.isCurrent(epoch)} onImported={importedTask}
             operatorCheck={operatorCheck} onVerifyOperator={() => { void verifyOperator(); }} />
           <RunList runs={runs && detail.run ? runs.map((run) => run.id === detail.run!.id && detail.run!.version > run.version ? detail.run! : run) : runs} error={runsError} tasks={tasks} selectedId={selectedId} onSelect={chooseRun}
@@ -376,7 +467,7 @@ export function App() {
               <Icon name="back" size={16} />全部运行
             </button>
           )}
-          {!selectedId ? <Overview /> : detail.run ? (
+          {!selectedId ? <Overview onDemo={() => { const demo = tasks?.find((task) => !task.private); if (demo) void start({task_id:demo.id,mode:"demo"}); }} demoDisabled={creating || Boolean(pending) || !tasks?.some((task) => !task.private) || !health?.container_available || health?.public_demo === false} onConnect={() => setOperatorOpen(true)} /> : detail.run ? (
             <RunDetail run={detail.run} events={detail.events} error={detail.error} tasks={tasks} health={health}
               now={now} actions={actions} focusKey={focusKey} />
           ) : detail.error ? (
@@ -392,9 +483,9 @@ export function App() {
         <span>API 契约 <code>/api/openapi.json</code></span>
       </footer>
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-      <OperatorDialog open={operatorOpen} onClose={() => setOperatorOpen(false)} token={token} tokenStatus={tokenStatus} health={health}
-        onSave={replaceToken}
-        onClear={() => replaceToken("")} />
+      <OperatorDialog open={operatorOpen} onClose={() => { loginEpoch.current.advance(); setOperatorOpen(false); }} token={token} tokenStatus={tokenStatus} health={health}
+        session={session} onConnect={connectMember} onSave={replaceToken}
+        onClear={() => { void disconnect(); }} />
     </div>
   );
 }
@@ -404,9 +495,9 @@ function DetailError({ error, id, onOperator, onRetry }: { error: Described; id:
     return (
       <div className="detail-state">
         <Icon name="lock" size={28} />
-        <h2>这次运行需要操作令牌</h2>
-        <p>live 运行的详情、事件和报告只对操作者开放。令牌只保存在本页内存中。</p>
-        <button type="button" className="button button-primary" onClick={onOperator}>载入令牌</button>
+        <h2>请连接后查看这次运行</h2>
+        <p>真实运行的详情、事件和报告只属于创建它的成员或原操作者。会话凭据只保存在本页内存。</p>
+        <button type="button" className="button button-primary" onClick={onOperator}>连接访问</button>
       </div>
     );
   }
@@ -427,26 +518,29 @@ function DetailError({ error, id, onOperator, onRetry }: { error: Described; id:
   );
 }
 
-function Overview() {
+function Overview({onDemo,demoDisabled,onConnect}: {onDemo:()=>void;demoDisabled:boolean;onConnect:()=>void}) {
   return (
     <div className="overview">
-      <p className="eyebrow">受控任务 · 可核对的证据链</p>
-      <h1>从一个失败测试，走到可核对的修复。</h1>
-      <p className="lede">可以直接选择公开演示，也可以载入操作令牌，点击“导入Python项目”选择自己的源码和测试。上传预览并确认后，选择DeepSeek真实调用；模型提出补丁后停下，等待你审阅，再由新工作区的容器测试决定结果。</p>
+      <p className="eyebrow">小型 Python 项目 · 自带 DeepSeek Key</p>
+      <h1>把失败测试，变成经过验证的修复文件。</h1>
+      <p className="lede">上传源码、测试和问题描述，先免费检查能否复现，再让模型提出修复。你审阅后运行固定测试，通过即可下载改好的文件。</p>
+      <div className="overview-actions">
+        <button type="button" className="button button-primary" onClick={onDemo} disabled={demoDisabled}><Icon name="play" size={16}/>一键体验脚本演示</button>
+        <button type="button" className="button" onClick={onConnect}><Icon name="lock" size={16}/>连接我的 Key</button>
+      </div>
+      <p className="small muted">公开演示使用预置动作与修复，不调用模型；测试仍由容器执行。</p>
       <ol className="flow">
-        <li><span className="flow-n">1</span><div><strong>调查</strong><p>有界读文件、字面搜索、固定检查。文件和工具输出只当作数据。</p></div></li>
-        <li><span className="flow-n">2</span><div><strong>复现</strong><p>在容器中运行原始测试，确认基线确实失败。</p></div></li>
-        <li className="is-gate"><span className="flow-n"><Icon name="gate" size={14} /></span><div><strong>人工确认</strong><p>补丁停在这里。确认绑定 proposal_digest 与 expected_version，而不是只按运行 ID。</p></div></li>
-        <li><span className="flow-n">4</span><div><strong>独立验证</strong><p>从不可变任务重建工作区，应用这份补丁，运行不可修改的测试。</p></div></li>
+        <li><span className="flow-n">1</span><div><strong>准备问题，先做预检</strong><p>选择源码与测试，填写期望行为。预检只运行固定测试，缺依赖或没有失败测试时不会调用模型。</p></div></li>
+        <li><span className="flow-n">2</span><div><strong>确认调用，审阅修改</strong><p>使用你的 DeepSeek Key；只在单独确认后发送任务代码。模型提出补丁后暂停，等待你审阅。</p></div></li>
+        <li><span className="flow-n">3</span><div><strong>验证通过，下载文件</strong><p>在新副本中验证准确的补丁。通过后下载修复文件，按原目录应用到对应版本。</p></div></li>
       </ol>
       <div className="boundaries">
-        <h2>证据边界</h2>
+        <h2>适合什么任务</h2>
+        <p>带有可复现失败测试的小型 Python 项目，使用标准库或固定 pytest 环境。最多200个文本文件、2 MiB、3个可修改源码文件；不自动安装依赖或拉取远程仓库。</p>
         <ul>
-          <li><strong>脚本演示</strong>不调用模型，补丁是预置修复：它证明运行时与验证器可用，不证明模型能力。</li>
-          <li><strong>DeepSeek 真实调用</strong>需要操作令牌；模型文本和补丁说明不会被当作结果。</li>
-          <li><strong>自己的代码</strong>操作者可在网页选择文件并预览确认，CLI也保留。源码上传服务器不等于启动模型，真实运行需要另行确认。</li>
-          <li>三个任务是根据已观察问题独立编写的公开回归案例，不是盲评或 benchmark 成绩。</li>
-          <li>容器不可用时服务返回 503，不会转到宿主机执行。</li>
+          <li>邀请制成员独立保存项目与记录；平台不收费，真实调用费用由你的模型服务账户承担。</li>
+          <li>连接、导入和预检不调用模型。退出或过期后停止新模型请求，已发出的请求仍可能完成并计费。</li>
+          <li>结果只覆盖选定的固定测试；脚本演示、真实模型效果和人工验收分别记录。</li>
         </ul>
       </div>
     </div>

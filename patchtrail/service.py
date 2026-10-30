@@ -1,7 +1,7 @@
 """One bounded agent, explicit approval, and verifier-owned completion states."""
-from concurrent.futures import ThreadPoolExecutor
 import copy
 import hashlib
+from functools import wraps
 import json
 import math
 from pathlib import Path
@@ -10,6 +10,8 @@ import time
 import uuid
 
 from .config import Settings, runtime_code_hash
+from .resources import ResourcePool
+from .preflight import baseline, binding
 from .providers import DeepSeekProvider, ProviderError, ScriptedProvider, initial_messages
 from .projects import ProjectCatalog
 from .sandbox import DockerRunner, SandboxUnavailable
@@ -53,8 +55,16 @@ def public_run(row):
     return result
 
 
+def _resource_serialized(operation):
+    @wraps(operation)
+    def call(self, *args, **kwargs):
+        with self.pool.lock:
+            return operation(self, *args, **kwargs)
+    return call
+
+
 class RunService:
-    def __init__(self, settings: Settings, runner=None, provider=None, dispatch=True):
+    def __init__(self, settings: Settings, runner=None, provider=None, dispatch=True, *, pool=None, member=False, credential_provider=None):
         self.settings = settings
         self.settings.data_dir = settings.data_dir.resolve()
         self.store = Store(settings.data_dir / "runs.sqlite3")
@@ -63,19 +73,33 @@ class RunService:
         self.provider = provider or DeepSeekProvider(settings)
         self.demo_provider = ScriptedProvider()
         self.dispatch = dispatch
-        self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="patchtrail")
-        self.lock = threading.Lock()
+        self.pool = pool or ResourcePool()
+        self.owns_pool = pool is None
+        self.pool.services.append(self)
+        self.member = member
+        self.credential_provider = credential_provider
+        self.run_credentials = {}
+        self.preflights = {}
+        self.run_preflights = {}
+        self.lock = self.pool.lock
         self.submitted = set()
         self.closed = False
         self.store.recover_active()
-        if dispatch:
+        if member:
+            # A process restart destroys all BYOK sessions; queued work must not
+            # later acquire an unrelated login's credentials implicitly.
+            for row in self.store.list_runs(100):
+                if row["state"] == "queued":
+                    self._fail(row["id"], "session_required", "Server restarted before dispatch; sign in and create a new run")
+        if dispatch and not member:
             for row in self.store.list_runs(100):
                 if row["state"] == "queued":
                     self._submit(row["id"], self.diagnose)
 
     def close(self):
         self.closed = True
-        self.executor.shutdown(wait=False, cancel_futures=True)
+        if self.owns_pool:
+            self.pool.close()
 
     def resolve_task(self, task_id):
         try:
@@ -114,9 +138,36 @@ class RunService:
             finally:
                 with self.lock:
                     self.submitted.discard(key)
-        self.executor.submit(execute)
+        try:
+            self.pool.submit(execute)
+        except BaseException:
+            with self.lock:
+                self.submitted.discard(key)
+            raise
 
-    def create(self, task_id, mode, request_key):
+    def preflight(self, task_id):
+        try:
+            task = self.resolve_task(task_id)
+        except KeyError:
+            raise ServiceError("unknown_task", "Unknown task", 404) from None
+        result = self.pool.submit(lambda: baseline(self, task)).result()
+        with self.lock:
+            self.preflights = {key: value for key, value in self.preflights.items()
+                               if value["expires_at"] > time.time()}
+            if len(self.preflights) >= 32:
+                self.preflights.pop(next(iter(self.preflights)))
+            self.preflights[result["preflight_id"]] = result
+        return {key: value for key, value in result.items() if key != "binding"}
+
+    def _preflight_receipt(self, task, preflight_id):
+        result = self.preflights.get(preflight_id)
+        if (not result or result["task_id"] != task.id or not result["eligible"]
+                or result["expires_at"] <= time.time() or result["binding"] != binding(self, task)):
+            raise ServiceError("preflight_required", "Run a fresh failing baseline check before confirming a model call", 409)
+        return copy.deepcopy(result)
+
+    @_resource_serialized
+    def create(self, task_id, mode, request_key, preflight_id=None, credential=None):
         try:
             task = self.resolve_task(task_id)
         except KeyError:
@@ -130,7 +181,10 @@ class RunService:
             if (previous["task_id"], previous["mode"], previous["limits"]) != (task_id, mode, self.settings.limits):
                 raise StoreConflict("Idempotency key was already used for a different request")
             return previous
-        if mode == "live" and not self.settings.api_key:
+        receipt = None
+        if mode == "live" and (self.member or preflight_id):
+            receipt = self._preflight_receipt(task, preflight_id)
+        if mode == "live" and not self.member and not self.settings.api_key:
             raise ServiceError("model_not_configured", "Configure DEEPSEEK_API_KEY locally before a live run", 503)
         try:
             runner = self._runner_for(task)
@@ -145,10 +199,15 @@ class RunService:
                 if (previous["task_id"], previous["mode"], previous["limits"]) != (task_id, mode, self.settings.limits):
                     raise StoreConflict("Idempotency key was already used for a different request")
                 return previous
-            active = [r for r in self.store.list_runs(100) if r["state"] not in TERMINAL]
-            if len(active) >= 6 or len(self.submitted) >= 6:
+            if self.member and (self.store.count_runs() >= 20 or self.store.count_runs(active=True) >= 2):
+                raise ServiceError("member_quota", "Member run quota reached (2 active, 20 total)", 429)
+            if self.pool.active_runs() >= 6 or self.pool.pending >= self.pool.capacity:
                 raise ServiceError("queue_full", "The small preview queue is full", 429)
             row = self.store.create_run(task_id, mode, request_key, self.settings.limits)
+            if credential:
+                self.run_credentials[row["id"]] = credential
+            if receipt:
+                self.run_preflights[row["id"]] = receipt
         if row["created"]:
             self.store.append_event(row["id"], "run_created", {"mode": mode,
                 "provider": self.demo_provider.label if mode == "demo" else self.settings.model,
@@ -190,6 +249,23 @@ class RunService:
                 self.store.append_event(run_id, "explicit_resume_after_unknown_model_outcome",
                                         {"previous_request": cp["pending_model_request"]})
                 cp.pop("pending_model_request", None)
+            if row["mode"] == "live":
+                receipt = self.run_preflights.pop(run_id, None)
+                if receipt and (receipt["expires_at"] <= time.time() or receipt["binding"] != binding(self, task)):
+                    raise ServiceError("preflight_required", "Baseline receipt expired or source changed", 409)
+                # Legacy direct-live requests and explicit resume still reproduce
+                # the baseline before dispatching even their first model request.
+                if not receipt:
+                    receipt = baseline(self, task)
+                if receipt["binding"] != binding(self, task) or tree_hash(workspace) != receipt["source_hash"]:
+                    raise ServiceError("preflight_required", "Source changed after the baseline check", 409)
+                self.store.append_event(run_id, "baseline_checked", {k: v for k, v in receipt.items() if k != "binding"})
+                if not receipt["eligible"]:
+                    self._fail(run_id, "baseline_passed" if receipt["status"] == "already_passed" else "baseline_" + receipt["status"], "Baseline is not a complete failing test run; no model request sent")
+                    return
+                cp["baseline_check"] = receipt["check"]
+                cp["messages"].append({"role": "user", "content": "Application baseline check: " + json.dumps(receipt["check"])})
+                self._checkpoint(run_id, cp)
             provider = self.demo_provider if row["mode"] == "demo" else self.provider
             while not self.closed:
                 if self.store.get_run(run_id)["state"] != "diagnosing":
@@ -202,6 +278,8 @@ class RunService:
                 if len(json.dumps(cp["messages"], ensure_ascii=False)) > self.settings.max_input_chars:
                     self._fail(run_id, "context_budget", "The input context limit was reached; no silent truncation")
                     return
+                if row["mode"] == "live" and self.member:
+                    provider = self.credential_provider(self.run_credentials.get(run_id))
                 cp["calls"] += 1
                 cp["pending_model_request"] = uuid.uuid4().hex
                 cp["elapsed_ms"] = elapsed
@@ -297,8 +375,8 @@ class RunService:
             self._fail(run_id, "time_budget", "The execution time budget expired; no proposal was accepted")
         except CheckUnconfirmed:
             self._fail(run_id, "baseline_unconfirmed", "No complete baseline test run was confirmed; inspect the container check event")
-        except ServiceError:
-            self._fail(run_id, "runtime_error", "The imported project snapshot could not be validated")
+        except ServiceError as exc:
+            self._fail(run_id, exc.code, str(exc))
         except ProviderError as exc:
             if not exc.uncertain:
                 cp.pop("pending_model_request", None)
@@ -323,6 +401,8 @@ class RunService:
         if name == "run_check":
             if args != {"check_id": "tests"}:
                 raise ValueError("Only the configured tests check is allowed")
+            if cp.get("baseline_check") and self.store.get_run(run_id)["mode"] == "live":
+                return cp["baseline_check"], None
             runner = self._runner_for(task, remaining)
             outcome = runner.run(workspace, task.check_command, run_id)
             check = outcome.to_dict()
@@ -344,6 +424,7 @@ class RunService:
         proposal["explanation"] = args["explanation"]  # informational, not an executable/digest field
         return {"proposal_digest": proposal["digest"], "status": "awaiting_approval"}, proposal
 
+    @_resource_serialized
     def approve(self, run_id, digest, expected_version):
         row = self.store.get_run(run_id)
         approval = row["checkpoint"].get("approval") or {}
@@ -354,6 +435,8 @@ class RunService:
         workspace = self.settings.data_dir / "workspaces" / run_id
         if tree_hash(workspace) != row["proposal"]["base_workspace_hash"]:
             raise StoreConflict("Workspace changed after the proposal; approval refused")
+        if self.dispatch and self.pool.pending >= self.pool.capacity:
+            raise ServiceError("queue_full", "The shared execution queue is full", 429)
         checkpoint = copy.deepcopy(row["checkpoint"])
         checkpoint["approval"] = {"digest": digest, "from_version": expected_version}
         row = self.store.transition(run_id, {"awaiting_approval"}, "verifying",
@@ -392,8 +475,13 @@ class RunService:
         row = self.store.get_run(run_id)
         return self.store.transition(run_id, {row["state"]}, "cancelled", {"stop_reason": "operator_cancelled"}, row["version"])
 
-    def resume(self, run_id, expected_version):
+    @_resource_serialized
+    def resume(self, run_id, expected_version, credential=None):
         row = self.store.get_run(run_id)
+        if self.dispatch and self.pool.pending >= self.pool.capacity:
+            raise ServiceError("queue_full", "The shared execution queue is full", 429)
+        if credential:
+            self.run_credentials[run_id] = credential
         state = "verifying" if row["proposal"] else "queued"
         row = self.store.transition(run_id, {"interrupted"}, state, {"stop_reason": None}, expected_version)
         self._submit(run_id, self.verify if state == "verifying" else self.diagnose)

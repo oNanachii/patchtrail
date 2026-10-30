@@ -1,5 +1,7 @@
 """Private project HTTP/orchestration boundaries with explicit no-execution fakes."""
 import json
+import io
+import zipfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
@@ -100,8 +102,18 @@ class PrivateProjectTests(unittest.TestCase):
         final = self.client.get("/api/runs/" + rid + "/report", headers=self.auth).json()
         self.assertEqual(final["run"]["state"], "succeeded")
         self.assertEqual(final["run"]["result"]["runner"], "fake-no-execution")
+        download = self.client.get("/api/runs/" + rid + "/files.zip", headers=self.auth)
+        self.assertEqual(download.status_code, 200)
+        with zipfile.ZipFile(io.BytesIO(download.content)) as archive:
+            self.assertEqual(archive.read("a.py"), b"VALUE = 2\n")
+            self.assertEqual(archive.read("b.py"), b"VALUE = 3\n")
+            manifest = json.loads(archive.read("patchtrail-manifest.json"))
+            self.assertEqual(manifest["proposal_digest"], detail["proposal"]["digest"])
+            self.assertEqual({entry["path"] for entry in manifest["files"]}, {"a.py", "b.py"})
+            self.assertFalse(any(name.startswith("tests/") for name in archive.namelist()))
 
-    def test_already_passing_baseline_stops_before_a_patch_or_second_model_call(self):
+
+    def test_already_passing_baseline_stops_before_any_model_call(self):
         class PassingRunner(NoExecutionRunner):
             def run(self, *args):
                 return CheckResult(0, "Ran 2 tests in 0.001s\n\nOK\n", 1, False, False, "fake-no-execution")
@@ -112,7 +124,7 @@ class PrivateProjectTests(unittest.TestCase):
         self.assertEqual(final["stop_reason"], "baseline_passed")
         self.assertIsNone(final["proposal"])
         calls = [event for event in self.service.store.events(row["id"]) if event["kind"] == "model_requested"]
-        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(calls), 0)
 
 
 if __name__ == "__main__":

@@ -115,7 +115,7 @@ class LiveEvidenceTests(unittest.TestCase):
 
         service, row = self.run_diagnosis(TextProvider(), "text-only-live-evidence")
         self.assertEqual((row["state"], row["stop_reason"]), ("failed", "no_patch_proposal"))
-        self.assertEqual(self.runner.calls, [])
+        self.assertEqual(len(self.runner.calls), 1)  # Fixed baseline runs before the model.
         responses = [event["payload"] for event in service.store.events(row["id"])
                      if event["kind"] == "model_response"]
         self.assertEqual(len(responses), 1)

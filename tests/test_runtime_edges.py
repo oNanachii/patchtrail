@@ -115,7 +115,7 @@ class RuntimeEdgeTests(unittest.TestCase):
         final = service.store.get_run(row["id"])
         self.assertEqual((final["state"], final["stop_reason"]), ("failed", "time_budget"))
         self.assertIsNone(final["proposal"])
-        self.assertEqual(runner.calls, [])
+        self.assertEqual(len(runner.calls), 1)  # Baseline ran before the slow model response.
         self.assertFalse(any(event["kind"] == "state_changed"
                              and event["payload"].get("to") == "awaiting_approval"
                              for event in service.store.events(row["id"])))

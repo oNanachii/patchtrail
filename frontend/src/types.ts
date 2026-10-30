@@ -18,6 +18,10 @@ export interface Health {
   operator_configured: boolean;
   container_available: boolean;
   pytest_configured?: boolean;
+  byok_available?: boolean;
+  session_ttl_seconds?: number;
+  run_limits?: Record<string,number>;
+  member_limits?: {active_runs:number; total_runs:number; snapshots:number};
   public_demo: boolean;
   demo_mode?: string;
   scope?: string;
@@ -105,3 +109,16 @@ export interface RunEvent {
 }
 
 export type TokenStatus = "none" | "unverified" | "accepted" | "rejected";
+
+export interface SessionInfo {
+  role: "member" | "operator";
+  member_id?: string;
+  expires_at?: number;
+  model: string;
+}
+
+export interface Preflight {
+  preflight_id: string; task_id: string; source_hash: string; check_profile: string;
+  status: "ready" | "already_passed" | "environment_missing" | "timed_out" | "unconfirmed";
+  eligible: boolean; check: Partial<CheckResultData> & {error?: string}; expires_at: number;
+}

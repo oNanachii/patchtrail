@@ -165,7 +165,7 @@ class ServiceTests(unittest.TestCase):
         self.service.diagnose(row["id"])
         final = self.service.store.get_run(row["id"])
         self.assertEqual((final["state"], final["stop_reason"]), ("failed", "no_patch_proposal"))
-        self.assertEqual(self.runner.calls, [])
+        self.assertEqual(len(self.runner.calls), 1)  # Fixed baseline runs before the model.
 
     def test_rejected_tools_return_observations_and_never_run_model_commands(self):
         task = get_task(TASK)

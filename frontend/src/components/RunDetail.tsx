@@ -3,7 +3,7 @@ import { isCheckResult } from "../lib/checks.js";
 import { formatCount, formatDateTime, formatDuration, formatRelative, parseTime, shortHash } from "../lib/format.js";
 import { runStopReason, TERMINAL } from "../lib/labels.js";
 import { findCreated } from "../lib/trail.js";
-import type { Health, Run, RunEvent, Task } from "../types";
+import type { CheckResultData, Health, Run, RunEvent, Task } from "../types";
 import { CheckPanel } from "./CheckPanel";
 import { type ApprovalSnapshot, PatchReview } from "./PatchReview";
 import { StageTrack } from "./StageTrack";
@@ -18,6 +18,7 @@ export type RunActions = {
   resume: (run: Run, version: number) => Promise<void>;
   download: (run: Run) => Promise<void>;
   downloadPatch?: (run: Run) => Promise<void>;
+  downloadFiles?: (run: Run) => Promise<void>;
 };
 
 export function RunDetail({ run, events, error, tasks, health, now, actions, focusKey }: {
@@ -41,6 +42,8 @@ export function RunDetail({ run, events, error, tasks, health, now, actions, foc
   const created = parseTime(run.created_at);
   const updated = parseTime(run.updated_at);
   const cancellable = !TERMINAL.has(run.state);
+  const check = isCheckResult(run.result) ? run.result as CheckResultData : null;
+  const filesReady = run.state === "succeeded" && check?.passed === true;
 
   return (
     <article className="run-detail" aria-labelledby="run-heading">
@@ -59,6 +62,11 @@ export function RunDetail({ run, events, error, tasks, health, now, actions, foc
           </p>
         </div>
         <div className="run-head-actions">
+          {filesReady && actions.downloadFiles && <button type="button" className="button button-primary" disabled={download.busy} onClick={async () => {
+            setDownload({ busy: true, error: null });
+            try { await actions.downloadFiles?.(run); setDownload({ busy: false, error: null }); }
+            catch (caught) { setDownload({ busy: false, error: caught as Described }); }
+          }}>{download.busy ? <Spinner /> : <Icon name="download" size={15} />}下载修复文件包</button>}
           {run.proposal && actions.downloadPatch && <button type="button" className="button" disabled={download.busy} onClick={async () => {
             setDownload({ busy: true, error: null });
             try { await actions.downloadPatch?.(run); setDownload({ busy: false, error: null }); }
@@ -91,6 +99,7 @@ export function RunDetail({ run, events, error, tasks, health, now, actions, foc
       {download.error && <ErrorLine error={download.error} />}
       {error && <div className="sync-warn"><ErrorLine error={error} /><span className="small muted">显示的是上次同步的状态。</span></div>}
 
+      <ResultSummary run={run} task={task} check={check} filesReady={filesReady} />
       <ModeBanner run={run} events={events} health={health} />
       <StageTrack run={run} events={events} now={now} />
       <NextAction run={run} onResume={() => setDialog("resume")} />
@@ -101,7 +110,7 @@ export function RunDetail({ run, events, error, tasks, health, now, actions, foc
             <section className="panel patch-review is-empty" aria-labelledby="patch-title">
               <header className="section-head"><h3 id="patch-title"><Icon name="patch" />补丁审阅</h3></header>
               <p className="muted small">
-                {TERMINAL.has(run.state) || run.state === "interrupted" ? "这次运行没有提出补丁。" : "尚未提出补丁。Agent 提出补丁包后会停在这里，等待你按 digest 与版本确认。"}
+                {TERMINAL.has(run.state) || run.state === "interrupted" ? "这次运行没有提出补丁。" : "尚未提出补丁。Agent 提出补丁包后会停在这里，等待你审阅并确认。"}
               </p>
             </section>
           )}
@@ -117,6 +126,31 @@ export function RunDetail({ run, events, error, tasks, health, now, actions, foc
       <CancelDialog open={dialog === "cancel"} run={run} onClose={() => setDialog(null)} onCancel={actions.cancel} />
       <ResumeDialog open={dialog === "resume"} run={run} onClose={() => setDialog(null)} onResume={actions.resume} />
     </article>
+  );
+}
+
+function ResultSummary({ run, task, check, filesReady }: {
+  run: Run; task: Task | null; check: CheckResultData | null; filesReady: boolean;
+}) {
+  const reason = runStopReason(run);
+  let testSummary = "尚未验证修复。模型提出修改后，需要你先确认。";
+  if (filesReady) testSummary = `已通过 ${check?.tests_run ?? "所选"} 条固定测试；可下载本次验证过的修复文件。`;
+  else if (run.state === "verifying") testSummary = "正在独立工作区运行固定测试，结果尚未确认。";
+  else if (run.state === "failed") testSummary = reason?.detail ?? "本次运行没有获得通过结果，请查看下方检查记录。";
+  else if (run.state === "cancelled") testSummary = "运行已取消，没有生成可交付的修复文件包。";
+  else if (run.state === "interrupted") testSummary = "运行已中断，需要明确恢复后才能继续。";
+  return (
+    <section className="panel" aria-labelledby="result-summary-title">
+      <header className="section-head"><h3 id="result-summary-title"><Icon name="file" />这次修复</h3></header>
+      <dl className="kv">
+        <dt>问题</dt><dd>{task?.description ?? "任务说明暂未加载；可在下方查看已记录的运行证据。"}</dd>
+        <dt>{run.mode === "live" ? "模型修复建议" : "预置演示修复"}</dt>
+        <dd>{run.proposal?.explanation ?? (run.proposal ? "已提出修改，请查看下方差异。" : "尚未提出修改。")}</dd>
+        <dt>固定测试结果</dt><dd>{testSummary}</dd>
+      </dl>
+      {filesReady && <p className="small muted">文件包包含已确认的源码替换文件和应用说明。应用前请备份并核对原文件版本，再按原目录复制、重跑测试。固定测试通过不代表覆盖所有行为。</p>}
+      {run.mode === "demo" && <p className="small muted">这是脚本演示的预置修复，没有模型调用。</p>}
+    </section>
   );
 }
 
@@ -151,7 +185,7 @@ function NextAction({ run, onResume }: { run: Run; onResume: () => void }) {
   const result = run.result;
   switch (run.state) {
     case "queued":
-      return <Callout tone="neutral" icon="clock" title="排队中：等待单一 worker 开始调查">首版只有一个执行 worker，运行按顺序处理。</Callout>;
+      return <Callout tone="neutral" icon="clock" title="排队中：等待开始调查">所有运行共用有界队列，按顺序处理。</Callout>;
     case "diagnosing":
       return (
         <Callout tone="info" icon="search" title="调查中：读取代码、复现失败、准备补丁">
@@ -160,7 +194,7 @@ function NextAction({ run, onResume }: { run: Run; onResume: () => void }) {
       );
     case "awaiting_approval":
       return (
-        <Callout tone="attention" icon="gate" title="需要你：审阅补丁，再按 digest 与版本确认"
+        <Callout tone="attention" icon="gate" title="需要你：审阅修改，再确认运行测试"
           actions={
             <button type="button" className="button button-primary" onClick={() => {
               const target = document.getElementById("patch-title");

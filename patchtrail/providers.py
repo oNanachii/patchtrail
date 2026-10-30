@@ -53,29 +53,47 @@ def initial_messages(task):
     ]
 
 
+def _redact(value, secret):
+    if isinstance(value, str):
+        return value.replace(secret, "[REDACTED]")
+    if isinstance(value, list):
+        return [_redact(item, secret) for item in value]
+    if isinstance(value, dict):
+        return {_redact(key, secret): _redact(item, secret) for key, item in value.items()}
+    return value
+
+
 class DeepSeekProvider:
     label = "DeepSeek live model"
 
-    def __init__(self, settings: Settings, transport=None):
+    def __init__(self, settings: Settings, transport=None, credential_supplier=None):
         self.settings = settings
         self.transport = transport
+        self.credential_supplier = credential_supplier
         self.last_completion_metadata = {}
 
     def complete(self, messages, task, call_number, remaining_seconds):
         self.last_completion_metadata = {}
-        if not self.settings.api_key:
+        api_key = self.credential_supplier() if self.credential_supplier else self.settings.api_key
+        if not api_key:
             raise ProviderError("DeepSeek API key is not configured")
+        if self.settings.base_url.rstrip("/") != "https://api.deepseek.com":
+            raise ProviderError("Only the official DeepSeek endpoint is supported")
         payload = {"model": self.settings.model, "messages": messages, "tools": TOOL_SCHEMAS,
                    "tool_choice": "auto", "max_tokens": self.settings.max_output_tokens,
                    "stream": False, "thinking": {"type": "disabled"}}
         # No retry: an unknown response may already have consumed a billed model request.
         timeout = httpx.Timeout(max(0.1, min(30.0, remaining_seconds)), connect=min(5.0, max(0.1, remaining_seconds)))
         async def request_body():
+            # Revalidate a BYOK session at the dispatch boundary, after queuing
+            # and checkpoint writes. Already dispatched requests may finish.
+            if self.credential_supplier:
+                self.credential_supplier()
             # Whole-call deadline, including streamed reads, rather than only per-read timeouts.
             async with asyncio.timeout(max(0.1, remaining_seconds)):
                 async with httpx.AsyncClient(timeout=timeout, transport=self.transport, follow_redirects=False) as client:
                     async with client.stream("POST", self.settings.base_url.rstrip("/") + "/chat/completions",
-                                             headers={"Authorization": "Bearer " + self.settings.api_key}, json=payload) as response:
+                                             headers={"Authorization": "Bearer " + api_key}, json=payload) as response:
                         if response.status_code != 200:
                             raise ProviderError(f"DeepSeek returned HTTP {response.status_code}; no automatic retry")
                         parts, size = [], 0
@@ -86,10 +104,30 @@ class DeepSeekProvider:
                             parts.append(chunk)
                         return b"".join(parts)
         try:
-            body = json.loads(asyncio.run(request_body()))
+            raw = asyncio.run(request_body())
+            body = _redact(json.loads(raw), api_key)
+            # Tool arguments contain a second JSON encoding layer. Decode that
+            # layer before redacting, including legal escaped Unicode credentials.
+            if isinstance(body, dict):
+                choices = body.get("choices")
+                for choice in choices if isinstance(choices, list) else []:
+                    if not isinstance(choice, dict) or not isinstance(choice.get("message"), dict):
+                        continue
+                    tool_calls = choice["message"].get("tool_calls")
+                    for call in tool_calls if isinstance(tool_calls, list) else []:
+                        if not isinstance(call, dict) or not isinstance(call.get("function"), dict):
+                            continue
+                        function = call["function"]
+                        try:
+                            arguments = json.loads(function.get("arguments", ""))
+                            redacted = _redact(arguments, api_key)
+                            if redacted != arguments:
+                                function["arguments"] = json.dumps(redacted, ensure_ascii=False)
+                        except (TypeError, ValueError):
+                            pass
         except ProviderError:
             raise
-        except (httpx.HTTPError, TimeoutError, ValueError):
+        except (httpx.HTTPError, TimeoutError, ValueError, RecursionError):
             raise ProviderError("DeepSeek response could not be confirmed; inspect the run before retrying", uncertain=True) from None
         try:
             if not isinstance(body, dict):

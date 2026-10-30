@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { parseUnifiedDiff } from "../lib/diff.js";
-import { formatClock, parseTime, shortHash } from "../lib/format.js";
+import { formatClock, parseTime } from "../lib/format.js";
 import type { Run, RunEvent } from "../types";
 import { DiffView } from "./DiffView";
 import { Dialog, ErrorLine, Hash, Icon, Spinner } from "./ui";
@@ -42,7 +42,9 @@ export function PatchReview({ run, events, onApprove }: {
 
       {files.map((file) => <DiffView key={file.path} diff={file.diff ?? proposal.diff} label={`补丁差异 ${file.path}`} />)}
 
-      <dl className="proof">
+      <details className="raw">
+        <summary>技术详情：补丁身份、源版本与文件哈希</summary>
+        <dl className="proof">
         <div className="proof-row proof-digest">
           <dt>补丁 digest</dt>
           <dd><Hash value={proposal.digest} label="补丁 digest" full /></dd>
@@ -59,22 +61,23 @@ export function PatchReview({ run, events, onApprove }: {
           <dt>任务源</dt>
           <dd><Hash value={proposal.source_hash} label="任务源哈希" /></dd>
         </div>
-      </dl>
+        </dl>
+      </details>
 
       {awaiting && (
         <div className="approve-bar">
           <p>
-            确认只针对这一份补丁：digest <code>{shortHash(proposal.digest)}</code> 与运行版本 <code>v{run.version}</code>。
-            服务端随后从原始任务重建工作区，在禁网容器里运行不可修改的测试。
+            确认只针对当前这份修改；内容或版本变化时，服务会拒绝旧确认。
+            随后会从原始任务重建工作区，在容器里运行原有测试。
           </p>
           <button type="button" className="button button-primary" onClick={() => setSnapshot({ runId: run.id, digest: proposal.digest, version: run.version, path: paths })}>
-            <Icon name="check" size={15} />确认并验证…
+            <Icon name="check" size={15} />确认修改并验证…
           </button>
         </div>
       )}
       {approval && (
         <p className="small muted approved-note">
-          <Icon name="check" size={13} /> 已按此 digest 确认（状态版本 v{approval.version - 1} → v{approval.version}）。确认之后的结论只来自验证器输出。
+          <Icon name="check" size={13} /> 已确认这份修改。确认之后的结论只来自验证器输出；技术详情保留准确的补丁与源版本。
         </p>
       )}
 
@@ -123,28 +126,32 @@ function ApproveDialog({ snapshot, run, onClose, onApprove }: {
   const conflict = error?.status === 409;
 
   return (
-    <Dialog open onClose={onClose} title="确认这份补丁并开始验证" tone="attention"
+    <Dialog open onClose={onClose} title="确认这份修改并运行测试" tone="attention"
       footer={
         <>
           <button type="button" className="button" onClick={onClose} data-autofocus>返回审阅</button>
           {!conflict && (
             <button type="button" className="button button-primary" onClick={submit} disabled={stale || phase === "sending"}>
               {phase === "sending" ? <Spinner /> : <Icon name="check" size={15} />}
-              {unknown ? "用同一确认重试" : `确认 ${snapshot.digest.slice(0, 8)} · v${snapshot.version}`}
+              {unknown ? "用同一确认重试" : "确认并运行测试"}
             </button>
           )}
         </>
       }>
       <dl className="kv">
         <dt>文件</dt><dd><code>{snapshot.path}</code> <span className="diff-add-count">+{stats.added}</span> <span className="diff-del-count">−{stats.removed}</span></dd>
-        <dt>proposal_digest</dt><dd><Hash value={snapshot.digest} label="补丁 digest" full /></dd>
-        <dt>expected_version</dt><dd><code>{snapshot.version}</code></dd>
       </dl>
+      <details className="raw">
+        <summary>查看本次确认绑定的补丁与版本</summary>
+        <dl className="kv">
+          <dt>proposal_digest</dt><dd><Hash value={snapshot.digest} label="补丁 digest" full /></dd>
+          <dt>expected_version</dt><dd><code>{snapshot.version}</code></dd>
+        </dl>
+      </details>
       <ol className="plain-list numbered small">
-        <li>从不可变的原始任务重建一个新工作区（不复用调查工作区）。</li>
-        <li>只应用这个 digest 对应的补丁；内容或基础哈希不符会被拒绝。</li>
-        <li>在禁网、只读、非 root 的容器中运行不可修改的测试。</li>
-        <li>成功或失败由测试结果决定，与模型或脚本的说明无关。</li>
+        <li>从原始任务创建独立工作区，只应用你正在审阅的这份修改。</li>
+        <li>在隔离容器中运行原有测试；源码或版本不符会拒绝验证。</li>
+        <li>验证通过后可下载修复文件包，再由你应用到自己的项目。</li>
       </ol>
       {stale && (
         <p className="inline-warn" role="alert">

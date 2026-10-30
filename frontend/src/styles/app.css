@@ -638,3 +638,21 @@ details.raw .code-block { margin-top: 6px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0s !important; animation-iteration-count: 1 !important; transition-duration: 0s !important; scroll-behavior: auto !important; }
 }
+
+/* BYOK workflow additions, sharing the original surface and type tokens. */
+.overview-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 10px; }
+.session-summary { border: 1px solid var(--line); background: var(--sunken); border-radius: 9px; padding: 12px; }
+.preflight-box { display: grid; gap: 10px; margin: 14px 0; padding: 12px; border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.preflight-box h3 { font-size: 14px; }
+.preflight-result { display: grid; gap: 6px; border-left: 3px solid var(--attention); padding-left: 10px; min-width: 0; font-size: 13px; }
+.preflight-result.is-ready { border-left-color: var(--success); }
+.preflight-result .output-details { margin-top: 0; }
+.model-help > form { margin-top: 12px; }
+.model-help > p { margin-top: 10px; }
+@media (max-width: 959px) {
+  .app[data-view="list"] .shell { display: flex; flex-direction: column; }
+  .app[data-view="list"] .main { order: -1; }
+  .app[data-view="list"] .overview { border-top: 0; padding-top: 14px; }
+  .app[data-view="list"] .overview .flow { margin-top: 20px; }
+  .overview-actions .button { flex: 1 1 220px; }
+}

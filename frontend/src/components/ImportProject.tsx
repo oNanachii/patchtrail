@@ -12,17 +12,17 @@ export function ImportProjectDialog(props:Props) {
   const {open,onClose,hasToken,onOperator}=props;
   return <Dialog open={open} onClose={onClose} title="导入Python项目" footer={!hasToken ? <>
     <button className="button" data-autofocus onClick={onClose}>返回</button>
-    <button className="button button-primary" onClick={()=>{onClose();window.setTimeout(onOperator,0);}}>载入操作令牌</button>
+    <button className="button button-primary" onClick={()=>{onClose();window.setTimeout(onOperator,0);}}>连接访问</button>
   </> : undefined}>
     {hasToken && props.tokenStatus==='accepted' && !props.operatorCheck.checking && !props.operatorCheck.error ? <ImportForm key={props.credentialEpoch} {...props}/> : hasToken ? <div className="stack" role="status">
-      <p>{props.operatorCheck.checking ? <><Spinner/> 正在确认操作权限…</> : '操作权限尚未确认。文件还没有读取或上传。'}</p>
+      <p>{props.operatorCheck.checking ? <><Spinner/> 正在确认访问权限…</> : '访问权限尚未确认。文件还没有读取或上传。'}</p>
       {props.operatorCheck.error && <p className="error-line">{props.operatorCheck.error}</p>}
-      <p className="small muted">这是只读令牌验证，不创建运行，也不会产生模型费用。</p>
-      <button type="button" className="button button-primary" disabled={props.operatorCheck.checking} onClick={props.onVerifyOperator}>重新验证操作权限</button>
+      <p className="small muted">这是只读会话验证，不创建运行，也不会产生模型费用。</p>
+      <button type="button" className="button button-primary" disabled={props.operatorCheck.checking} onClick={props.onVerifyOperator}>重新验证访问权限</button>
       <button type="button" className="button" data-autofocus onClick={onClose}>返回</button>
     </div> : <div className="stack">
-      <p>先载入操作令牌，就可以在网页选择源码和测试文件，无需SSH或手写清单。</p>
-      <p className="small muted">操作令牌由管理员提供，或在本地私有配置 <code>.env</code> 的 <code>PATCHTRAIL_ADMIN_TOKEN</code> 中查看。这里不填写 <code>DEEPSEEK_API_KEY</code>。</p>
+      <p>先使用邀请码与自己的DeepSeek Key连接，就可以在网页选择源码和测试文件，无需SSH或手写清单。</p>
+      <p className="small muted">连接只建立会话，不调用模型。导入后的源码、补丁和运行记录只属于你的访问身份。</p>
     </div>}
   </Dialog>;
 }

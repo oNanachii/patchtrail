@@ -87,6 +87,7 @@ export function buildTrail(events) {
  */
 export function findBaseline(events) {
   for (const event of events) {
+    if (event.kind === "baseline_checked" && typeof event.payload?.check?.output === "string") return event.payload.check;
     if (event.kind === "tool_result" && event.payload?.name === "run_check" && typeof event.payload?.result?.output === "string") {
       return event.payload.result;
     }
