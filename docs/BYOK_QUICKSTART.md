@@ -1,6 +1,8 @@
 # 三分钟演示与BYOK使用指南
 
-[打开PatchTrail](https://math.madokanun.top:8444)。当前是邀请制有限beta：平台不收费，脚本演示没有模型费用，真实调用使用你自己的DeepSeek额度。
+[打开PatchTrail](https://patchtrail.madokanun.top)。当前是邀请制有限beta：平台不收费，脚本演示没有模型费用，真实调用使用你自己的DeepSeek额度。
+
+2026-10-31已换为独立域名，旧入口仍可用，原任务与记录保留。浏览器内的连接不会跨域迁移，在新网址重新填写原邀请码和自己的Key即可。
 
 ## 先做一个不调用模型的三分钟演示
 

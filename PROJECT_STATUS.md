@@ -1,10 +1,14 @@
 # PatchTrail当前状态
 
-2026年10月30日更新。第一主项目面向Agent应用和Python后端，同时保留全栈展示；用户本人操作Claude设计前端。
+2026年10月31日更新。第一主项目面向Agent应用和Python后端，同时保留全栈展示；用户本人操作Claude设计前端。
+
+## 独立域名已上线
+
+当前入口为[patchtrail.madokanun.top](https://patchtrail.madokanun.top)，无需输入端口。旧入口继续保留；应用、数据库和任务记录未迁移或重置。新旧页面及入口脚本、样式字节一致，可信HTTPS、健康状态、请求大小限制与匿名鉴权已核对；浏览器可读取原有运行详情。换域名需要重新连接短期会话。本次没有新增模型调用，不改变既有模型效果结论。
 
 ## 当前：v0.4.0邀请制BYOK已上线
 
-运行源码`8fcbaca`，公开入口仍为[HTTPS演示](https://math.madokanun.top:8444)。成员使用独立邀请码与自己的DeepSeek Key；平台不收费，真实模型费用由成员账户承担。旧operator、公共脚本任务与legacy记录保留，没有重置或合并旧数据。使用步骤见[三分钟指南](docs/BYOK_QUICKSTART.md)，接口见[BYOK契约](docs/BYOK_API_CONTRACT.md)。
+运行源码`8fcbaca`，公开入口为[HTTPS演示](https://patchtrail.madokanun.top)。成员使用独立邀请码与自己的DeepSeek Key；平台不收费，真实模型费用由成员账户承担。旧operator、公共脚本任务与legacy记录保留，没有重置或合并旧数据。使用步骤见[三分钟指南](docs/BYOK_QUICKSTART.md)，接口见[BYOK契约](docs/BYOK_API_CONTRACT.md)。
 
 成员身份、导入和运行使用独立空间。Key只在短期会话内存，默认1小时，退出/过期/撤销禁止新请求；已发出的请求仍可能完成和计费。全体身份共用有界worker/队列，默认6个全局未终结运行，每成员2个未终结、20个累计运行、5个导入快照。没有开放注册、任意Git、依赖安装或平台支付。
 

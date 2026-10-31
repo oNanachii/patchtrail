@@ -2,7 +2,9 @@
 
 受控的小型Python排错与补丁验证工作台。把代码、测试和问题交给一个有界Agent，先复现失败，再审阅补丁，由实际容器测试决定是否通过；通过后下载可应用的修复文件。
 
-[HTTPS公开演示](https://math.madokanun.top:8444) · [源码](https://github.com/oNanachii/patchtrail) · [三分钟演示与使用步骤](docs/BYOK_QUICKSTART.md) · [当前状态](PROJECT_STATUS.md)
+[HTTPS公开演示](https://patchtrail.madokanun.top) · [源码](https://github.com/oNanachii/patchtrail) · [三分钟演示与使用步骤](docs/BYOK_QUICKSTART.md) · [当前状态](PROJECT_STATUS.md)
+
+2026-10-31启用独立域名，无需输入端口。旧演示入口继续保留，任务和运行记录共用原数据；换到新网址后，需要重新连接邀请码和自己的Key。
 
 当前为 **v0.4.0邀请制有限beta**，运行源码`8fcbaca`。公开脚本演示不需要Key、不调用模型；受邀成员使用自己的DeepSeek Key，平台不收费，真实模型费用由自己的DeepSeek账户承担。成员任务与记录独立隔离，原操作者入口及历史记录保留。当前边界不等于面向任意陌生代码的商用安全认证。
 
