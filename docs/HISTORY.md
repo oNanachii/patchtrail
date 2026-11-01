@@ -77,5 +77,5 @@ HTTP仅用于目标与真实客户端均为回环地址的本机开发，公网�
 ## 其他资料
 
 - 各版本范围与契约：[v0.1 实现契约](IMPLEMENTATION_CONTRACT.md)、[v0.2 范围与完成标准](V0_2_SCOPE.md)、[v0.3 网页导入约定](WEB_IMPORT_CONTRACT.md)
-- 讲解准备：[面试讲解与本人验收](INTERVIEW_WALKTHROUGH.md)、[简历项目条目](RESUME_PROJECT_ENTRY.md)
-- 交接文档、启动提示和交付记录：[docs/process/](process/)
+- 讲解准备：[面试讲解与本人验收](process/INTERVIEW_WALKTHROUGH.md)、[简历项目条目](process/RESUME_PROJECT_ENTRY.md)
+- AI 协作过程文件（交接文档、启动提示、交付记录和上面的讲解准备材料）：[docs/process/](process/)

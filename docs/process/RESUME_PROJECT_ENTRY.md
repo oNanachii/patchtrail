@@ -35,15 +35,15 @@
 
 ## 验证范围和链接
 
-v0.1首轮真实DeepSeek验收为3个预先选定、已知的自编回归任务各1次，共10轮调用、16998 Token，修复后12条容器用例通过。依据：[首轮真实模型记录](../artifacts/live-model-validation.json)。
+v0.1首轮真实DeepSeek验收为3个预先选定、已知的自编回归任务各1次，共10轮调用、16998 Token，修复后12条容器用例通过。依据：[首轮真实模型记录](../../artifacts/live-model-validation.json)。
 
-v0.2使用两个仓库来源的三个预登记小功能，共五次尝试、20次调用、88253 Token。两个完整成功任务均来自文本分类仓库，每项5条容器用例及导出后的独立复验通过。pytest摘要任务两份提案因回归被审查拒绝，均未应用；首次合法subTest被运行器统计误判的失败及修正后的授权重试保留。不能把“两个仓库来源”写成两个仓库均修复成功。依据：[全部自有源码尝试](../artifacts/imported-live-validation.json)与[v0.2交付](process/V0_2_DELIVERY_2026-10-28.md)。
+v0.2使用两个仓库来源的三个预登记小功能，共五次尝试、20次调用、88253 Token。两个完整成功任务均来自文本分类仓库，每项5条容器用例及导出后的独立复验通过。pytest摘要任务两份提案因回归被审查拒绝，均未应用；首次合法subTest被运行器统计误判的失败及修正后的授权重试保留。不能把“两个仓库来源”写成两个仓库均修复成功。依据：[全部自有源码尝试](../../artifacts/imported-live-validation.json)与[v0.2交付](V0_2_DELIVERY_2026-10-28.md)。
 
-v0.3加入网页源码导入和真实调用指引，实际文件选择、预览、确认及自动选中新私有任务通过；费用确认窗口核对后取消。2026-10-29复查126项Python、34项Node、TypeScript与构建通过，部署的12份web资源字节未变化，三个公开脚本任务重新经实际OCI验证；没有新增模型调用。部分检查有包装重叠，不能相加为独立用例总数。依据：[网页导入交付](process/WEB_IMPORT_DELIVERY_2026-10-29.md)与[当前状态](../PROJECT_STATUS.md)。
+v0.3加入网页源码导入和真实调用指引，实际文件选择、预览、确认及自动选中新私有任务通过；费用确认窗口核对后取消。2026-10-29复查126项Python、34项Node、TypeScript与构建通过，部署的12份web资源字节未变化，三个公开脚本任务重新经实际OCI验证；没有新增模型调用。部分检查有包装重叠，不能相加为独立用例总数。依据：[网页导入交付](WEB_IMPORT_DELIVERY_2026-10-29.md)与[当前状态](../../PROJECT_STATUS.md)。
 
-早期21项前端逻辑／77项Python的[内部AI复核记录](../artifacts/frontend-independent-review.json)继续作为历史证据，不代表当前总数。浏览器范围为Chromium桌面及移动模拟视口，不能当作实体设备、全部浏览器或用户验收。
+早期21项前端逻辑／77项Python的[内部AI复核记录](../../artifacts/frontend-independent-review.json)继续作为历史证据，不代表当前总数。浏览器范围为Chromium桌面及移动模拟视口，不能当作实体设备、全部浏览器或用户验收。
 
 以上数字只支持对应任务和版本的结果；Token用量不单列为提效成果，不写通用修复准确率、未知任务表现、性能提升或任意代码绝对安全。模型提案由Codex内部审查后调用确认接口，不代表用户或外部人员已验收。原快照不自动改写，导出的diff也不等于验证已通过；本人关键解释和修改仍须实际完成。
 
 - 源码：[GitHub仓库](https://github.com/oNanachii/patchtrail)。
-- 演示入口：[HTTPS预览](https://math.madokanun.top:8444)。当前网页导入、静态资源和权限证据见[v0.3交付](process/WEB_IMPORT_DELIVERY_2026-10-29.md)，[首次部署验收](process/PUBLIC_DEPLOYMENT_2026-10-28.md)保留历史范围；再据本人验收选择最终简历表述。
+- 演示入口：[HTTPS预览](https://math.madokanun.top:8444)。当前网页导入、静态资源和权限证据见[v0.3交付](WEB_IMPORT_DELIVERY_2026-10-29.md)，[首次部署验收](PUBLIC_DEPLOYMENT_2026-10-28.md)保留历史范围；再据本人验收选择最终简历表述。
