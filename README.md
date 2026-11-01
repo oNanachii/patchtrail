@@ -17,13 +17,18 @@ AI 改代码时常不先复现问题、甚至改测试来“通过”，结果�
 ## 怎么工作
 
 ```mermaid
-flowchart LR
-  U[上传源码、测试和问题] --> B[容器中复现失败]
-  B --> C[确认调用模型]
-  C --> D[Agent 调查并提出补丁]
-  D --> A[人工审阅并批准]
-  A --> V[新副本中运行原测试]
-  V --> S[通过后下载修复文件]
+flowchart TB
+  subgraph R1 [" "]
+    direction LR
+    U[上传源码、测试和问题] --> B[容器中复现失败] --> C[确认调用模型] --> D[Agent 调查并提出补丁]
+  end
+  subgraph R2 [" "]
+    direction LR
+    A[人工审阅并批准] --> V[新副本中运行原测试] --> S[通过后下载修复文件]
+  end
+  R1 --> R2
+  style R1 fill:none,stroke:none
+  style R2 fill:none,stroke:none
 ```
 
 原测试没有失败（或缺环境、超时）就不调用模型；批准后的测试没有通过，就不提供修复文件。
