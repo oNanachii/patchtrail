@@ -215,6 +215,6 @@ pytest摘要任务的两份补丁因回归被审查拒绝，均未应用。另�
 
 [源码仓库](https://github.com/oNanachii/patchtrail) · [在线项目](https://math.madokanun.top:8444)
 
-[本轮复查摘要](../artifacts/recheck-2026-10-29.json) · [网页导入交付](WEB_IMPORT_DELIVERY_2026-10-29.md) · [模型与容器历史验收](V0_2_DELIVERY_2026-10-28.md) · [真实调用汇总](../artifacts/imported-live-validation.json) · [架构说明](ARCHITECTURE.md)
+[本轮复查摘要](../artifacts/recheck-2026-10-29.json) · [网页导入交付](process/WEB_IMPORT_DELIVERY_2026-10-29.md) · [模型与容器历史验收](process/V0_2_DELIVERY_2026-10-28.md) · [真实调用汇总](../artifacts/imported-live-validation.json) · [架构说明](ARCHITECTURE.md)
 
 这份讲解依据已实现代码与有限验收整理，帮助建立理解和展示顺序。项目工程完成、真实模型效果、你本人的掌握程度，分别判断。原投递简历和已有学习通过记录保持不变。

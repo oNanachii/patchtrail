@@ -76,4 +76,4 @@ POST /api/runs body {task_id, mode:"demo"|"live"}, header Idempotency-Key; retur
 
 ## Delivery evidence
 
-Separate unit/contract tests, actual container checks, live-model task outcomes, browser checks, server deployment and user interview acceptance. Store actual failures as well as success. Prepare docs/CLAUDE_FRONTEND_HANDOFF.md, architecture/decisions, reproducible commands, resume wording with evidence boundaries, and a short interview walkthrough. No claimed novelty, production certification, blind benchmark or measured efficiency without corresponding evidence.
+Separate unit/contract tests, actual container checks, live-model task outcomes, browser checks, server deployment and user interview acceptance. Store actual failures as well as success. Prepare docs/process/CLAUDE_FRONTEND_HANDOFF.md, architecture/decisions, reproducible commands, resume wording with evidence boundaries, and a short interview walkthrough. No claimed novelty, production certification, blind benchmark or measured efficiency without corresponding evidence.

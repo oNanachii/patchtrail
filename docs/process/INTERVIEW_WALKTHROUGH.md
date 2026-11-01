@@ -45,4 +45,4 @@
 
 当前支持带固定测试的小型Python任务、标准库／已准备的pytest环境，以及最多三文件整包提案。它不是任意仓库自动修复平台，没有自动安装依赖、多租户账户或自动合并PR；容器限制也不是任意代码绝对安全的证明。Token用量是已发生调用的记录，不是节省时间或成本的成果。
 
-材料入口：[当前状态](../PROJECT_STATUS.md)、[网页导入交付](WEB_IMPORT_DELIVERY_2026-10-29.md)、[自有源码全部模型尝试](V0_2_DELIVERY_2026-10-28.md)、[简历候选条目](RESUME_PROJECT_ENTRY.md)。
+材料入口：[当前状态](../../PROJECT_STATUS.md)、[网页导入交付](WEB_IMPORT_DELIVERY_2026-10-29.md)、[自有源码全部模型尝试](V0_2_DELIVERY_2026-10-28.md)、[简历候选条目](RESUME_PROJECT_ENTRY.md)。

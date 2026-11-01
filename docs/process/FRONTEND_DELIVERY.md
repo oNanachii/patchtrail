@@ -85,7 +85,7 @@ cd frontend && node scripts/acceptance.mjs   # --only a,b 只跑部分场景，�
 
 ## 未验收与已知限制
 
-- **真实容器**：本机没有 Docker/Podman；未连接服务器（按要求不操作服务器，也未建立 SSH 转发）。新界面尚未展示过真实 `podman` 验证结果。部署前应按 `docs/CLAUDE_FRONTEND_HANDOFF.md` 的回环转发跑一次演示流程。
+- **真实容器**：本机没有 Docker/Podman；未连接服务器（按要求不操作服务器，也未建立 SSH 转发）。新界面尚未展示过真实 `podman` 验证结果。部署前应按 `docs/process/CLAUDE_FRONTEND_HANDOFF.md` 的回环转发跑一次演示流程。
 - **真实 DeepSeek**：未发起任何模型调用。live 运行详情（`model_response` 文本、`observed_models`、Token 明细、live 401/重新鉴权）只按代码与 API 形状实现，**没有用真实 live 运行数据在浏览器中查看过**。`artifacts/live-model-validation.json` 是摘要，不含完整事件，无法替代。
 - **harness 与生产的差异**：`verification_started` 事件中的 `runner: "OCI container"` 是服务端常量，harness 下同样出现；实际执行器以检查结果中的 `runner` 为准（harness 显示 `design-harness-fake`）。确认弹窗描述的是生产容器行为，harness 下由顶部横幅说明不适用。
 - **浏览器与辅助技术**：只测了 Chromium（无头 Chrome 与桌面应用内置浏览器）。未测 Safari/Firefox、未用 VoiceOver/NVDA 实测；无障碍仅基于原生控件、`<dialog>`、标签与焦点检查。390px 为设备模拟，未在真机触屏测试。
