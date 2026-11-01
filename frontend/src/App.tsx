@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FirstVisitGuide } from "./components/FirstVisitGuide";
 import { NewRun, type CreateFailure } from "./components/NewRun";
 import type { ApprovalSnapshot } from "./components/PatchReview";
 import { RunDetail, type RunActions } from "./components/RunDetail";
@@ -462,6 +463,7 @@ export function App() {
             tokenStatus={tokenStatus} publicDemo={health?.public_demo} now={now} onOperator={() => setOperatorOpen(true)} />
         </aside>
         <main className="main" ref={mainRef} tabIndex={-1} aria-label="运行详情">
+          <FirstVisitGuide onClose={() => mainRef.current?.focus({ preventScroll: true })} />
           {narrow && selectedId && (
             <button type="button" className="back-button" onClick={() => select(null)}>
               <Icon name="back" size={16} />全部运行

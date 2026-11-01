@@ -656,3 +656,26 @@ details.raw .code-block { margin-top: 6px; }
   .app[data-view="list"] .overview .flow { margin-top: 20px; }
   .overview-actions .button { flex: 1 1 220px; }
 }
+
+/* First-visit guide: a dismissible card at the top of the main column. */
+.first-visit {
+  display: grid; gap: 14px; margin-bottom: 20px; padding: 16px 18px 18px; min-width: 0;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.first-visit-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.first-visit-head .icon-button { margin: -5px -7px 0 0; }
+.first-visit-kicker { font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: .06em; color: var(--muted); }
+.first-visit-lede { margin-top: 4px; font-size: 17px; font-weight: 650; line-height: 1.4; }
+.first-visit-steps { display: grid; gap: 12px 20px; }
+.first-visit-steps li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; align-items: start; }
+.first-visit-n {
+  width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%;
+  border: 1.5px solid var(--line-strong); font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+}
+.first-visit-steps strong { font-size: 14px; }
+.first-visit-steps p { margin-top: 2px; font-size: 13px; line-height: 1.55; color: var(--ink-2); }
+.first-visit-note { font-size: 13px; color: var(--muted); }
+.first-visit-note .mode-tag { margin-right: 8px; vertical-align: 1px; }
+@container main (min-width: 640px) {
+  .first-visit-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
