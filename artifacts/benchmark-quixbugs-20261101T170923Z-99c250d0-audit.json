@@ -1,0 +1,49 @@
+{
+  "artifact": "benchmark-quixbugs-20261101T170923Z-99c250d0.json",
+  "checked_tasks": 40,
+  "eligible_tasks": 34,
+  "paired_tasks": 34,
+  "checked_calls": 112,
+  "unknown_calls": 0,
+  "tariff_yuan": 0.22736064,
+  "cap_liability_yuan": 0.45472128,
+  "errors": [],
+  "passed": true,
+  "checked_at_utc": "2026-11-01T17:39:44.235937+00:00",
+  "review_actor": "Codex internal independent arithmetic and artifact review; not external human review",
+  "verifier_script_sha256": "738095ce173201611fd373b0b7ce4305cca9c5af2ab9b956a3e8456697045cf6",
+  "input_artifacts_sha256": {
+    "benchmark-quixbugs-20261101T170923Z-99c250d0.json": "a4ea58ce0803ce6e8f901ae3f8d2f70d66d415572ababd2acb6dbbc1aba58de0",
+    "benchmark-quixbugs-20261101T170923Z-99c250d0-calls.json": "2dd4e14001fb42109d7ad8c466cb8d80308c56f1a26f618e654f9a7ef877d5a8"
+  },
+  "original_acceptance_artifacts": {
+    "artifacts/live-model-validation.json": {
+      "sha256": "9530aec871f6fc254e874b7e8cbb14d7ddb7fae9222e19c45e6d5480b0076f70",
+      "unchanged": true
+    },
+    "artifacts/imported-live-validation.json": {
+      "sha256": "b28c444bdc3b3a4ca1402a1ee86d66d1c5831ccdb6974a5cdc54cf3fed40a792",
+      "unchanged": true
+    }
+  },
+  "executed_benchmark_files_match": {
+    "benchmark_quixbugs.py": true,
+    "benchmark_quixbugs_data.py": true,
+    "benchmark_meter.py": true
+  },
+  "server_real_key_scan": {
+    "passed": true,
+    "files_scanned": 5,
+    "scope": "the four exported benchmark JSON artifacts and generated report, scanned on server before publication; no key value exported"
+  },
+  "local_software_checks": {
+    "python_unittest_tests": 170,
+    "passed": true,
+    "scope": "software checks including explicit provider/runner test doubles; separate from live benchmark"
+  },
+  "semantic_scoring_notes": {
+    "topological_ordering": "All three exact-list tests reject baseline; static inspection of first two graph outputs finds valid alternative topological orders. Score is original-test pass, not independent semantic certification.",
+    "wrap": "All five tests reject baseline splits/spaces; baseline also retains an extra space at some column boundaries and exceeds width.",
+    "minimum_spanning_tree": "Two of three tests reject baseline extra edges; Agent passes the same three."
+  }
+}

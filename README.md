@@ -48,11 +48,13 @@ flowchart TB
 | v0.1：已知自编回归任务（2026-10-28） | **3 个任务各运行一次，均通过**；共 10 次真实模型调用，每项修复后 4 条容器用例通过 | [首轮真实模型记录](artifacts/live-model-validation.json) |
 | v0.2：自有源码小功能（2026-10-28） | **3 个预登记任务、5 次尝试，2 个任务完成**；首次运行器误判后的授权重试和全部失败记录均保留 | [全部尝试记录](artifacts/imported-live-validation.json) |
 | v0.2：审查环节拒绝的补丁 | 未完成的 pytest 摘要任务有 **2 份**补丁因回归被拒，均未应用 | [拒绝原因及复核范围](artifacts/imported-live-validation.json) |
+| QuixBugs Python 对照（2026-11-01） | 40 题预检后 34 题配对：单次基线 **31/34**、Agent **34/34** 通过原测试；112 次调用、用量计价约 **¥0.2274**。脚本自动批准；拓扑排序差异包含严格顺序断言 | [逐题结果、费用与复现](docs/BENCHMARK_QUIXBUGS.md) |
 | 2026-11-01 本地软件检查 | **149** 项 Python、**56** 项 Node 检查通过，TypeScript 类型检查和生产构建通过 | [项目状态](PROJECT_STATUS.md)；下方为复现命令 |
 
 ## 局限
 
 - 两轮真实模型验收的任务来源和尝试规则不同，分别报告，不合并成通用修复率；补丁审查由 AI 代码审查（Codex）完成，不是外部人工验收。v0.4 的邀请、隔离、预检与导出检查没有新增真实模型效果成绩。软件检查含包装调用，不能与容器、模型任务数相加为独立样本。
+- QuixBugs 对照独立报告，公开基准可能出现在模型训练数据里，不代表通用修复率；Agent 可读取完整测试，基线只得到源码和失败输出，分数按上游原测试判定。
 - 只支持小型 Python 项目（标准库或预先准备的 pytest 环境），不自动安装依赖；一次最多导入 200 个文件、2 MiB。
 - 邀请制 beta，单机、单个执行 worker；容器隔离降低了风险，但不是对任意陌生代码的安全认证。
 
@@ -110,6 +112,7 @@ cd /opt/patchtrail/current
 ## 文档
 
 - [3 分钟上手](docs/BYOK_QUICKSTART.md)：在线演示和用自己项目的步骤
+- [QuixBugs 公开小基准](docs/BENCHMARK_QUIXBUGS.md)：单次基线与 Agent 的独立对照、逐题记录和复现命令
 - [架构与取舍](docs/ARCHITECTURE.md)、[项目讲解](docs/PROJECT_EXPLANATION.md)（另有 [PDF 版](output/pdf/PatchTrail_项目讲解_2026-10-29.pdf)，对应 v0.3.1）
 - [API 约定](docs/BYOK_API_CONTRACT.md)；服务启动后可查看 `/api/openapi.json`
 - [服务器部署与回退](deploy/README.md)
