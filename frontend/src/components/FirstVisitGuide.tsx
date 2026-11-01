@@ -2,7 +2,7 @@ import { useState } from "react";
 import { guideClosed, localStorageOrNull, rememberGuideClosed } from "../lib/firstVisit.js";
 import { Icon, ModeTag } from "./ui";
 
-/** Dismissible, non-modal card: what PatchTrail is and a one-minute path through the script demo. */
+/** Dismissible, non-modal card: what PatchTrail is and a three-step path through the script demo. */
 export function FirstVisitGuide({ onClose }: { onClose: () => void }) {
   const [open, setOpen] = useState(() => !guideClosed(localStorageOrNull()));
   if (!open) return null;
@@ -23,11 +23,11 @@ export function FirstVisitGuide({ onClose }: { onClose: () => void }) {
           <Icon name="x" size={16} />
         </button>
       </div>
-      <ol className="first-visit-steps" aria-label="1 分钟试一遍脚本演示">
+      <ol className="first-visit-steps" aria-label="三步体验脚本演示">
         <li><span className="first-visit-n">1</span><div><strong>选一个演示任务</strong>
           <p>在“选择任务”中选一个公开样例，点“开始脚本演示”；也可以直接点“一键体验脚本演示”。</p></div></li>
         <li><span className="first-visit-n">2</span><div><strong>看调查过程和补丁</strong>
-          <p>“执行记录”列出读取文件、搜索代码和运行检查的步骤，“补丁审阅”显示提出的修改。</p></div></li>
+          <p>在“执行记录”查看读取文件、运行检查和提出补丁的步骤，在“补丁审阅”查看具体修改。</p></div></li>
         <li><span className="first-visit-n">3</span><div><strong>确认并看测试结果</strong>
           <p>点“确认修改并验证”并在弹窗中确认，补丁应用到新副本后运行原有测试，显示是否通过。</p></div></li>
       </ol>
