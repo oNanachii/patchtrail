@@ -10,7 +10,7 @@
 
 独立浏览器使用实际服务器和rootless Podman，完成脚本任务新建、diff审阅、精确确认、容器验证和实际JSON报告下载。也读取既有真实DeepSeek记录，核对模型标识、用量及检查结果，清除令牌后私有详情立即遮蔽。创建与鉴权的受控竞态另由逻辑回归验证，未声称通过浏览器网络拦截重现。
 
-[前端复核记录](../artifacts/frontend-independent-review.json)保留完整范围。Claude原交付声称的11个headless Chrome场景未全部独立重跑，不能与本轮结果混同。
+[前端复核记录](../../artifacts/frontend-independent-review.json)保留完整范围。Claude原交付声称的11个headless Chrome场景未全部独立重跑，不能与本轮结果混同。
 
 ## 公网实际检查
 
@@ -19,11 +19,11 @@
 - 3个公开脚本任务依次新建并确认，均由真实Podman检查通过，各4条用例。重复创建和重复确认沿用原请求/提案，没有新增模型调用。这验证脚本运行时及容器，不是新增模型能力测试。
 - 公网浏览器在1440×900和390×844读取实际完成结果，页面横向溢出为0；采集的JS/CSP告警及错误为空。浏览器显示脚本标记、真实podman结果及4条用例；截图见下方。
 
-[公网TLS/资源/权限记录](../artifacts/public-https-validation.json)，[实际HTTP/OCI流程报告](../artifacts/public-https-workflow.json)。首次通用文件探针错误请求根路径的许可文件，404后按真实`/assets/`挂载复核通过，无需修改应用。代理初启时后端刚重启，首次本机探针短暂502；重试和后续公网请求通过，记录未将其隐藏为从未出错。
+[公网TLS/资源/权限记录](../../artifacts/public-https-validation.json)，[实际HTTP/OCI流程报告](../../artifacts/public-https-workflow.json)。首次通用文件探针错误请求根路径的许可文件，404后按真实`/assets/`挂载复核通过，无需修改应用。代理初启时后端刚重启，首次本机探针短暂502；重试和后续公网请求通过，记录未将其隐藏为从未出错。
 
-![公网桌面实际结果](../artifacts/browser/public-https/desktop.png)
+![公网桌面实际结果](../../artifacts/browser/public-https/desktop.png)
 
-![公网移动宽度实际结果](../artifacts/browser/public-https/mobile.png)
+![公网移动宽度实际结果](../../artifacts/browser/public-https/mobile.png)
 
 ## 部署边界与回退
 
@@ -33,7 +33,7 @@
 
 准备阶段曾在同一脚本内比较旧Caddy及证书/key元数据相同，但未保存这些旧值；启用阶段只保存了当前值，无法再次逐值比较。因此不声称启用前后这些文件已有完整哈希/元数据对照。动态Fail2ban规则也未作全量逐字节一致断言；可直接复核的是原服务身份、监听与新端口规则。
 
-代码回退可将`current`切回保留的backend-03并只重启PatchTrail；数据与密钥在release外。仅回退HTTPS时，停止新proxy与watcher并删除本次新增的精确8444规则，不动旧服务。参见[独立HTTPS操作说明](../deploy/https/README.md)。
+代码回退可将`current`切回保留的backend-03并只重启PatchTrail；数据与密钥在release外。仅回退HTTPS时，停止新proxy与watcher并删除本次新增的精确8444规则，不动旧服务。参见[独立HTTPS操作说明](../../deploy/https/README.md)。
 
 ## 尚未验收
 

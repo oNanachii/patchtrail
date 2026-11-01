@@ -34,7 +34,7 @@
 
 v0.3核心实现完整126项Python检查通过；最终前端34项Node、TypeScript及生产构建通过，部分检查有包装重叠。独立审查、本地无真实Key设计副本、实际公网文件选择/预览/确认/自动选中新任务均通过。6181字节源码的HTTP预览、前置鉴权、重复确认同任务、私有状态拒绝及原控制请求限制已验证。最终v0.3.1源码23453b1部署于release20261029-web-import-02，12个静态文件与本地逐字节匹配、运行源码hash匹配、可信TLS及隐私头通过。
 
-网页已加入DeepSeek使用步骤：先载入PATCHTRAIL_ADMIN_TOKEN，选择任务和真实模式，再点击“开始真实调用”并确认费用。DEEPSEEK_API_KEY由后端保管；上传和确认导入不调用模型，真实运行会把本任务代码、测试和工具结果发给模型服务。此前v0.3发布验收打开真实调用费用确认窗口后取消；当时发布前后历史运行仍为12条demo、8条live，没有新增运行或付费模型调用。桌面1280×720、移动390×844页面/弹窗横向溢出为0，最终打开时选文件入口可见。原6个服务进程、两份Caddy与证书元数据对照不变。详见docs/WEB_IMPORT_DELIVERY_2026-10-29.md及artifacts/web-import-validation.json；以下v0.2历史验收保持原义。
+网页已加入DeepSeek使用步骤：先载入PATCHTRAIL_ADMIN_TOKEN，选择任务和真实模式，再点击“开始真实调用”并确认费用。DEEPSEEK_API_KEY由后端保管；上传和确认导入不调用模型，真实运行会把本任务代码、测试和工具结果发给模型服务。此前v0.3发布验收打开真实调用费用确认窗口后取消；当时发布前后历史运行仍为12条demo、8条live，没有新增运行或付费模型调用。桌面1280×720、移动390×844页面/弹窗横向溢出为0，最终打开时选文件入口可见。原6个服务进程、两份Caddy与证书元数据对照不变。详见docs/process/WEB_IMPORT_DELIVERY_2026-10-29.md及artifacts/web-import-validation.json；以下v0.2历史验收保持原义。
 
 ## v0.2历史已验证
 
@@ -55,7 +55,7 @@ v0.3核心实现完整126项Python检查通过；最终前端34项Node、TypeScr
 
 源码已公开：https://github.com/oNanachii/patchtrail 。当前CLI缺workflow scope，连接器写workflow也返回403；自动CI未启用，模板位于deploy/ci-workflow.yml.example。
 
-公开演示：https://math.madokanun.top:8444 。当前v0.4交付与边界见上方；历史v0.3网页导入交付见docs/WEB_IMPORT_DELIVERY_2026-10-29.md；原v0.2模型与容器证据见docs/V0_2_DELIVERY_2026-10-28.md；首次HTTPS部署历史见docs/PUBLIC_DEPLOYMENT_2026-10-28.md。数据、密钥、导入源码、完整运行记录和审批依据保留在私有目录，公开摘要只提供状态、统计和内容哈希。
+公开演示：https://math.madokanun.top:8444 。当前v0.4交付与边界见上方；历史v0.3网页导入交付见docs/process/WEB_IMPORT_DELIVERY_2026-10-29.md；原v0.2模型与容器证据见docs/process/V0_2_DELIVERY_2026-10-28.md；首次HTTPS部署历史见docs/process/PUBLIC_DEPLOYMENT_2026-10-28.md。数据、密钥、导入源码、完整运行记录和审批依据保留在私有目录，公开摘要只提供状态、统计和内容哈希。
 
 docs/V0_2_SCOPE.md确定的工程范围已实现并按以上证据验证；用户明确授权了原三个源码任务及随后两次付费追加，全部尝试均保留。没有为了通过率应用审查已知不正确的提案，pytest模型任务仍明确为未完成；运行时自身的pytest支持已有独立实现和实际容器检查。
 

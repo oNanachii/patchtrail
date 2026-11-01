@@ -36,6 +36,6 @@
 
 本次没有新增付费模型调用、执行导入源码或新增OCI验收。此前v0.2的实际容器及模型记录保持原版本范围，不能用网页上传成功替代代码修复有效性，也不能把历史模型结果改写为本次上传后的新成绩。
 
-公开[验收摘要](../artifacts/web-import-validation.json)及实际界面截图分别保存：[上传预览](../artifacts/browser/web-import/preview-desktop.png)、[桌面导入](../artifacts/browser/web-import/import-desktop.png)、[移动导入](../artifacts/browser/web-import/import-mobile.png)、[取消真实调用确认](../artifacts/browser/web-import/live-confirmation-cancelled.png)。旧版实际OCI与全部模型尝试见[V0.2交付记录](V0_2_DELIVERY_2026-10-28.md)。
+公开[验收摘要](../../artifacts/web-import-validation.json)及实际界面截图分别保存：[上传预览](../../artifacts/browser/web-import/preview-desktop.png)、[桌面导入](../../artifacts/browser/web-import/import-desktop.png)、[移动导入](../../artifacts/browser/web-import/import-mobile.png)、[取消真实调用确认](../../artifacts/browser/web-import/live-confirmation-cancelled.png)。旧版实际OCI与全部模型尝试见[V0.2交付记录](V0_2_DELIVERY_2026-10-28.md)。
 
-最终[公网文件对照](../artifacts/web-import-final-public-assets.json)保留每份资源摘要；公开摘要未包含操作令牌、模型Key、私有运行ID或导入源码。
+最终[公网文件对照](../../artifacts/web-import-final-public-assets.json)保留每份资源摘要；公开摘要未包含操作令牌、模型Key、私有运行ID或导入源码。

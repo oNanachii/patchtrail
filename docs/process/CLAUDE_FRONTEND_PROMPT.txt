@@ -1,4 +1,4 @@
-请先阅读当前项目的 AGENTS.md、PROJECT_STATUS.md、README.md 和 docs/CLAUDE_FRONTEND_HANDOFF.md，然后完成 PatchTrail 的前端设计与实现。
+请先阅读当前项目的 AGENTS.md、PROJECT_STATUS.md、README.md 和 docs/process/CLAUDE_FRONTEND_HANDOFF.md，然后完成 PatchTrail 的前端设计与实现。
 
 这是受控仓库排错与补丁验证工作台。你可以自主决定配色、字体、布局和视觉风格，做出适合开发者实际审阅任务、证据、diff与验证结果的体验。当前 web/ 是功能基线，后端以 patchtrail/api.py 及 /api/openapi.json 为契约。
 
