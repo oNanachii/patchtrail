@@ -1,5 +1,6 @@
 """Fail-closed Docker/Podman checks with bounded output and explicit limits."""
 from dataclasses import asdict, dataclass
+import json
 import os
 from pathlib import Path
 import re
@@ -14,6 +15,34 @@ from .workspace import RUN_ID, WorkspaceError, tree_hash
 
 
 OUTPUT_LIMIT = 64 * 1024
+COMPLETION_LIMIT = 16 * 1024
+_LAUNCHER_SOURCE = Path(__file__).with_name("test_launcher.py").read_text(encoding="utf-8")
+
+
+def _extract_completion(output: str, marker: str) -> tuple[str, dict]:
+    """Separate the normal-return recorder footer from human framework output.
+
+    The marker avoids accidental collisions; it is visible to the container
+    process and is not a secret or an authenticated attestation.
+    """
+    lines = output.splitlines(keepends=True)
+    matches = [index for index, line in enumerate(lines) if line.startswith(marker)]
+    if not matches:
+        return output, {"status": "missing"}
+    if len(matches) != 1:
+        return output, {"status": "ambiguous"}
+    index = matches[0]
+    payload = lines[index][len(marker):].strip()
+    if any(line.strip() for line in lines[index + 1:]) or len(payload.encode()) > COMPLETION_LIMIT:
+        return output, {"status": "invalid"}
+    try:
+        record = json.loads(payload)
+    except (ValueError, RecursionError):
+        return output, {"status": "invalid"}
+    if not isinstance(record, dict):
+        return output, {"status": "invalid"}
+    human = "".join(lines[:index] + lines[index + 1:]).rstrip() + "\n"
+    return human, {**record, "status": "complete"}
 
 
 def _unittest_subtest_skips(lines: list[str]) -> int:
@@ -57,10 +86,12 @@ class CheckResult:
     truncated: bool
     runner: str = "docker"
     check_profile: str = ""
+    completion_report: dict | None = None
 
     def _summary(self) -> dict:
-        # The output check is deliberately a finite-regression contract, not a
-        # defense against a hostile Python test forging the runner's stdout.
+        # Human output is cross-checked with actual-run completion evidence.
+        # Neither mechanism independently attests arbitrary hostile Python in
+        # the same interpreter as the test framework.
         text = re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", self.output)
         lines = text.rstrip().splitlines()
         last = lines[-1].strip() if lines else ""
@@ -130,7 +161,22 @@ class CheckResult:
 
     @property
     def complete(self) -> bool:
-        return not self.timed_out and not self.truncated and bool(self._summary()["valid"])
+        summary = self._summary()
+        if self.timed_out or self.truncated or not summary["valid"]:
+            return False
+        if self.completion_report is None:
+            return True  # Legacy captures and explicitly injected unit-test runners only.
+        report = self.completion_report
+        integer_fields = ("tests", "failed", "skipped", "exit_code", "schema_version")
+        if (not isinstance(report, dict) or report.get("status") != "complete"
+                or any(type(report.get(key)) is not int for key in integer_fields)
+                or report.get("schema_version") != 1 or report.get("framework_returned") is not True
+                or report.get("session_finished") is not True or report.get("valid") is not True
+                or report.get("exit_code") != self.exit_code
+                or report.get("framework") != summary["framework"]
+                or report.get("passed") is not summary.get("passed")):
+            return False
+        return all(report[key] == summary[key] for key in ("tests", "failed", "skipped"))
 
     @property
     def passed(self) -> bool:
@@ -240,6 +286,11 @@ class DockerRunner:
         if remaining <= 0:
             raise SandboxUnavailable("Container availability probe exhausted the execution budget")
         name = "patchtrail-" + secrets.token_hex(12)
+        marker = "PATCHTRAIL_COMPLETION_" + secrets.token_hex(24) + ":"
+        # The caller still supplies only a validated fixed profile command.
+        # An owned launcher records normal framework return before success is
+        # accepted; arbitrary stdout and a zero process exit are insufficient.
+        launch = ("python", "-I", "-B", "-c", _LAUNCHER_SOURCE, profile, marker, *command)
         argv = [self.binary, "run", "--name", name, "--rm", "--pull=never",
                 "--network", "none", "--read-only", "--user", "65534:65534",
                 "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
@@ -250,7 +301,7 @@ class DockerRunner:
                 "--workdir", "/workspace", "--env", "HOME=/tmp",
                 "--env", "PYTHONDONTWRITEBYTECODE=1", "--env", "PYTHONUNBUFFERED=1",
                 "--env", "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1", "--env", "PYTEST_ADDOPTS=",
-                self.image, *command]
+                self.image, *launch]
         process = None
         output = bytearray()
         truncated = False
@@ -288,9 +339,11 @@ class DockerRunner:
                         truncated = True
             if process.poll() is None:
                 process.wait(timeout=max(0.05, deadline - time.monotonic()))
-            return CheckResult(process.returncode, output.decode("utf-8", errors="replace"),
+            human_output, completion = _extract_completion(output.decode("utf-8", errors="replace"), marker)
+            return CheckResult(process.returncode, human_output,
                                int((time.monotonic() - started) * 1000), timed_out,
-                               truncated, runner=self.runner, check_profile=profile)
+                               truncated, runner=self.runner, check_profile=profile,
+                               completion_report=completion)
         except BaseException:
             self._cleanup(name)
             if process is not None:

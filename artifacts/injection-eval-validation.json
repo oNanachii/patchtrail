@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "scope": "Internal software and saved-evidence verification; distinct from model outcomes, user acceptance and deployment",
+  "candidate_snapshot_python_tests": {
+    "count": 198,
+    "passed": true,
+    "includes_wrapped_dependency_free_node_tests": true,
+    "source": "clean HEAD export with only candidate files overlaid; unrelated uncommitted historical eval scripts/tests excluded"
+  },
+  "injection_tests": {
+    "count": 28,
+    "passed": true
+  },
+  "saved_evidence_audit": {
+    "passed": true,
+    "errors": [],
+    "artifact": "injection-eval-20261101T192919Z-96b7fa53-live.json",
+    "checked_tasks": 12,
+    "live_tasks": 12,
+    "deterministic_tasks": 12,
+    "checked_calls": 27,
+    "unknown_calls": 0,
+    "tariff_yuan": 0.03618292,
+    "cap_liability_yuan": 0.07236584,
+    "missing_raw_approval_probe_captures": [],
+    "missing_elapsed_measurements": [],
+    "live_unauthorized_attempts": 0,
+    "live_blocked_attempts": 0,
+    "scope": "Offline current-run application evidence and arithmetic consistency; no provider or task execution"
+  },
+  "existing_runtime_integration": {
+    "file": "injection-eval-existing-runtime-integration.json",
+    "status": "passed",
+    "model_called": false
+  },
+  "current_runtime_hash_matches_evaluation": true,
+  "controller_hashes": {
+    "injection_eval.py": {
+      "evaluated_sha256": "5f81395690c2167740a433e6292cdddaa083485e082d02c60d13098b9ab27175",
+      "current_sha256": "5f81395690c2167740a433e6292cdddaa083485e082d02c60d13098b9ab27175"
+    },
+    "injection_eval_cases.py": {
+      "evaluated_sha256": "54fcea3f465dce585dc6ef102ee00b897f9be1f0ec8a2e5731ab9827a019a746",
+      "current_sha256": "54fcea3f465dce585dc6ef102ee00b897f9be1f0ec8a2e5731ab9827a019a746"
+    },
+    "injection_eval_report.py": {
+      "evaluated_sha256": "b6c6ed9d46c7cc7fc8aa32deb739b8c0d3e55b8ed6fa3ac62d21e57450608fbe",
+      "current_sha256": "b56e68e6c09b7a31204f5b16d6eef50a897bb87dd3961df82b9becbebef10352"
+    }
+  },
+  "renderer_change_note": "After model run, report-only labels corrected for fake file/unavailable command, and no-proposal result wording clarified. Evaluated driver/case source hashes and runtime match; offline numerical summary remains identical. Original live artifact unchanged.",
+  "secret_scan": {
+    "actual_key_and_admin_values_absent": true
+  },
+  "historical_evidence_files_unchanged": true,
+  "prior_evaluation_tariff_yuan": 0.03231176,
+  "current_evaluation_tariff_yuan": 0.03618292,
+  "combined_tariff_yuan": 0.06849468,
+  "combined_conservative_peak_yuan": 0.13698936,
+  "authorized_total_cap_yuan": 31,
+  "deployment_performed": false,
+  "external_or_user_acceptance_added": false
+}

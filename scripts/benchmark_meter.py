@@ -119,7 +119,8 @@ def _usage(body):
 
 
 class Meter:
-    def __init__(self, path: Path, api_key: str, model="deepseek-flash", cap_yuan=8, *, transport=None):
+    def __init__(self, path: Path, api_key: str, model="deepseek-flash", cap_yuan=8, *,
+                 transport=None, maximum_cap_yuan=8):
         if model != "deepseek-flash":
             raise ValueError("Only the verified deepseek-flash price schedule is supported")
         if not api_key:
@@ -129,8 +130,10 @@ class Meter:
         self.api_key = api_key
         self.model = model
         self.cap = _decimal(cap_yuan)
-        if not self.cap.is_finite() or not 0 < self.cap <= 8:
-            raise ValueError("Benchmark spending cap must be in (0, 8] CNY")
+        self.maximum_cap = _decimal(maximum_cap_yuan)
+        if (not self.maximum_cap.is_finite() or not 0 < self.maximum_cap <= 31
+                or not self.cap.is_finite() or not 0 < self.cap <= self.maximum_cap):
+            raise ValueError("Spending cap exceeds the explicitly authorized maximum (default 8 CNY)")
         self.transport = transport
         self.calls = []
         self.stopped = False
@@ -152,7 +155,8 @@ class Meter:
         if self.path.exists():
             ledger = json.loads(self.path.read_text(encoding="utf-8"))
             if (ledger.get("schema_version") != 1 or ledger.get("model") != self.model
-                    or _decimal(ledger["cap_yuan"]) != self.cap):
+                    or _decimal(ledger["cap_yuan"]) != self.cap
+                    or _decimal(ledger.get("maximum_cap_yuan", 8)) != self.maximum_cap):
                 raise ValueError("Existing benchmark ledger configuration differs")
             self.calls = ledger["calls"]
             self.stop_reason = ledger.get("stop_reason")
@@ -160,6 +164,7 @@ class Meter:
 
     def _save(self):
         value = {"schema_version": 1, "model": self.model, "cap_yuan": float(self.cap),
+                 "maximum_cap_yuan": float(self.maximum_cap),
                  "pricing_url": PRICING_URL, "pricing_checked_date": "2026-11-01",
                  "cost_is_tariff_estimate": True,
                  "stop_reason": self.stop_reason,

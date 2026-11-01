@@ -22,8 +22,10 @@ class SandboxTests(unittest.TestCase):
         self.workspace = prepare_workspace(self.base / "workspaces", "run", get_task("quantity-shortfall"))
         self.log = self.base / "cli-calls.jsonl"
 
-    def fake_cli(self, run_body, *, info_status=0):
+    def fake_cli(self, run_body, *, info_status=0, completion=None):
         path = self.base / "fake-podman"
+        footer = ("\n    marker = next(arg for arg in sys.argv if arg.startswith('PATCHTRAIL_COMPLETION_'))"
+                  "\n    print(marker + json.dumps(" + repr(completion) + "))") if completion is not None else ""
         script = f'''#!{sys.executable}
 import json, os, sys, time
 with open({str(self.log)!r}, "a") as stream:
@@ -33,7 +35,7 @@ if sys.argv[1] == "info":
 if sys.argv[1] == "rm":
     raise SystemExit(0)
 if sys.argv[1] == "run":
-{run_body}
+{run_body}{footer}
 '''
         path.write_text(script)
         path.chmod(0o755)
@@ -54,7 +56,10 @@ if sys.argv[1] == "run":
         self.assertEqual(CheckResult(0, good, 1, False, False).to_dict()["tests_run"], 4)
 
     def test_restricted_oci_arguments_and_clean_environment(self):
-        binary = self.fake_cli('    print(os.environ.get("DEEPSEEK_API_KEY", "NO_MODEL_KEY"))\n    print("Ran 4 tests in 0.001s\\n\\nOK")')
+        binary = self.fake_cli('    print(os.environ.get("DEEPSEEK_API_KEY", "NO_MODEL_KEY"))\n    print("Ran 4 tests in 0.001s\\n\\nOK")', completion={
+            "schema_version": 1, "framework": "unittest", "tests": 4, "failed": 0,
+            "skipped": 0, "exit_code": 0, "framework_returned": True,
+            "session_finished": True, "valid": True, "passed": True})
         with patch.dict(os.environ, {"DEEPSEEK_API_KEY": "UNIT_TEST_SECRET_MUST_NOT_PASS"}):
             result = DockerRunner(binary=binary).run(self.workspace, CHECK_COMMAND, "run")
         self.assertTrue(result.passed)
@@ -85,7 +90,10 @@ if sys.argv[1] == "run":
         self.assertFalse(DockerRunner(binary=str(self.base / "missing-cli")).available())
 
     def test_pytest_fixed_command_and_environment_reach_only_the_container(self):
-        binary = self.fake_cli('    print("collecting ... collected 2 items")\n    print("================ 2 passed in 0.01s ================")')
+        binary = self.fake_cli('    print("collecting ... collected 2 items")\n    print("================ 2 passed in 0.01s ================")', completion={
+            "schema_version": 1, "framework": "pytest", "tests": 2, "failed": 0,
+            "skipped": 0, "exit_code": 0, "framework_returned": True,
+            "session_finished": True, "valid": True, "passed": True})
         command = build_check_command("pytest", ["tests/test_quantities.py"])
         result = DockerRunner(binary=binary).run(self.workspace, command, "pytest-run")
         self.assertTrue(result.passed)

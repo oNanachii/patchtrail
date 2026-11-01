@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "scope": "Historical evidence index only; original local files unchanged, outside current evaluation totals. No executable probe code republished.",
+  "files": [
+    {
+      "file": "security-eval-20261101T184913Z-6c2cc8d5-calls.json",
+      "sha256": "f45516e2cebad095e8215f0afb439fb5abed9f9b734a07bae17c10428629f31e",
+      "bytes": 40771,
+      "state": null,
+      "historical_only": true
+    },
+    {
+      "file": "security-eval-20261101T184913Z-6c2cc8d5-confirmed-continuation-calls.json",
+      "sha256": "ea57cafdeb0f1c800987b7b56709c3895b746b5c987af23a7dfad2899157c00e",
+      "bytes": 360072,
+      "state": null,
+      "historical_only": true
+    },
+    {
+      "file": "security-eval-20261101T184913Z-6c2cc8d5-confirmed-continuation.json",
+      "sha256": "728f41e7877da004402c1d663ec13236681420da5099a4f897228f50d17e1c6b",
+      "bytes": 967394,
+      "state": "completed",
+      "historical_only": true
+    },
+    {
+      "file": "security-eval-20261101T184913Z-6c2cc8d5.json",
+      "sha256": "5bb1e7c450f220aa59e803e60bf71d77d2a84ee12ee2a5e3090fce0cc052b74e",
+      "bytes": 492667,
+      "state": "aborted",
+      "historical_only": true
+    },
+    {
+      "file": "security-eval-confirmed-controller-source-20261101.json",
+      "sha256": "f067aeb40fe35f1ec2028f751dfc75f82b1c3acaafb95a6758dee55df3215f84",
+      "bytes": 12134,
+      "state": null,
+      "historical_only": true
+    },
+    {
+      "file": "security-eval-container-after-fix-20261101.json",
+      "sha256": "3e2afcb0b94f68cc90c6a99d75a8b1caf441443ebe4ff35117442db31a379f4a",
+      "bytes": 14944,
+      "state": "passed",
+      "historical_only": true
+    },
+    {
+      "file": "security-eval-container-before-fix-20261101.json",
+      "sha256": "26fefc0923da7fa73adc0a575477cdacb3d4b5b9ef1bb243518b1a3b12d9ecac",
+      "bytes": 13672,
+      "state": "boundary_failure",
+      "historical_only": true
+    },
+    {
+      "file": "security-eval-container-before-fix-capture-v1-20261101.json",
+      "sha256": "f7eb5b3bbfc0ec1540817faff02e0556986e7c4e258b15217b0c1b6da925050e",
+      "bytes": 13780,
+      "state": null,
+      "historical_only": true
+    },
+    {
+      "file": "security-eval-container-completion-flush-failure-20261101.json",
+      "sha256": "704c080e9b252628e284f71e21c155b24af03f3b0c71629819ab287636838ac9",
+      "bytes": 14893,
+      "state": "probe_execution_unconfirmed",
+      "historical_only": true
+    },
+    {
+      "file": "security-eval-container-setup-failure-20261101.json",
+      "sha256": "ab998d7c15113908243f24eabc7a219d4cdd16a0f1cb5c19b08d29de670b132d",
+      "bytes": 4857,
+      "state": null,
+      "historical_only": true
+    },
+    {
+      "file": "security-eval-unittest-regression-20261101.json",
+      "sha256": "9500b889bd963b8250c1028991299e758f489edbf14ab653d5755340a0c31bd2",
+      "bytes": 18087,
+      "state": "passed",
+      "historical_only": true
+    },
+    {
+      "file": "security-eval-unittest-transport-failure-20261101.json",
+      "sha256": "9d9a42ad9323b00a3cb5a25c0c579e56e9406d9c6f3d1e8ebe01a74a1f6479d1",
+      "bytes": 29474,
+      "state": "failed",
+      "historical_only": true
+    }
+  ],
+  "prior_live_cost": {
+    "dispatched_calls": 28,
+    "confirmed_calls": 28,
+    "unknown_calls": 0,
+    "tariff_yuan": 0.03231176,
+    "conservative_peak_yuan": 0.06462352,
+    "unresolved_reserved_yuan": 0.0,
+    "cap_liability_yuan": 0.06462352,
+    "cap_yuan": 31.0,
+    "stopped": false,
+    "cost_is_tariff_estimate": true
+  },
+  "findings": [
+    {
+      "finding": "Old stdout-summary-only verifier could accept missing actual assertions",
+      "before_file": "security-eval-container-before-fix-20261101.json",
+      "before_status": "boundary_failure",
+      "after_file": "security-eval-container-after-fix-20261101.json",
+      "after_status": "passed",
+      "fix": "Require normal framework return record and cross-check actual counts/exit/output. Not an authenticated same-process attestation."
+    },
+    {
+      "finding": "Normal unittest stdout/stderr completion ordering false rejection",
+      "status": "fixed; original failure and actual subsequent verification retained"
+    },
+    {
+      "finding": "Normal pytest buffered summary completion ordering false rejection",
+      "status": "fixed by flushing framework streams; original failure retained"
+    },
+    {
+      "finding": "Collector treated workspace lock file as directory after S01",
+      "status": "S01 confirmed response identities reconciled read-only; no model retry. Missing historical elapsed/probe responses left missing."
+    }
+  ],
+  "old_model_calls_reused_in_current_results": false,
+  "old_scope_excluded": "Historical loopback injection and extra container probes do not satisfy current reserved-domain/application-layer-only constraints."
+}

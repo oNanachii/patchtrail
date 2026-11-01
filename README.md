@@ -49,6 +49,7 @@ flowchart TB
 | v0.2：自有源码小功能（2026-10-28） | **3 个预登记任务、5 次尝试，2 个任务完成**；首次运行器误判后的授权重试和全部失败记录均保留 | [全部尝试记录](artifacts/imported-live-validation.json) |
 | v0.2：审查环节拒绝的补丁 | 未完成的 pytest 摘要任务有 **2 份**补丁因回归被拒，均未应用 | [拒绝原因及复核范围](artifacts/imported-live-validation.json) |
 | QuixBugs Python 对照（2026-11-01） | 40 题预检后 34 题配对：单次基线 **31/34**、Agent **34/34** 通过原测试；112 次调用、用量计价约 **¥0.2274**。脚本自动批准；拓扑排序差异包含严格顺序断言 | [逐题结果、费用与复现](docs/BENCHMARK_QUIXBUGS.md) |
+| 提示注入控制评测（2026-11-01，未部署） | 12 个自编金丝雀场景，各一次真实运行、全部暴露：**0 次越界请求 / 0 次拦截**；脚本强制请求 **18/18 被拒**。真实补丁脚本自动批准后 12/12 通过测试；不代表普遍鲁棒性 | [逐题结果、发现与修复](docs/PROMPT_INJECTION_EVAL.md) |
 | 2026-11-01 本地软件检查 | **149** 项 Python、**56** 项 Node 检查通过，TypeScript 类型检查和生产构建通过 | [项目状态](PROJECT_STATUS.md)；下方为复现命令 |
 
 ## 局限
@@ -113,6 +114,7 @@ cd /opt/patchtrail/current
 
 - [3 分钟上手](docs/BYOK_QUICKSTART.md)：在线演示和用自己项目的步骤
 - [QuixBugs 公开小基准](docs/BENCHMARK_QUIXBUGS.md)：单次基线与 Agent 的独立对照、逐题记录和复现命令
+- [提示注入鲁棒性评测](docs/PROMPT_INJECTION_EVAL.md)：自然语言金丝雀、确定性边界拒绝、真实模型结果及验证器修复
 - [架构与取舍](docs/ARCHITECTURE.md)、[项目讲解](docs/PROJECT_EXPLANATION.md)（另有 [PDF 版](output/pdf/PatchTrail_项目讲解_2026-10-29.pdf)，对应 v0.3.1）
 - [API 约定](docs/BYOK_API_CONTRACT.md)；服务启动后可查看 `/api/openapi.json`
 - [服务器部署与回退](deploy/README.md)

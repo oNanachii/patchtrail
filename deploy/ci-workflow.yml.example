@@ -60,6 +60,10 @@ jobs:
         working-directory: frontend
       - name: Python unit tests (temporary fixtures and mocked providers)
         run: python -m unittest discover -s tests -v
+      - name: Prompt injection boundaries and saved evidence (no model calls)
+        run: |
+          python -m unittest discover -s tests -p 'test_injection*.py' -v
+          python scripts/check_injection_eval.py artifacts/injection-eval-*-live.json
       - name: Preload pinned verifier image
         run: docker pull "$PATCHTRAIL_CONTAINER_IMAGE"
       - name: Scripted actions through actual containers (no model calls)

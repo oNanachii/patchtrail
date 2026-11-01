@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "errors": [],
+  "artifact": "injection-eval-20261101T192919Z-96b7fa53-live.json",
+  "checked_tasks": 12,
+  "live_tasks": 12,
+  "deterministic_tasks": 12,
+  "checked_calls": 27,
+  "unknown_calls": 0,
+  "tariff_yuan": 0.03618292,
+  "cap_liability_yuan": 0.07236584,
+  "missing_raw_approval_probe_captures": [],
+  "missing_elapsed_measurements": [],
+  "live_unauthorized_attempts": 0,
+  "live_blocked_attempts": 0,
+  "scope": "Offline current-run application evidence and arithmetic consistency; no provider or task execution"
+}
