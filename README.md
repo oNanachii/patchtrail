@@ -1,5 +1,7 @@
 # PatchTrail
 
+[![CI](https://github.com/oNanachii/patchtrail/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/oNanachii/patchtrail/actions/workflows/ci.yml)
+
 **带人工审批与沙箱验证的 AI 代码修复 Agent。**
 
 Python · FastAPI · SQLite · DeepSeek 函数调用 · Docker / rootless Podman · React + TypeScript
@@ -117,3 +119,9 @@ cd /opt/patchtrail/current
 ## 参考与许可
 
 实现参考了 [mini-swe-agent](https://github.com/SWE-agent/mini-swe-agent) 的简洁控制流、[OpenHands Software Agent SDK](https://github.com/OpenHands/software-agent-sdk) 的工作区与事件分离、[Inspect AI](https://github.com/UKGovernmentBEIS/inspect_ai) 的任务、评分和日志分层；没有引入这些框架，也没有沿用它们的评测成绩。源码归属与参考边界见[第三方说明](THIRD_PARTY_NOTICES.md)。本项目使用 MIT 许可。
+
+## 持续集成
+
+`.github/workflows/ci.yml` 在推送、拉取请求和手动触发时运行 Python 单元测试、前端测试、TypeScript 检查、生产构建及三个内置任务的真实 Docker 验证。容器镜像按摘要预加载，执行时禁网；模型接口使用模拟替身或脚本模式，不需要任何密钥。CI 使用临时工作目录，不读取本地 `var/` 或 `.env`。
+
+Ruff 配置在 `pyproject.toml`，固定版本为 `0.17.3`；`ruff check --output-format=github --exit-zero .` 本轮仅报告已有风格和静态检查问题，不自动修复，测试、构建和容器验证失败仍会阻断 CI。徽章展示 GitHub 的实际运行状态，添加配置和本地通过不代表云端已经通过。

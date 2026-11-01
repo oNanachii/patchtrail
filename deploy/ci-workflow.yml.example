@@ -1,32 +1,69 @@
-name: Runtime and container checks
+name: CI
+
 on:
   push:
   pull_request:
+  workflow_dispatch:
+
 permissions:
   contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     env:
+      PYTHONDONTWRITEBYTECODE: '1'
       PATCHTRAIL_CONTAINER_BIN: docker
       PATCHTRAIL_CONTAINER_IMAGE: docker.io/library/python@sha256:1148dbb014615300fa7e713b2f94f550c0d1c69780c0805f84f093ceee34dd0b
+      PATCHTRAIL_ADMIN_TOKEN: ''
+      DEEPSEEK_API_KEY: ''
+      TYPESAFE_API_KEY: ''
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'
-      - run: python -m pip install -r requirements.lock.txt
-      - run: npm ci
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - name: Verify checkout has no local runtime data or credentials
+        run: |
+          test ! -e var
+          test ! -e .env
+          echo "PATCHTRAIL_DATA_DIR=$RUNNER_TEMP/patchtrail-ci" >> "$GITHUB_ENV"
+      - name: Install Python test and lint dependencies
+        run: python -m pip install -r requirements.lock.txt 'ruff==0.17.3'
+      - name: Ruff report (existing violations are non-blocking)
+        # Lint findings are reported; invalid configuration still fails the step.
+        run: ruff check --output-format=github --exit-zero .
+      - name: Install frontend dependencies
+        run: npm ci
         working-directory: frontend
-      - run: npm test
+      - name: Frontend tests
+        run: npm test
         working-directory: frontend
-      - run: npm run build
+      - name: TypeScript check
+        run: npm run typecheck
         working-directory: frontend
-      - run: python -m unittest discover -s tests -v
+      - name: Frontend production build
+        run: npm run build
+        working-directory: frontend
+      - name: Python unit tests (temporary fixtures and mocked providers)
+        run: python -m unittest discover -s tests -v
       - name: Preload pinned verifier image
         run: docker pull "$PATCHTRAIL_CONTAINER_IMAGE"
-      - name: Scripted actions through actual containers
-        run: python scripts/verify_container.py --output artifacts/ci-container-integration.json
+      - name: Scripted actions through actual containers (no model calls)
+        run: python scripts/verify_container.py --output "$RUNNER_TEMP/ci-container-integration.json"
+      - name: Verify checks did not create repository runtime data
+        if: always()
+        run: test ! -e var

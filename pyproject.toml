@@ -1,0 +1,16 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+force-exclude = true
+extend-exclude = [
+  ".venv",
+  "var",
+  "data",
+  "artifacts",
+  "output",
+  "frontend/node_modules",
+  "web",
+]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
