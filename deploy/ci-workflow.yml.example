@@ -42,7 +42,7 @@ jobs:
           test ! -e .env
           echo "PATCHTRAIL_DATA_DIR=$RUNNER_TEMP/patchtrail-ci" >> "$GITHUB_ENV"
       - name: Install Python test and lint dependencies
-        run: python -m pip install -r requirements.lock.txt 'ruff==0.17.3'
+        run: python -m pip install -r requirements-mcp.lock.txt 'ruff==0.17.3'
       - name: Ruff report (existing violations are non-blocking)
         # Lint findings are reported; invalid configuration still fails the step.
         run: ruff check --output-format=github --exit-zero .

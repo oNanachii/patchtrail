@@ -78,6 +78,7 @@ docker pull python:3.12-slim   # 测试用的镜像；创建任务时不会自�
 **运行测试**（前端构建产物 `web/` 已提交，只有改前端时才需要 Node）：
 
 ```sh
+.venv/bin/python -m pip install -r requirements-mcp.lock.txt  # 完整套件含官方 MCP SDK
 .venv/bin/python -m unittest discover -s tests -v
 cd frontend
 npm ci
@@ -86,6 +87,24 @@ npm run typecheck
 npm run build
 cd ..
 ```
+
+## 通过 MCP 使用
+
+本地 stdio server 使用官方 MCP Python SDK。先安装 `requirements-mcp.lock.txt` 并启动上面的本地 API，然后在调用方配置以下启动命令；将 `/ABS/PATCHTRAIL` 替换为项目绝对路径：
+
+```sh
+# Claude Code：由你本人运行配置命令
+claude mcp add --transport stdio patchtrail -- \
+  "/ABS/PATCHTRAIL/.venv/bin/python" "/ABS/PATCHTRAIL/scripts/serve_mcp.py" --base-url http://127.0.0.1:8874
+
+# Codex
+codex mcp add patchtrail -- \
+  "/ABS/PATCHTRAIL/.venv/bin/python" "/ABS/PATCHTRAIL/scripts/serve_mcp.py" --base-url http://127.0.0.1:8874
+```
+
+工具只有 `list_tasks`、`start_demo_run`、`get_run`、`list_runs`；仅发起公开脚本演示，不调用付费模型，也不传递 Key 或管理员令牌。启动时提供稳定的 `request_key`，随后查询运行；待审批时打开返回的网页链接，由人检查并批准具体补丁。**不提供批准补丁的 MCP 工具，避免调用方 Agent 自己批准自己的补丁。**
+
+[完整 MCP 指南](docs/MCP.md) 包含 Claude Code `.mcp.json`、Codex TOML、独立演示数据目录、权限范围及故障处理。MCP 复用既有 API 的限额、权限、容器和审批检查，不另开数据库。
 
 ## 管理员：邀请码与命令行导入
 

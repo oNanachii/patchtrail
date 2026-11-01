@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-01",
+  "sdk": {"distribution": "mcp", "version": "2.3.0", "official": true, "dependency_check_passed": true},
+  "transport": "stdio",
+  "tools": ["list_tasks", "start_demo_run", "get_run", "list_runs"],
+  "approval_tool_provided": false,
+  "live_model_tool_provided": false,
+  "integration": {
+    "api": "existing application routes over a temporary loopback API",
+    "new_service_or_database_in_adapter": false,
+    "authentication": "anonymous public demo permissions; no key/token forwarding",
+    "actual_stdio_subprocess": true,
+    "sdk_client_modes_passed": ["legacy", "auto"],
+    "arbitrary_working_directory_passed": true,
+    "scripted_proposal_final_state": "awaiting_approval",
+    "approval_via_stdio_performed": false,
+    "runner": "explicit inspection fake; no task code execution",
+    "new_actual_container_execution": false,
+    "paid_model_calls": 0
+  },
+  "checks": {
+    "candidate_snapshot_python_tests_passed": 216,
+    "includes_existing_node_wrapper_checks": true,
+    "mcp_targeted_tests_passed": 18,
+    "candidate_snapshot_excludes_unrelated_uncommitted_historical_work": true,
+    "private_and_live_records_denied": true,
+    "forced_demo_and_strict_argument_checks": true,
+    "stable_idempotency_key_and_no_automatic_retry": true,
+    "existing_rate_queue_container_and_auth_checks_reused": true,
+    "proxy_credentials_cookie_and_redirect_boundaries": true,
+    "bounded_response_and_sanitized_errors": true
+  },
+  "evidence_boundary": "Internal API contracts and real MCP transport with an explicit fake task runner; not a new model-effectiveness result or actual Claude Code/Codex user acceptance.",
+  "client_configuration_modified": false,
+  "deployment_performed": false,
+  "existing_public_demo_rest_approval_changed": false
+}

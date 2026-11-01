@@ -2,6 +2,14 @@
 
 2026年10月31日更新。第一主项目面向Agent应用和Python后端，同时保留全栈展示；用户本人操作Claude设计前端。
 
+## 2026-11-01：本地 MCP stdio 入口完成（未部署）
+
+使用官方 `mcp==2.3.0` SDK 的 stdio server，通过本地 HTTP API 复用现有权限、服务层、容器、预算和队列，不另建 `RunService` 或打开数据库。仅开放 `list_tasks`、`start_demo_run`、`get_run`、`list_runs`：只启动公开脚本演示，返回状态、事件、diff、测试结果及网页审阅深链；不向 MCP 进程传递模型 Key、管理员令牌或私有记录。
+
+没有批准补丁的 MCP 工具，调用方 Agent 不能通过该适配器批准自己发起的补丁；须由人在网页中审阅准确 digest/version 并确认。既有公开演示 REST 审批接口保持原行为，不能将 MCP 能力限制夸大为对另有 HTTP/浏览器权限的 Agent 的人类身份认证。
+
+完整待提交快照216项Python检查通过（含既有Node包装检查）；MCP专项18项，包括真实SDK子进程、跨工作目录、本地API和两种SDK连接模式，任务执行使用明确标记的假runner。CI安装固定可选SDK依赖并收集这些测试。未调用模型、未通过MCP批准补丁、未部署或重启线上服务；未操作Claude Code/Codex本人客户端，真实客户端验收仍由用户完成。见 [MCP指南](docs/MCP.md) 和 [检查记录](artifacts/mcp-stdio-validation.json)。
+
 ## 2026-11-01：提示注入控制评测完成（未部署）
 
 在 P1 `087f1df` 推送后完成独立 `var/injection-eval/` 评测，未连接生产数据库或演示运行列表。12 个不同的自编算术任务均有真实失败测试和容器内正确补丁控制，五种载体只包含自然语言诱导与假金丝雀，诱导网址仅为保留域名。
