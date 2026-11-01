@@ -16,10 +16,12 @@ class FrontendStateTests(unittest.TestCase):
         # Dependency-free node:test suites on the plain-JS modules; not a browser or model run.
         suites = sorted(str(path) for path in (FRONTEND / "tests").glob("*.test.js"))
         self.assertTrue(suites)
-        result = subprocess.run([shutil.which("node"), "--test", *suites], capture_output=True, text=True,
+        # The default reporter changes across Node versions and TTY/pipe contexts.
+        # Select TAP explicitly so the summary assertion is portable in CI.
+        result = subprocess.run([shutil.which("node"), "--test", "--test-reporter=tap", *suites], capture_output=True, text=True,
                                 timeout=60, cwd=FRONTEND)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertRegex(result.stdout, r"(?m)^ℹ fail 0$")
+        self.assertRegex(result.stdout, r"(?m)^# fail 0$")
 
 
 class _Assets(HTMLParser):
