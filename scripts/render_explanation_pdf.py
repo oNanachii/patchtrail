@@ -12,7 +12,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from reportlab.platypus import (
-    Flowable, Image, KeepTogether, PageBreak, Paragraph, SimpleDocTemplate,
+    Flowable, Image, PageBreak, Paragraph, SimpleDocTemplate,
     Spacer, Table, TableStyle,
 )
 
@@ -150,33 +150,55 @@ def main():
             i+=1
             continue
         if line=='<!-- page -->':
-            story.append(PageBreak());i+=1;continue
+            story.append(PageBreak())
+            i+=1
+            continue
         if line.startswith('<!-- diagram:'):
-            story.append(Diagram(line.split(':',1)[1].split(' ',1)[0]));story.append(Spacer(1,8));i+=1;continue
+            story.append(Diagram(line.split(':',1)[1].split(' ',1)[0]))
+            story.append(Spacer(1,8))
+            i+=1
+            continue
         if line.startswith('|'):
             rows=[]
             while i<len(lines) and lines[i].strip().startswith('|'):
                 cells=[x.strip() for x in lines[i].strip().strip('|').split('|')]
-                if not all(re.fullmatch(r':?-+:?',x) for x in cells):rows.append(cells)
+                if not all(re.fullmatch(r':?-+:?',x) for x in cells):
+                    rows.append(cells)
                 i+=1
-            count=len(rows[0]); widths=([135,170,WIDTH-305] if count==3 else [170,WIDTH-170])
+            count=len(rows[0])
+            widths=([135,170,WIDTH-305] if count==3 else [170,WIDTH-170])
             data=[[Paragraph(inline(x),styles['tablehead' if n==0 else 'table']) for x in row] for n,row in enumerate(rows)]
             table=Table(data,colWidths=widths,repeatRows=1,hAlign='LEFT')
             table.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),PALE),('VALIGN',(0,0),(-1,-1),'TOP'),('LINEBELOW',(0,0),(-1,0),0.7,LINE),('LINEBELOW',(0,1),(-1,-1),0.4,LINE),('LEFTPADDING',(0,0),(-1,-1),8),('RIGHTPADDING',(0,0),(-1,-1),8),('TOPPADDING',(0,0),(-1,-1),7),('BOTTOMPADDING',(0,0),(-1,-1),7)]))
-            story.extend([table,Spacer(1,12)]);continue
+            story.extend([table,Spacer(1,12)])
+            continue
         image=re.fullmatch(r'!\[([^\]]+)\]\(([^)]+)\)',line)
         if image:
             caption,path=image.groups()
             path=(source.parent/path).resolve()
-            im=Image(str(path));im.drawHeight*=WIDTH/im.drawWidth;im.drawWidth=WIDTH
-            story.extend([im,Spacer(1,5),Paragraph(inline(caption),styles['caption'])]);i+=1;continue
+            im=Image(str(path))
+            im.drawHeight*=WIDTH/im.drawWidth
+            im.drawWidth=WIDTH
+            story.extend([im,Spacer(1,5),Paragraph(inline(caption),styles['caption'])])
+            i+=1
+            continue
         kind='body'
-        if line.startswith('# '):kind='title';line=line[2:]
-        elif line.startswith('## '):kind='h2';line=line[3:]
-        elif line.startswith('### '):kind='h3';line=line[4:]
-        elif line.startswith('> '):kind='quote';line=line[2:]
-        elif line.startswith('- '):line='• '+line[2:]
-        story.append(Paragraph(inline(line),styles[kind]));i+=1
+        if line.startswith('# '):
+            kind='title'
+            line=line[2:]
+        elif line.startswith('## '):
+            kind='h2'
+            line=line[3:]
+        elif line.startswith('### '):
+            kind='h3'
+            line=line[4:]
+        elif line.startswith('> '):
+            kind='quote'
+            line=line[2:]
+        elif line.startswith('- '):
+            line='• '+line[2:]
+        story.append(Paragraph(inline(line),styles[kind]))
+        i+=1
     args.output.parent.mkdir(parents=True,exist_ok=True)
     doc=SimpleDocTemplate(str(args.output),pagesize=A4,rightMargin=44,leftMargin=44,topMargin=39,bottomMargin=57,title='PatchTrail项目讲解：从实际使用到面试表达',author='PatchTrail - AI协作项目说明',pageCompression=1)
     doc.build(story,canvasmaker=NumberedCanvas)

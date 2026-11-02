@@ -1,6 +1,5 @@
 """HTTP contract tests using injected fakes, never a real model or host executor."""
 
-import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest

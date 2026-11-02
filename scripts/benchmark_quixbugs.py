@@ -237,7 +237,8 @@ def markdown_report(record, artifact_name, calls_name):
         '| --- | --- | --- | --- | --- | --- | --- | --- | --- |']
     for method, title in [('baseline', '单次基线'), ('agent', 'PatchTrail Agent')]:
         s = summaries[method]
-        fmt = lambda value: '—' if value is None else f'{value:.2f}'
+        def fmt(value):
+            return '—' if value is None else f'{value:.2f}'
         rate = '—' if s['repair_rate'] is None else f"{s['repair_rate']:.2%}"
         lines.append(f"| {title} | {s['fixed_tasks']}/{s['eligible_tasks']} | {rate} | {s['attempted_tasks']}/{s['not_run_tasks']} | {fmt(s['mean_model_calls'])} | {fmt(s['mean_total_tokens'])} | {s['total_tokens']} | {s['total_tariff_yuan']:.6f} | {fmt(s['mean_elapsed_seconds'])} |")
     lines += ['', '逐题配对：`' + json.dumps(summaries['paired'], ensure_ascii=False) + '`。', '',

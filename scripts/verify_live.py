@@ -1,7 +1,6 @@
 """Bounded live validation. Starting, reviewing and approving are separate commands."""
 import argparse
 import json
-import os
 import re
 from pathlib import Path
 import sys

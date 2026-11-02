@@ -7,9 +7,10 @@ from pathlib import Path
 import sys
 from urllib.parse import urlsplit
 
-WEB = Path(__file__).resolve().parent.parent / "web"
-sys.path.insert(0, str(WEB.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from patchtrail.api import CSP
+
+WEB = Path(__file__).resolve().parent.parent / "web"
 
 
 class FrontendHandler(SimpleHTTPRequestHandler):

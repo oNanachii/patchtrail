@@ -148,4 +148,4 @@ cd /opt/patchtrail/current
 
 `.github/workflows/ci.yml` 在推送、拉取请求和手动触发时运行 Python 单元测试、前端测试、TypeScript 检查、生产构建及三个内置任务的真实 Docker 验证。容器镜像按摘要预加载，执行时禁网；模型接口使用模拟替身或脚本模式，不需要任何密钥。CI 使用临时工作目录，不读取本地 `var/` 或 `.env`。
 
-Ruff 配置在 `pyproject.toml`，固定版本为 `0.17.3`；`ruff check --output-format=github --exit-zero .` 本轮仅报告已有风格和静态检查问题，不自动修复，测试、构建和容器验证失败仍会阻断 CI。徽章展示 GitHub 的实际运行状态，添加配置和本地通过不代表云端已经通过。
+Ruff 配置在 `pyproject.toml`，固定版本为 `0.17.3`；`ruff check --output-format=github .` 检查启用的规则，发现问题会阻断 CI，不自动修改源码。测试、构建和容器验证失败也会阻断 CI。徽章展示 GitHub 的实际运行状态，本地通过不代表云端已经通过。

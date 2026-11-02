@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-01",
+  "baseline_commit": "d8043aa5809a901ad75bf75b5c42b72ec009cd47",
+  "ruff_version": "0.17.3",
+  "clean_snapshot_before": {
+    "findings": 156,
+    "by_code": {
+      "F401": 8,
+      "E731": 1,
+      "E702": 102,
+      "E701": 44,
+      "E402": 1
+    }
+  },
+  "clean_snapshot_after": {
+    "findings": 0,
+    "exit_code": 0
+  },
+  "lint_rules_and_exclusions_unchanged": true,
+  "ci_exit_zero_removed": true,
+  "ci_template_updated": true,
+  "behavior_checks": {
+    "files": [
+      {
+        "file": "patchtrail/api.py",
+        "normalized_ast_equal": true,
+        "string_values_unchanged": true,
+        "all_literal_values_unchanged": true,
+        "bootstrap_normalization": false,
+        "embedded_code_sha256": {}
+      },
+      {
+        "file": "patchtrail/service.py",
+        "normalized_ast_equal": true,
+        "string_values_unchanged": true,
+        "all_literal_values_unchanged": true,
+        "bootstrap_normalization": false,
+        "embedded_code_sha256": {}
+      },
+      {
+        "file": "scripts/benchmark_quixbugs.py",
+        "normalized_ast_equal": true,
+        "string_values_unchanged": true,
+        "all_literal_values_unchanged": true,
+        "bootstrap_normalization": false,
+        "embedded_code_sha256": {}
+      },
+      {
+        "file": "scripts/recheck_imported_patch.py",
+        "normalized_ast_equal": true,
+        "string_values_unchanged": true,
+        "all_literal_values_unchanged": true,
+        "bootstrap_normalization": false,
+        "embedded_code_sha256": {
+          "REMOTE": "85d03ec9a039c142a6a6b4d2db2b74a84527e998bc693faf05723b370a426b9d"
+        }
+      },
+      {
+        "file": "scripts/render_explanation_pdf.py",
+        "normalized_ast_equal": true,
+        "string_values_unchanged": true,
+        "all_literal_values_unchanged": true,
+        "bootstrap_normalization": false,
+        "embedded_code_sha256": {}
+      },
+      {
+        "file": "scripts/summarize_imported_live.py",
+        "normalized_ast_equal": true,
+        "string_values_unchanged": true,
+        "all_literal_values_unchanged": true,
+        "bootstrap_normalization": false,
+        "embedded_code_sha256": {}
+      },
+      {
+        "file": "scripts/verify_imported_live.py",
+        "normalized_ast_equal": true,
+        "string_values_unchanged": true,
+        "all_literal_values_unchanged": true,
+        "bootstrap_normalization": false,
+        "embedded_code_sha256": {}
+      },
+      {
+        "file": "scripts/verify_live.py",
+        "normalized_ast_equal": true,
+        "string_values_unchanged": true,
+        "all_literal_values_unchanged": true,
+        "bootstrap_normalization": false,
+        "embedded_code_sha256": {}
+      },
+      {
+        "file": "scripts/serve_frontend.py",
+        "normalized_ast_equal": true,
+        "string_values_unchanged": true,
+        "all_literal_values_unchanged": false,
+        "bootstrap_normalization": true,
+        "embedded_code_sha256": {}
+      },
+      {
+        "file": "tests/test_api.py",
+        "normalized_ast_equal": true,
+        "string_values_unchanged": true,
+        "all_literal_values_unchanged": true,
+        "bootstrap_normalization": false,
+        "embedded_code_sha256": {}
+      },
+      {
+        "file": "tests/test_frontend.py",
+        "normalized_ast_equal": true,
+        "string_values_unchanged": true,
+        "all_literal_values_unchanged": true,
+        "bootstrap_normalization": false,
+        "embedded_code_sha256": {}
+      },
+      {
+        "file": "tests/test_web_imports.py",
+        "normalized_ast_equal": true,
+        "string_values_unchanged": true,
+        "all_literal_values_unchanged": true,
+        "bootstrap_normalization": false,
+        "embedded_code_sha256": {}
+      }
+    ],
+    "benchmark_markdown_identical": true,
+    "markdown_sha256": "5979fc573cbb452f82bda6d8cf55c85a227dc480e4e15a2d72ac4be2ef71fe84"
+  },
+  "software_checks": {
+    "python_tests_passed": 216,
+    "includes_existing_node_wrapper_checks": true,
+    "frontend_node_tests_passed": 56,
+    "typescript_check_passed": true,
+    "production_build_passed": true,
+    "committed_web_artifacts_byte_identical": true,
+    "new_tests_added": false
+  },
+  "paid_model_calls": 0,
+  "deployment_performed": false,
+  "scope": "Behavior-preserving statement layout, unused imports, equivalent local formatter and import bootstrap; CI lint failures now block."
+}

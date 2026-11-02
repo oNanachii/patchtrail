@@ -123,17 +123,44 @@ class WebImportHttpTests(unittest.TestCase):
 
     def test_invalid_source_contracts_are_controlled_and_do_not_publish(self):
         cases = []
-        wrong = payload(); wrong["files"][0]["path"] = "../escape.py"; cases.append(wrong)
-        wrong = payload(); wrong["manifest"]["files"][0] = ".env"; wrong["files"][0]["path"] = ".env"; cases.append(wrong)
-        wrong = payload(); wrong["files"].append(copy.deepcopy(wrong["files"][0])); cases.append(wrong)
-        wrong = payload(); wrong["files"][0]["content"] = "a" * (128 * 1024 + 1); cases.append(wrong)
-        wrong = payload(); wrong["files"][0]["content"] = "\ud800"; cases.append(wrong)
-        wrong = payload(); wrong["files"][0]["content"] = "nul\0source"; cases.append(wrong)
-        wrong = payload(); wrong["manifest"]["editable_files"] = ["tests/test_app.py"]; cases.append(wrong)
-        wrong = payload(); wrong["manifest"]["command"] = "echo private"; cases.append(wrong)
-        wrong = payload(); wrong["files"].pop(); cases.append(wrong)
-        wrong = payload(); wrong["manifest"]["files"].append("app.py/nested.py"); wrong["files"].append({"path": "app.py/nested.py", "content": "pass"}); cases.append(wrong)
-        wrong = payload(); deep = "/".join(["nested"] * 18) + "/app.py"; wrong["manifest"]["files"][0] = deep; wrong["manifest"]["editable_files"] = [deep]; wrong["files"][0]["path"] = deep; cases.append(wrong)
+        wrong = payload()
+        wrong["files"][0]["path"] = "../escape.py"
+        cases.append(wrong)
+        wrong = payload()
+        wrong["manifest"]["files"][0] = ".env"
+        wrong["files"][0]["path"] = ".env"
+        cases.append(wrong)
+        wrong = payload()
+        wrong["files"].append(copy.deepcopy(wrong["files"][0]))
+        cases.append(wrong)
+        wrong = payload()
+        wrong["files"][0]["content"] = "a" * (128 * 1024 + 1)
+        cases.append(wrong)
+        wrong = payload()
+        wrong["files"][0]["content"] = "\ud800"
+        cases.append(wrong)
+        wrong = payload()
+        wrong["files"][0]["content"] = "nul\0source"
+        cases.append(wrong)
+        wrong = payload()
+        wrong["manifest"]["editable_files"] = ["tests/test_app.py"]
+        cases.append(wrong)
+        wrong = payload()
+        wrong["manifest"]["command"] = "echo private"
+        cases.append(wrong)
+        wrong = payload()
+        wrong["files"].pop()
+        cases.append(wrong)
+        wrong = payload()
+        wrong["manifest"]["files"].append("app.py/nested.py")
+        wrong["files"].append({"path": "app.py/nested.py", "content": "pass"})
+        cases.append(wrong)
+        wrong = payload()
+        deep = "/".join(["nested"] * 18) + "/app.py"
+        wrong["manifest"]["files"][0] = deep
+        wrong["manifest"]["editable_files"] = [deep]
+        wrong["files"][0]["path"] = deep
+        cases.append(wrong)
         for body in cases:
             with self.subTest(paths=body["manifest"]["files"]):
                 # surrogate JSON must be escaped rather than encoded by the client transport.
@@ -211,7 +238,8 @@ class PreviewLifecycleTests(unittest.TestCase):
             self.assertEqual(error.exception.status, 429)
             self.assertEqual(list((root / "previews").glob(".preview-*")), [])
             abandoned = root / "previews/.preview-crashed"
-            abandoned.mkdir(); (abandoned / "partial").write_text("unpublished")
+            abandoned.mkdir()
+            (abandoned / "partial").write_text("unpublished")
             store.preview(**payload())
             self.assertFalse(abandoned.exists())
 

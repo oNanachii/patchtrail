@@ -1,6 +1,5 @@
 from html.parser import HTMLParser
 from pathlib import Path
-import re
 import shutil
 import subprocess
 import unittest
