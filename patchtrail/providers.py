@@ -1,7 +1,11 @@
-"""Real DeepSeek transport and an explicitly scripted runtime demonstration."""
+"""Bounded OpenAI-compatible model transport and scripted runtime demonstrations."""
 import asyncio
 import copy
+from dataclasses import replace
 import json
+import ipaddress
+from typing import Protocol, runtime_checkable
+from urllib.parse import urlsplit
 import uuid
 
 import httpx
@@ -63,25 +67,88 @@ def _redact(value, secret):
     return value
 
 
-class DeepSeekProvider:
-    label = "DeepSeek live model"
+@runtime_checkable
+class ModelProvider(Protocol):
+    """The service needs one bounded completion operation, not a vendor SDK."""
+    label: str
 
-    def __init__(self, settings: Settings, transport=None, credential_supplier=None):
+    def complete(self, messages, task, call_number, remaining_seconds) -> tuple[dict, dict]:
+        ...
+
+
+class OpenAICompatibleProvider:
+    """Operator-configured chat-completions transport with the product's tool contract."""
+    label = "OpenAI-compatible live model"
+    provider_name = "Compatible model"
+    trust_environment = False
+    normalize_null_tool_calls = True
+    protected_options = {"model", "messages", "tools", "tool_choice", "max_tokens",
+                         "max_completion_tokens", "max_output_tokens", "stream"}
+
+    def __init__(self, settings: Settings, transport=None, credential_supplier=None, *,
+                 request_options=None, label=None, preserve_reasoning_content=False,
+                 output_token_parameter="max_tokens"):
         self.settings = settings
         self.transport = transport
         self.credential_supplier = credential_supplier
         self.last_completion_metadata = {}
+        if type(preserve_reasoning_content) is not bool:
+            raise ProviderError("Reasoning-content preservation must be an explicit boolean")
+        self.preserve_reasoning_content = preserve_reasoning_content
+        if (not isinstance(output_token_parameter, str)
+                or output_token_parameter not in {"max_tokens", "max_completion_tokens"}):
+            raise ProviderError("Unsupported configured output-token parameter")
+        self.output_token_parameter = output_token_parameter
+        if request_options is None:
+            request_options = {}
+        if (not isinstance(request_options, dict)
+                or any(not isinstance(key, str) for key in request_options)
+                or self.protected_options.intersection(request_options)):
+            raise ProviderError("Model options cannot replace the fixed tool-calling request fields")
+        try:
+            encoded = json.dumps(request_options, allow_nan=False)
+            if len(encoded.encode()) > 16000:
+                raise ValueError("oversized options")
+            self.request_options = json.loads(encoded)
+        except (ValueError, TypeError, RecursionError):
+            raise ProviderError("Model options must be a bounded JSON object") from None
+        if label is not None:
+            self.label = label
+
+    def _endpoint(self):
+        value = self.settings.base_url
+        try:
+            if not isinstance(value, str) or any(character.isspace() for character in value):
+                raise ValueError("invalid origin")
+            parsed = urlsplit(value)
+            host = parsed.hostname or ""
+            port = parsed.port
+            try:
+                local = host == "localhost" or ipaddress.ip_address(host).is_loopback
+            except ValueError:
+                local = host == "localhost"
+            if (not host or parsed.scheme not in {"http", "https"}
+                    or parsed.scheme == "http" and not local
+                    or parsed.username is not None or parsed.password is not None
+                    or "?" in value or "#" in value or port == 0):
+                raise ValueError("unsafe endpoint")
+        except (TypeError, ValueError):
+            raise ProviderError("Model base URL must use HTTPS, or HTTP on explicit local loopback, without credentials or query") from None
+        return value.rstrip("/") + "/chat/completions"
+
+    def build_payload(self, messages):
+        """Expose the exact request to durable metered benchmark transports."""
+        return {"model": self.settings.model, "messages": messages, "tools": TOOL_SCHEMAS,
+                "tool_choice": "auto", self.output_token_parameter: self.settings.max_output_tokens,
+                "stream": False, **copy.deepcopy(self.request_options)}
 
     def complete(self, messages, task, call_number, remaining_seconds):
         self.last_completion_metadata = {}
         api_key = self.credential_supplier() if self.credential_supplier else self.settings.api_key
         if not api_key:
-            raise ProviderError("DeepSeek API key is not configured")
-        if self.settings.base_url.rstrip("/") != "https://api.deepseek.com":
-            raise ProviderError("Only the official DeepSeek endpoint is supported")
-        payload = {"model": self.settings.model, "messages": messages, "tools": TOOL_SCHEMAS,
-                   "tool_choice": "auto", "max_tokens": self.settings.max_output_tokens,
-                   "stream": False, "thinking": {"type": "disabled"}}
+            raise ProviderError(f"{self.provider_name} API key is not configured")
+        endpoint = self._endpoint()
+        payload = self.build_payload(messages)
         # No retry: an unknown response may already have consumed a billed model request.
         timeout = httpx.Timeout(max(0.1, min(30.0, remaining_seconds)), connect=min(5.0, max(0.1, remaining_seconds)))
         async def request_body():
@@ -91,11 +158,12 @@ class DeepSeekProvider:
                 self.credential_supplier()
             # Whole-call deadline, including streamed reads, rather than only per-read timeouts.
             async with asyncio.timeout(max(0.1, remaining_seconds)):
-                async with httpx.AsyncClient(timeout=timeout, transport=self.transport, follow_redirects=False) as client:
-                    async with client.stream("POST", self.settings.base_url.rstrip("/") + "/chat/completions",
+                async with httpx.AsyncClient(timeout=timeout, transport=self.transport, follow_redirects=False,
+                                             trust_env=self.trust_environment) as client:
+                    async with client.stream("POST", endpoint,
                                              headers={"Authorization": "Bearer " + api_key}, json=payload) as response:
                         if response.status_code != 200:
-                            raise ProviderError(f"DeepSeek returned HTTP {response.status_code}; no automatic retry")
+                            raise ProviderError(f"{self.provider_name} returned HTTP {response.status_code}; no automatic retry")
                         parts, size = [], 0
                         async for chunk in response.aiter_bytes():
                             size += len(chunk)
@@ -128,7 +196,7 @@ class DeepSeekProvider:
         except ProviderError:
             raise
         except (httpx.HTTPError, TimeoutError, ValueError, RecursionError):
-            raise ProviderError("DeepSeek response could not be confirmed; inspect the run before retrying", uncertain=True) from None
+            raise ProviderError(f"{self.provider_name} response could not be confirmed; inspect the run before retrying", uncertain=True) from None
         try:
             if not isinstance(body, dict):
                 raise ValueError("invalid body")
@@ -138,6 +206,9 @@ class DeepSeekProvider:
             message = choice["message"]
             if choice.get("finish_reason") == "length":
                 raise ProviderError("Model output reached its token limit")
+            if (self.normalize_null_tool_calls and isinstance(message, dict)
+                    and message.get("tool_calls", []) is None):
+                message = {key: value for key, value in message.items() if key != "tool_calls"}
             if (not isinstance(message, dict) or message.get("role") != "assistant"
                     or not isinstance(message.get("tool_calls", []), list)
                     or message.get("content") is not None and not isinstance(message["content"], str)):
@@ -150,6 +221,21 @@ class DeepSeekProvider:
                         or not isinstance(call["function"].get("name"), str)):
                     raise ValueError("invalid tool call")
             clean = {"role": "assistant", "content": message.get("content")}
+            if self.preserve_reasoning_content and message.get("reasoning_content") is not None:
+                reasoning = message["reasoning_content"]
+                if not isinstance(reasoning, str):
+                    raise ValueError("invalid reasoning content")
+                # Some compatible vendors require this field to accompany the
+                # next tool result. It remains private context, not user prose.
+                # Decode a nested JSON string before redacting as with tool args.
+                try:
+                    nested = json.loads(reasoning)
+                    redacted = _redact(nested, api_key)
+                    if redacted != nested:
+                        reasoning = json.dumps(redacted, ensure_ascii=False)
+                except (TypeError, ValueError):
+                    pass
+                clean["reasoning_content"] = reasoning
             if "tool_calls" in message:
                 clean["tool_calls"] = copy.deepcopy(message["tool_calls"])
             raw_usage = body.get("usage") or {}
@@ -162,7 +248,36 @@ class DeepSeekProvider:
                 "finish_reason": choice.get("finish_reason")}.items() if isinstance(value, str)}
             return clean, usage
         except (KeyError, IndexError, TypeError, ValueError):
-            raise ProviderError("DeepSeek returned an invalid completion message") from None
+            raise ProviderError(f"{self.provider_name} returned an invalid completion message") from None
+
+
+class DeepSeekProvider(OpenAICompatibleProvider):
+    """Legacy payload and endpoint restriction, also used by member BYOK."""
+    label = "DeepSeek live model"
+    provider_name = "DeepSeek"
+    trust_environment = True
+    normalize_null_tool_calls = False
+
+    def __init__(self, settings: Settings, transport=None, credential_supplier=None):
+        super().__init__(settings, transport, credential_supplier,
+                         request_options={"thinking": {"type": "disabled"}})
+
+    def _endpoint(self):
+        if self.settings.base_url.rstrip("/") != "https://api.deepseek.com":
+            raise ProviderError("Only the official DeepSeek endpoint is supported")
+        return "https://api.deepseek.com/chat/completions"
+
+
+def create_provider(settings: Settings, transport=None) -> ModelProvider:
+    """Select an operator adapter without ever reusing a DeepSeek key elsewhere."""
+    if settings.provider_kind == "deepseek":
+        return DeepSeekProvider(settings, transport)
+    if settings.provider_kind == "openai-compatible":
+        return OpenAICompatibleProvider(replace(settings, api_key=settings.compatible_api_key), transport,
+            request_options=settings.model_options,
+            preserve_reasoning_content=settings.preserve_reasoning_content,
+            output_token_parameter=settings.output_token_parameter)
+    raise ProviderError("Unsupported configured model provider")
 
 
 class ScriptedProvider:

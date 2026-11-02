@@ -63,6 +63,8 @@ jobs:
         run: |
           python -m unittest discover -s tests -p 'test_injection*.py' -v
           python scripts/check_injection_eval.py artifacts/injection-eval-*-live.json
+      - name: Saved second-model comparison evidence (no model calls)
+        run: python scripts/check_model_comparison.py artifacts/benchmark-quixbugs-zhipu-20261102T075540Z-a600d216.json
       - name: Preload pinned verifier image
         run: docker pull "$PATCHTRAIL_CONTAINER_IMAGE"
       - name: Scripted actions through actual containers (no model calls)

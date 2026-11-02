@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-02",
+  "baseline_commit": "be67b40b2509fd9a34c73f7d2e07d36e4c6c31ae",
+  "real_model_evaluation": {
+    "passed": true,
+    "errors": [],
+    "artifact": "benchmark-quixbugs-zhipu-20261102T075540Z-a600d216.json",
+    "checked_tasks": 40,
+    "frozen_eligible_tasks": 34,
+    "agent_attempts": 34,
+    "checked_calls": 84,
+    "unknown_calls": 0,
+    "tariff_yuan": 0.5308602,
+    "cap_liability_yuan": 1.103,
+    "scope": "Offline frozen-P1 data, call ownership, cost, approval and verifier consistency"
+  },
+  "original_task_source_test_files_unchanged": {
+    "checked_tasks": 40,
+    "passed": true
+  },
+  "original_evidence_files_unchanged": [
+    "artifacts/live-model-validation.json",
+    "artifacts/imported-live-validation.json",
+    "artifacts/benchmark-quixbugs-20261101T170923Z-99c250d0.json",
+    "artifacts/benchmark-quixbugs-20261101T170923Z-99c250d0-calls.json"
+  ],
+  "server_secret_handling": {
+    "environment_variable": "ZHIPU_API_KEY",
+    "private_environment_permissions": "0600",
+    "server_scan_before_transfer_passed": true,
+    "credential_returned_to_local_model_context": false
+  },
+  "software_checks": {
+    "python_tests_passed": 273,
+    "new_targeted_tests_passed": 57,
+    "includes_existing_node_wrapper_checks": true,
+    "node_tests_passed": 56,
+    "typecheck_passed": true,
+    "production_build_passed": true,
+    "web_artifact_files_unchanged": 12,
+    "ruff_passed": true
+  },
+  "source_provenance": {
+    "evaluated_source_artifact": "benchmark-quixbugs-zhipu-20261102T075540Z-a600d216-source.json",
+    "evaluated_runtime_hash": "9c7820a3c3b1f41beaad4abcca459eaaba41ec11c5f0a6cc62dcfcfebfe521e3",
+    "source_snapshot_reconstructs_hash": true,
+    "current_runtime_hash": "b28266d471994583e8d94c6a99f928ce66cb9a54eb0df3789bb2f9b7cf732b20",
+    "post_eval_refinements": [
+      "Preserve legacy DeepSeek environment handling; generic remains proxy-free.",
+      "Accept null tool_calls for generic non-tool answers; actual null responses in this evaluation: 0.",
+      "Optional generic output-token parameter name; all 84 actual requests used max_tokens.",
+      "Report formatting and explicit legacy DeepSeek benchmark profile pinning; no model results reinterpreted."
+    ]
+  },
+  "failure_categories": {
+    "patch_failed_tests": 4,
+    "verification_unconfirmed": 1
+  },
+  "original_test_successes": 29,
+  "fixed_cohort_size": 34,
+  "script_auto_approval": true,
+  "human_approval_review": false,
+  "model_requests_retried": false,
+  "unknown_model_requests": 0,
+  "null_tool_call_responses": 0,
+  "deployment_performed": false,
+  "new_browser_or_external_acceptance": false,
+  "scope": "Internal regression and evidence consistency, distinct from real model results, semantic correctness and user acceptance."
+}

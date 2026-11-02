@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "errors": [],
+  "artifact": "benchmark-quixbugs-zhipu-20261102T075540Z-a600d216.json",
+  "checked_tasks": 40,
+  "frozen_eligible_tasks": 34,
+  "agent_attempts": 34,
+  "checked_calls": 84,
+  "unknown_calls": 0,
+  "tariff_yuan": 0.5308602,
+  "cap_liability_yuan": 1.103,
+  "scope": "Offline frozen-P1 data, call ownership, cost, approval and verifier consistency"
+}

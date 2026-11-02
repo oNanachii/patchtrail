@@ -106,6 +106,25 @@ codex mcp add patchtrail -- \
 
 [完整 MCP 指南](docs/MCP.md) 包含 Claude Code `.mcp.json`、Codex TOML、独立演示数据目录、权限范围及故障处理。MCP 复用既有 API 的限额、权限、容器和审批检查，不另开数据库。
 
+## 替换操作者模型
+
+默认仍使用 DeepSeek 官方端点和原有请求配置。服务端可选择 `PATCHTRAIL_PROVIDER=openai-compatible`，配合 `PATCHTRAIL_MODEL_BASE_URL`、`PATCHTRAIL_MODEL` 和独立的 `PATCHTRAIL_COMPATIBLE_API_KEY` 使用支持 Chat Completions 工具调用的兼容端点；通用模式不会回退使用 DeepSeek Key。远程端点要求 HTTPS，本机回环开发允许 HTTP；通用模式不跟随重定向、不读取环境代理或自动重试，DeepSeek 保留原有环境代理策略。
+
+例如智谱官方 API 的非秘密配置如下；Key 只在服务器的私有环境中填写，不放进代码、命令参数、页面或运行记录：
+
+```sh
+PATCHTRAIL_PROVIDER=openai-compatible
+PATCHTRAIL_MODEL_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+PATCHTRAIL_MODEL=glm-4.7
+PATCHTRAIL_MODEL_OPTIONS='{"thinking":{"type":"disabled"}}'
+```
+
+`ModelProvider` 统一服务层接口，`OpenAICompatibleProvider` 复用同一工具清单、限额和解析器。`PATCHTRAIL_MODEL_OPTIONS` 只接受服务端 JSON 配置，不能覆盖工具、消息、模型或输出上限；需要回传供应商 `reasoning_content` 时可显式启用 `PATCHTRAIL_PRESERVE_REASONING=true`，内容不会进入页面事件。具体兼容性取决于端点支持的 Chat Completions 字段，不支持任意 API 协议。
+
+通用端点默认使用 `max_tokens`；需要对应字段的端点可设置 `PATCHTRAIL_OUTPUT_TOKEN_PARAMETER=max_completion_tokens`，数值仍取同一个服务端输出上限，不能借供应商参数另设更高额度。DeepSeek 及成员流程始终使用原有 `max_tokens`。
+
+公开演示始终使用脚本 provider。**成员 BYOK 仍只访问 DeepSeek 官方端点**，不继承通用端点、Key 或供应商参数；当操作者切换通用模型时，成员默认仍用 `deepseek-flash`（可用服务端 `PATCHTRAIL_MEMBER_MODEL` 指定 DeepSeek 模型）。智谱 Agent 的固定题集对比和费用记录见 [QuixBugs 报告](docs/BENCHMARK_QUIXBUGS.md)。
+
 ## 管理员：邀请码与命令行导入
 
 成员用邀请码和自己的 Key 登录。最初的部署管理员仍可展开登录窗口里的“已有操作者入口”，填写 `PATCHTRAIL_ADMIN_TOKEN`，读取原来的私有任务和历史，并使用服务器上的模型配置；两类身份的数据互不合并，管理员令牌也不是邀请码。

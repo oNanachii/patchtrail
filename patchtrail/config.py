@@ -2,6 +2,7 @@
 from dataclasses import dataclass, field
 import os
 import hashlib
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -28,10 +29,26 @@ def load_local_env(path: Path = ROOT / ".env") -> None:
             os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
 
 
+def _model_options():
+    try:
+        value = json.loads(os.getenv("PATCHTRAIL_MODEL_OPTIONS", "{}"))
+    except (ValueError, TypeError):
+        raise ValueError("PATCHTRAIL_MODEL_OPTIONS must be a JSON object") from None
+    if not isinstance(value, dict):
+        raise ValueError("PATCHTRAIL_MODEL_OPTIONS must be a JSON object")
+    return value
+
+
 @dataclass
 class Settings:
     data_dir: Path = field(default_factory=lambda: Path(os.getenv("PATCHTRAIL_DATA_DIR", str(ROOT / "var"))))
     api_key: str = field(default_factory=lambda: os.getenv("DEEPSEEK_API_KEY", ""), repr=False)
+    provider_kind: str = field(default_factory=lambda: os.getenv("PATCHTRAIL_PROVIDER", "deepseek"))
+    compatible_api_key: str = field(default_factory=lambda: os.getenv("PATCHTRAIL_COMPATIBLE_API_KEY", ""), repr=False)
+    model_options: dict = field(default_factory=_model_options, repr=False)
+    output_token_parameter: str = field(default_factory=lambda: os.getenv("PATCHTRAIL_OUTPUT_TOKEN_PARAMETER", "max_tokens"))
+    preserve_reasoning_content: bool = field(default_factory=lambda: os.getenv("PATCHTRAIL_PRESERVE_REASONING", "false").lower() == "true")
+    deepseek_member_model: str = field(default_factory=lambda: os.getenv("PATCHTRAIL_MEMBER_MODEL", "deepseek-flash"))
     model: str = field(default_factory=lambda: os.getenv("PATCHTRAIL_MODEL", "deepseek-flash"))
     base_url: str = field(default_factory=lambda: os.getenv("PATCHTRAIL_MODEL_BASE_URL", "https://api.deepseek.com"))
     admin_token: str = field(default_factory=lambda: os.getenv("PATCHTRAIL_ADMIN_TOKEN", ""), repr=False)
@@ -44,6 +61,14 @@ class Settings:
     max_seconds: int = 120
     max_input_chars: int = 64000
     max_output_tokens: int = 4096
+
+    @property
+    def live_api_key(self):
+        return self.compatible_api_key if self.provider_kind == "openai-compatible" else self.api_key
+
+    @property
+    def member_model(self):
+        return self.model if self.provider_kind == "deepseek" else self.deepseek_member_model
 
     @property
     def limits(self):

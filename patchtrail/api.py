@@ -97,7 +97,10 @@ def create_app(service=None):
         with active.pool.lock:
             if member_id not in member_services:
                 settings = replace(active.settings, data_dir=members.directory / member_id,
-                                   api_key="", admin_token="", base_url="https://api.deepseek.com")
+                                   api_key="", admin_token="", base_url="https://api.deepseek.com",
+                                   provider_kind="deepseek", model=active.settings.member_model,
+                                   compatible_api_key="", model_options={}, preserve_reasoning_content=False,
+                                   output_token_parameter="max_tokens")
                 current = RunService(settings, runner=active.runner, dispatch=active.dispatch,
                     pool=active.pool, member=True,
                     credential_provider=lambda credential: members.provider(credential, settings))
@@ -257,7 +260,7 @@ def create_app(service=None):
             if len(queue) >= 12:
                 raise ServiceError("rate_limited", "Please wait before signing in again", 429)
             queue.append(now)
-        result = members.login(body.invite_code, body.api_key, active.settings.model)
+        result = members.login(body.invite_code, body.api_key, active.settings.member_model)
         member_service(result["member_id"])
         return result
 
@@ -279,7 +282,7 @@ def create_app(service=None):
 
     @app.get("/api/health")
     def health():
-        return {"status": "ok", "version": __version__, "model_configured": bool(active.settings.api_key),
+        return {"status": "ok", "version": __version__, "model_configured": bool(active.settings.live_api_key),
                 "runtime_code_hash": runtime_code_hash(), "run_limits": active.settings.limits,
                 "model": active.settings.model, "operator_configured": bool(active.settings.admin_token),
                 "container_available": active.runner.available(), "public_demo": active.settings.public_demo,

@@ -133,7 +133,10 @@ class MemberRegistry:
                 return self.session(token_hash)["api_key"]
             except ServiceError:
                 raise ProviderError("Member session ended before dispatch; no new model request sent") from None
-        return DeepSeekProvider(replace(settings, api_key="", base_url="https://api.deepseek.com"),
+        return DeepSeekProvider(replace(settings, api_key="", base_url="https://api.deepseek.com",
+                                       provider_kind="deepseek", model=settings.member_model,
+                                       compatible_api_key="", model_options={}, preserve_reasoning_content=False,
+                                       output_token_parameter="max_tokens"),
                                 transport, credential_supplier=credential)
 
 

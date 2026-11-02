@@ -294,6 +294,8 @@ def main(argv=None):
     if args.env_file:
         load_local_env(args.env_file)
     settings = Settings(data_dir=directory / 'runtime', api_key=os.getenv('DEEPSEEK_API_KEY', ''),
+        provider_kind='deepseek', compatible_api_key='', model_options={}, preserve_reasoning_content=False,
+        output_token_parameter='max_tokens',
         model='deepseek-flash', admin_token=uuid.uuid4().hex, container_binary=args.container_bin,
         pytest_image=args.pytest_image, public_demo=False)
     if args.action == 'run' and not settings.api_key:

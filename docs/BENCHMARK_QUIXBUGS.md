@@ -56,48 +56,48 @@ python scripts/check_quixbugs_benchmark.py artifacts/benchmark-quixbugs-20261101
 
 ## 逐题结果与排除原因
 
-| 题目 | 预检/原因 | 单次基线 | Agent |
-| --- | --- | --- | --- |
-| bitcount | timed_out | 未运行 | 未运行 |
-| breadth_first_search | ready | 通过 | 通过 |
-| bucketsort | ready | 通过 | 通过 |
-| depth_first_search | ready | 通过 | 通过 |
-| detect_cycle | ready | 通过 | 通过 |
-| find_first_in_sorted | timed_out | 未运行 | 未运行 |
-| find_in_sorted | ready | 通过 | 通过 |
-| flatten | ready | 通过 | 通过 |
-| gcd | ready | 通过 | 通过 |
-| get_factors | ready | 通过 | 通过 |
-| hanoi | ready | 通过 | 通过 |
-| is_valid_parenthesization | ready | 通过 | 通过 |
-| kheapsort | ready | 通过 | 通过 |
-| knapsack | ready | 通过 | 通过 |
-| kth | ready | 通过 | 通过 |
-| lcs_length | ready | 通过 | 通过 |
-| levenshtein | timed_out | 未运行 | 未运行 |
-| lis | ready | 通过 | 通过 |
-| longest_common_subsequence | ready | 通过 | 通过 |
-| max_sublist_sum | ready | 通过 | 通过 |
-| mergesort | timed_out | 未运行 | 未运行 |
-| minimum_spanning_tree | ready | patch_failed_tests | 通过 |
-| next_palindrome | ready | 通过 | 通过 |
-| next_permutation | ready | 通过 | 通过 |
-| pascal | ready | 通过 | 通过 |
-| possible_change | unconfirmed（输出截断） | 未运行 | 未运行 |
-| powerset | ready | 通过 | 通过 |
-| quicksort | ready | 通过 | 通过 |
-| reverse_linked_list | ready | 通过 | 通过 |
-| rpn_eval | ready | 通过 | 通过 |
-| shortest_path_length | ready | 通过 | 通过 |
-| shortest_path_lengths | ready | 通过 | 通过 |
-| shortest_paths | ready | 通过 | 通过 |
-| shunting_yard | ready | 通过 | 通过 |
-| sieve | ready | 通过 | 通过 |
-| sqrt | timed_out | 未运行 | 未运行 |
-| subsequences | ready | 通过 | 通过 |
-| to_base | ready | 通过 | 通过 |
-| topological_ordering | ready | patch_failed_tests | 通过 |
-| wrap | ready | patch_failed_tests | 通过 |
+| 题目 | 预检/原因 | 单次基线 | Agent | 智谱 GLM-4.7 Agent |
+| --- | --- | --- | --- | --- |
+| bitcount | timed_out | 未运行 | 未运行 | 未运行（沿用 P1 排除） |
+| breadth_first_search | ready | 通过 | 通过 | 通过 |
+| bucketsort | ready | 通过 | 通过 | 通过 |
+| depth_first_search | ready | 通过 | 通过 | 通过 |
+| detect_cycle | ready | 通过 | 通过 | 通过 |
+| find_first_in_sorted | timed_out | 未运行 | 未运行 | 未运行（沿用 P1 排除） |
+| find_in_sorted | ready | 通过 | 通过 | 通过 |
+| flatten | ready | 通过 | 通过 | 通过 |
+| gcd | ready | 通过 | 通过 | 通过 |
+| get_factors | ready | 通过 | 通过 | 通过 |
+| hanoi | ready | 通过 | 通过 | 通过 |
+| is_valid_parenthesization | ready | 通过 | 通过 | 通过 |
+| kheapsort | ready | 通过 | 通过 | 通过 |
+| knapsack | ready | 通过 | 通过 | 通过 |
+| kth | ready | 通过 | 通过 | 通过 |
+| lcs_length | ready | 通过 | 通过 | 通过 |
+| levenshtein | timed_out | 未运行 | 未运行 | 未运行（沿用 P1 排除） |
+| lis | ready | 通过 | 通过 | patch_failed_tests |
+| longest_common_subsequence | ready | 通过 | 通过 | 通过 |
+| max_sublist_sum | ready | 通过 | 通过 | 通过 |
+| mergesort | timed_out | 未运行 | 未运行 | 未运行（沿用 P1 排除） |
+| minimum_spanning_tree | ready | patch_failed_tests | 通过 | patch_failed_tests |
+| next_palindrome | ready | 通过 | 通过 | 通过 |
+| next_permutation | ready | 通过 | 通过 | 通过 |
+| pascal | ready | 通过 | 通过 | 通过 |
+| possible_change | unconfirmed（输出截断） | 未运行 | 未运行 | 未运行（沿用 P1 排除） |
+| powerset | ready | 通过 | 通过 | patch_failed_tests |
+| quicksort | ready | 通过 | 通过 | 通过 |
+| reverse_linked_list | ready | 通过 | 通过 | 通过 |
+| rpn_eval | ready | 通过 | 通过 | 通过 |
+| shortest_path_length | ready | 通过 | 通过 | 通过 |
+| shortest_path_lengths | ready | 通过 | 通过 | 通过 |
+| shortest_paths | ready | 通过 | 通过 | 通过 |
+| shunting_yard | ready | 通过 | 通过 | 通过 |
+| sieve | ready | 通过 | 通过 | 通过 |
+| sqrt | timed_out | 未运行 | 未运行 | 未运行（沿用 P1 排除） |
+| subsequences | ready | 通过 | 通过 | verification_unconfirmed |
+| to_base | ready | 通过 | 通过 | 通过 |
+| topological_ordering | ready | patch_failed_tests | 通过 | 通过 |
+| wrap | ready | patch_failed_tests | 通过 | patch_failed_tests |
 
 ## 失败分类
 
@@ -118,3 +118,49 @@ python scripts/check_quixbugs_benchmark.py artifacts/benchmark-quixbugs-20261101
 本轮 Agent 相对单次基线多通过 3 题原测试，原测试通过率相差 8.82 个百分点；其中拓扑排序包含严格输出顺序造成的差距。调用、token、费用和耗时差距见同表；这是两套给定流程在同一小基准上的相对比较。
 公开基准可能出现在模型训练数据里，不代表通用修复率。模型服务使用可变别名；实际返回标识保留在逐次响应中，不声称固定权重快照；复现指流程和核验步骤，再次调用不保证输出或筛选名单完全相同。测试通过只代表原有测试通过，未增加隐藏测试或外部人工正确性审查。
 已有自编回归、自有源码验收记录原样保留，本轮结果单独报告。
+
+<!-- ZHIPU_COMPARISON_START -->
+
+## 第二模型：智谱官方 API 的 Agent 对比
+
+状态：`completed`；[逐题工件](../artifacts/benchmark-quixbugs-zhipu-20261102T075540Z-a600d216.json)、[调用费用账本](../artifacts/benchmark-quixbugs-zhipu-20261102T075540Z-a600d216-calls.json)。
+冻结 P1 的同一 34 题，不重新挑选分母；原 6 个排除项不补跑。源码、测试、数据哈希、同一镜像及 8 次调用 / 12 步 / 120 秒 / 4096 输出 token 预算均核对。每题一次 Agent 运行，不重跑 DeepSeek 或单次基线；失败及未知调用全部保留，不自动重试。
+智谱使用官方 `https://open.bigmodel.cn/api/paas/v4` 的 `glm-4.7`，显式关闭思考以接近 P1 非思考配置；提示与工具清单保持相同。Key 仅从服务器环境读取，补丁仍由**脚本自动批准**准确 digest/version 后用原测试验证，不是人工审查。
+
+| 指标 | P1 DeepSeek Agent | 智谱 GLM-4.7 Agent |
+| --- | --- | --- |
+| 原测试全通过 / 固定分母 | 34/34 | 29/34 |
+| 原测试全通过比例 | 100.00% | 85.29% |
+| 尝试 / 未运行 | 34/0 | 34/0 |
+| 平均模型调用 | 2.29 | 2.47 |
+| 平均 token | 6552.50 | 6792.06 |
+| 总 token（已确认） | 222785 | 230930 |
+| 用量计价（元） | 0.14676764 | 0.53086020 |
+| 平均耗时（秒） | 12.05 | 31.12 |
+
+本轮上限 ¥30.0；最高费率保守占用 ¥1.10300000，未知请求 0 次。费用按[智谱官方人民币费率](https://docs.bigmodel.cn/cn/guide/start/pricing)与 API usage 分档计算，不是独立账单；缓存未报告时按零命中保守估算。每次请求先持久预留字节上界输入及最大输出的最高费率费用，未知结果保留预留并停止后续派发。
+当前验证器包含 P1 之后的正常完成记录修复，基线工具结果会多出完成元数据；没有为了对齐旧实验而撤回修复。因此这是同一固定题集上的历史跨模型对照，包含运行时版本差异，不能将所有差距单独归因于模型。公开基准可能进入训练数据，原测试通过不代表通用修复率或外部正确性认证。
+
+```sh
+# 先在服务器环境设置 ZHIPU_API_KEY，Key 不作为命令参数。
+python scripts/benchmark_model_comparison.py dry-run --data-dir var/benchmark/zhipu-new \
+  --container-bin podman --pytest-image <P1镜像ID> --source-root <P1的quixbugs/tasks目录>
+# 确认预检后将 dry-run 改为 run；已开始目录拒绝再次运行。
+python scripts/check_model_comparison.py artifacts/benchmark-quixbugs-zhipu-20261102T075540Z-a600d216.json
+```
+
+<!-- ZHIPU_COMPARISON_END -->
+
+## 智谱这次运行的失败与核对
+
+- `lis`：12 条原测试中 3 条失败，返回的最长递增子序列长度偏小。
+- `minimum_spanning_tree`：3 条原测试中 2 条失败，返回集合包含多余边。
+- `powerset`：5 条原测试中 4 条因列表顺序不符失败。静态检查显示该补丁仍枚举同一组子集，只是顺序与原测试相反；这属于严格预言机的差异，不能直接称为未生成正确的数学幂集，评分仍保留原断言。
+- `wrap`：5 条原测试均失败，差异涉及原接口保留的空格与精确分行。
+- `subsequences`：验证阶段容器超时，测试框架没有完整返回。部分已运行断言失败，但最终仍记录为 `verification_unconfirmed`，不伪装成完整的测试失败或通过。这与模型请求结果未知不同：84 次模型请求的响应和用量均已确认。
+
+[独立核对](../artifacts/benchmark-quixbugs-zhipu-20261102T075540Z-a600d216-audit.json)重新计算了 34 次尝试、84 次请求、230930 token、费用、批准 digest/version 及只读文件哈希。原 DeepSeek 工件未改；比较是历史给定流程在原测试上的相对结果，不是模型能力的因果排名。
+
+[实际评测源码快照](../artifacts/benchmark-quixbugs-zhipu-20261102T075540Z-a600d216-source.json)可重建工件记录的运行时代码哈希。评测运行全程冻结，提交前另外保留了 DeepSeek 原有环境代理策略，并为通用端点补充 `tool_calls:null` 的合法无工具回答处理及可配置的输出限额字段名；本轮所有响应均未出现该 null 字段，84 次请求均使用原有 `max_tokens`，因此没有据此重跑或改写结果。报告排版修订也不改变原始工件。
+
+Key 在服务器私有环境中配置，只有服务器进程使用；工件在传回本机前通过实际 Key 及转义内容扫描。公开演示与成员 BYOK 未切换到智谱，没有部署或重启线上应用。再次调用前应复核供应商最新费率，本次静态计价不是未来账单保证。

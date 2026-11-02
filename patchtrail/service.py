@@ -10,7 +10,7 @@ import uuid
 from .config import Settings, runtime_code_hash
 from .resources import ResourcePool
 from .preflight import baseline, binding
-from .providers import DeepSeekProvider, ProviderError, ScriptedProvider, initial_messages
+from .providers import ModelProvider, ProviderError, ScriptedProvider, create_provider, initial_messages
 from .projects import ProjectCatalog
 from .sandbox import DockerRunner, SandboxUnavailable
 from .storage import Store, StoreConflict
@@ -46,7 +46,8 @@ def public_run(row):
         for file in result["proposal"].get("files", []):
             file.pop("content", None)
     result["private"] = row["task_id"].startswith("project-")
-    result["provider_label"] = ScriptedProvider.label if row["mode"] == "demo" else "DeepSeek live model"
+    result["provider_label"] = (ScriptedProvider.label if row["mode"] == "demo" else
+                                checkpoint.get("provider_label", "DeepSeek live model"))
     result["configured_model"] = checkpoint.get("configured_model")
     result["observed_models"] = sorted({m["reported_model"] for m in checkpoint.get("provider_metadata", [])
                                        if isinstance(m.get("reported_model"), str)})
@@ -62,13 +63,13 @@ def _resource_serialized(operation):
 
 
 class RunService:
-    def __init__(self, settings: Settings, runner=None, provider=None, dispatch=True, *, pool=None, member=False, credential_provider=None):
+    def __init__(self, settings: Settings, runner=None, provider: ModelProvider | None = None, dispatch=True, *, pool=None, member=False, credential_provider=None):
         self.settings = settings
         self.settings.data_dir = settings.data_dir.resolve()
         self.store = Store(settings.data_dir / "runs.sqlite3")
         self.catalog = ProjectCatalog(settings.data_dir / "projects")
         self.runner = runner or DockerRunner(settings.container_binary, settings.container_image)
-        self.provider = provider or DeepSeekProvider(settings)
+        self.provider = provider or create_provider(settings)
         self.demo_provider = ScriptedProvider()
         self.dispatch = dispatch
         self.pool = pool or ResourcePool()
@@ -182,8 +183,11 @@ class RunService:
         receipt = None
         if mode == "live" and (self.member or preflight_id):
             receipt = self._preflight_receipt(task, preflight_id)
-        if mode == "live" and not self.member and not self.settings.api_key:
-            raise ServiceError("model_not_configured", "Configure DEEPSEEK_API_KEY locally before a live run", 503)
+        if mode == "live" and not self.member and not self.settings.live_api_key:
+            message = ("Configure PATCHTRAIL_COMPATIBLE_API_KEY on the server before a live run"
+                       if self.settings.provider_kind == "openai-compatible" else
+                       "Configure DEEPSEEK_API_KEY locally before a live run")
+            raise ServiceError("model_not_configured", message, 503)
         try:
             runner = self._runner_for(task)
         except SandboxUnavailable:
@@ -265,6 +269,7 @@ class RunService:
                 cp["messages"].append({"role": "user", "content": "Application baseline check: " + json.dumps(receipt["check"])})
                 self._checkpoint(run_id, cp)
             provider = self.demo_provider if row["mode"] == "demo" else self.provider
+            cp.setdefault("provider_label", provider.label)
             while not self.closed:
                 if self.store.get_run(run_id)["state"] != "diagnosing":
                     return
